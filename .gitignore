@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+# Downloaded Hugging Face dataset snapshots
+mrsd-exo-ankle/
+
+# Generated exo-frame training data (rebuild with frame_transform.build_dataset)
+training_data/

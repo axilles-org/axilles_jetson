@@ -36,6 +36,7 @@ nor imports pandas.
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Sequence
 
@@ -71,6 +72,9 @@ TARGET = "ankle_moment_nm_per_kg"
 HEEL_STRIKE_THRESHOLD = 10000.0
 TOE_OFF_THRESHOLD = 20000.0
 FSR_FILTER_CUTOFF = 20.0
+
+# Sampling rate the exo logs at and the control loop runs at.
+TARGET_HZ = 200.0
 
 GAIT_CYCLE_POINTS = 101
 MIN_STRIDE_S, MAX_STRIDE_S = 0.5, 2.5
@@ -691,6 +695,1027 @@ class ExoFrame:
         return sign, float(signed)
 
 
+# ========================= Guided calibration =========================
+#
+# Everything below runs on the robot. The hardware imports are kept inside the
+# functions that need them, so `import exo_frame` stays numpy-only on a laptop.
+
+CALIB_DIR = Path("calibration")
+
+# Quiet-standing acceptance. A subject who cannot hold below this is not standing
+# still enough for the reading to serve as a zero.
+STILL_GYRO_MAX = 0.35            # rad/s
+STILL_MIN_FRACTION = 0.80        # of the standing window
+STILL_MAX_ENCODER_SD = 1.5       # deg
+
+# Sweep acceptance.
+SWEEP_MIN_ROM_DEG = 12.0         # combined dorsi + plantar excursion
+SWEEP_MIN_R2 = 0.75              # encoder rate vs IMU rate regression
+SWEEP_MAX_SHANK_GYRO = 0.60      # rad/s mean; the shank is meant to stay put
+SWEEP_MIN_HOLD_SEPARATION = 4.0  # deg between neutral and each held pose
+
+# Walking acceptance.
+WALK_MIN_STRIDES = 20
+WALK_MAX_ROTATION_SPREAD_DEG = 8.0
+WALK_MIN_SAGITTAL_CORR = 0.70
+
+# A measured IMU update rate below this means the report-rate override did not take.
+MIN_EFFECTIVE_IMU_HZ = 100.0
+
+
+@dataclass
+class PhaseSpec:
+    key: str
+    seconds: float
+    title: str
+    instruction: str
+
+
+# The protocol. Standing and walking are as specified. The sweep is split into
+# labelled sub-phases because an unlabelled sweep cannot determine which direction
+# is dorsiflexion: PCA recovers the axis but not its sign. The held poses make the
+# sign a direct measurement, and the free sweep afterwards supplies the rate
+# regression that gives the encoder-to-joint ratio and cross-checks that sign.
+PROTOCOL = (
+    PhaseSpec("standing", 10.0, "QUIET STANDING",
+              "Stand still, weight even on both feet, ankle relaxed and neutral.\n"
+              "Do not shift or sway. Look straight ahead."),
+    PhaseSpec("neutral", 5.0, "NEUTRAL HOLD",
+              "Sit down, or stand on your LEFT leg only.\n"
+              "Let the right foot rest in its NEUTRAL position and hold it still."),
+    PhaseSpec("dorsi", 5.0, "DORSIFLEXION HOLD",
+              "Pull your toes UP toward your shin, as far as is comfortable.\n"
+              "HOLD that position still until told to stop."),
+    PhaseSpec("plantar", 5.0, "PLANTARFLEXION HOLD",
+              "Point your toes DOWN and away from you, as far as is comfortable.\n"
+              "HOLD that position still until told to stop."),
+    PhaseSpec("sweep", 10.0, "SLOW SWEEPS",
+              "Sweep the ankle smoothly up and down, about 5 full cycles.\n"
+              "Keep it SLOW, and keep your shank still. Only the ankle moves."),
+    PhaseSpec("walking", 60.0, "LEVEL WALKING",
+              "Walk at a comfortable, steady pace on level ground.\n"
+              "Keep walking until told to stop."),
+)
+
+
+@dataclass
+class Check:
+    name: str
+    passed: bool
+    detail: str
+    critical: bool = True
+
+
+@dataclass
+class CalibrationResult:
+    stamp: str
+    rotations: dict
+    encoder_zero_deg: float
+    encoder_sign: int
+    encoder_ratio: float
+    heel_threshold: float
+    toe_threshold: float
+    checks: list
+    metrics: dict
+
+    @property
+    def ok(self) -> bool:
+        return all(bool(c.passed) for c in self.checks if c.critical)
+
+    def to_json(self) -> dict:
+        return {
+            "stamp": self.stamp,
+            "ok": self.ok,
+            "rotations": {s: np.asarray(self.rotations[s]).tolist() for s in SEGMENTS},
+            "encoder_zero_deg": self.encoder_zero_deg,
+            "encoder_sign": self.encoder_sign,
+            "encoder_ratio": self.encoder_ratio,
+            "heel_threshold": self.heel_threshold,
+            "toe_threshold": self.toe_threshold,
+            "features": list(FEATURES),
+            "target": TARGET,
+            "metrics": self.metrics,
+            "checks": [{"name": c.name, "passed": bool(c.passed), "detail": c.detail,
+                        "critical": bool(c.critical)} for c in self.checks],
+        }
+
+
+def _json_default(o):
+    """
+    Coerce numpy scalars and arrays for json.dumps.
+
+    Comparisons on numpy values return np.bool_, and reductions return np.float64;
+    both look like Python types until json refuses them, so this is applied at the
+    one place every calibration result is written.
+    """
+    if isinstance(o, (np.bool_,)):
+        return bool(o)
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, np.floating):
+        return float(o)
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+
+
+# ---------------- hardware access ----------------
+def load_sensor_hub(imu_report_hz: float = 200.0, verbose: bool = True):
+    """
+    Import SensorHub from 'Data collection/data_collection.py' and re-rate the IMUs.
+
+    That module hard-codes IMU_REPORT_HZ = 25.0, and SensorHub reads the global when
+    it constructs each _FastIMU, so the override must be applied to the module object
+    before SensorHub is instantiated. Patching the global rather than editing the file
+    leaves your recording script untouched.
+    """
+    import importlib.util
+
+    path = Path("Data collection") / "data_collection.py"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Cannot find {path}. Run calibration from the repository root on the "
+            "Jetson, with the exoskeleton connected."
+        )
+
+    spec = importlib.util.spec_from_file_location("_exo_data_collection", path)
+    mod = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(mod)      # requires smbus2 + adafruit_bno08x
+    except ImportError as exc:
+        raise RuntimeError(
+            f"Cannot load the sensor drivers ({exc}).\n"
+            "Calibration reads the IMUs, encoder and FSRs directly, so it has to run "
+            "on the Jetson with the exoskeleton connected and smbus2 plus "
+            "adafruit_bno08x installed.\n"
+            "To exercise the analysis without hardware, pass a `recorder` callable to "
+            "run_calibration(); test_calibration.py does exactly that."
+        ) from exc
+
+    previous = getattr(mod, "IMU_REPORT_HZ", None)
+    mod.IMU_REPORT_HZ = float(imu_report_hz)
+    if verbose and previous is not None and float(previous) != float(imu_report_hz):
+        print(f"  IMU report rate overridden for this run: "
+              f"{previous:.0f} Hz -> {imu_report_hz:.0f} Hz")
+        print(f"  WARNING: 'Data collection/data_collection.py' still records at "
+              f"{previous:.0f} Hz.")
+        print(f"  Logs taken with it carry only ~{previous * 1.25:.0f} Hz of real IMU "
+              f"bandwidth, so they cannot resolve heel-strike transients.")
+    return mod
+
+
+def record_phase(hub, seconds: float, fs: float = TARGET_HZ,
+                 progress: bool = True) -> dict:
+    """
+    Poll every sensor at `fs` for `seconds` and return raw arrays.
+
+    Ticks where an IMU has not yet produced a packet are left as NaN rather than
+    back-filled, so the analysis can measure the true update rate instead of being
+    fooled by held values.
+    """
+    import time
+
+    n = int(round(seconds * fs))
+    period = 1.0 / fs
+    out = {
+        "time": np.full(n, np.nan),
+        "foot_accel": np.full((n, 3), np.nan), "foot_gyro": np.full((n, 3), np.nan),
+        "shank_accel": np.full((n, 3), np.nan), "shank_gyro": np.full((n, 3), np.nan),
+        "encoder": np.full(n, np.nan),
+        "toe": np.full(n, np.nan), "heel": np.full(n, np.nan),
+    }
+
+    t0 = time.perf_counter()
+    next_t = t0
+    for i in range(n):
+        now = time.perf_counter()
+        if now < next_t:
+            time.sleep(min(period, next_t - now))
+        out["time"][i] = time.perf_counter() - t0
+
+        f = hub.read_imu_foot()
+        s = hub.read_imu_shank()
+        if f is not None:
+            out["foot_accel"][i] = np.asarray(f["accel"][:3], dtype=np.float64)
+            out["foot_gyro"][i] = np.asarray(f["gyro"][:3], dtype=np.float64)
+        if s is not None:
+            out["shank_accel"][i] = np.asarray(s["accel"][:3], dtype=np.float64)
+            out["shank_gyro"][i] = np.asarray(s["gyro"][:3], dtype=np.float64)
+
+        out["encoder"][i] = hub.read_encoder()["ankle_encoder_deg"]
+        fsr = hub.read_fsr()
+        out["toe"][i] = fsr["toe_fsr_raw"]
+        out["heel"][i] = fsr["heel_fsr_raw"]
+
+        next_t += period
+        if progress and fs > 0 and i % int(fs) == 0:
+            print(f"\r    {seconds - out['time'][i]:5.1f} s remaining ",
+                  end="", flush=True)
+    if progress:
+        print("\r    done.                      ")
+    return out
+
+
+def prompt_phase(spec: PhaseSpec, interactive: bool = True) -> None:
+    import time
+
+    print("\n" + "=" * 72)
+    print(f"  PHASE {spec.key.upper()}: {spec.title}   ({spec.seconds:.0f} s)")
+    print("=" * 72)
+    for line in spec.instruction.splitlines():
+        print(f"    {line}")
+    if interactive:
+        input("\n  Press ENTER when you are in position and ready...")
+    for k in (3, 2, 1):
+        print(f"    starting in {k}...", end="\r", flush=True)
+        time.sleep(1.0)
+    print("    RECORDING NOW              ")
+
+
+# ---------------- per-phase analysis ----------------
+def _finite(a: np.ndarray) -> np.ndarray:
+    a = np.asarray(a, dtype=np.float64)
+    return a[np.isfinite(a).all(axis=1)] if a.ndim == 2 else a[np.isfinite(a)]
+
+
+def _effective_hz(block: np.ndarray, duration_s: float) -> float:
+    """Update rate implied by how often a held value actually changes."""
+    v = _finite(block)
+    if len(v) < 2 or duration_s <= 0:
+        return 0.0
+    changed = np.any(np.diff(v, axis=0) != 0.0, axis=1) if v.ndim == 2 \
+        else (np.diff(v) != 0.0)
+    return float(np.sum(changed) / duration_s)
+
+
+def _unwrap_deg(x: np.ndarray, ref: float) -> np.ndarray:
+    """Fold degrees into ref +/- 180 so the 0/360 seam cannot split a hold."""
+    return (np.asarray(x, dtype=np.float64) - ref + 180.0) % 360.0 - 180.0 + ref
+
+
+def analyse_standing(rec: dict) -> tuple[dict, list]:
+    """Encoder zero and the gravity reference for both IMUs."""
+    checks: list = []
+    dur = float(np.nanmax(rec["time"]) - np.nanmin(rec["time"]))
+
+    fg = _finite(rec["foot_gyro"])
+    sg = _finite(rec["shank_gyro"])
+    speed = np.linalg.norm(np.vstack([fg, sg]), axis=1)
+    still = float(np.mean(speed < STILL_GYRO_MAX)) if len(speed) else 0.0
+
+    enc = _finite(rec["encoder"])
+    if len(enc) == 0:
+        raise ValueError("Standing phase recorded no encoder samples.")
+    enc_u = _unwrap_deg(enc, float(np.median(enc)))
+    zero = float(np.median(enc_u)) % 360.0
+    enc_sd = float(np.std(enc_u))
+
+    gravity = {}
+    for seg in SEGMENTS:
+        a = _finite(rec[f"{seg}_accel"])
+        if len(a) == 0:
+            raise ValueError(f"Standing phase recorded no {seg} accelerometer samples.")
+        gravity[seg] = _unit(a.mean(axis=0))
+
+    imu_hz = min(_effective_hz(rec["foot_accel"], dur),
+                 _effective_hz(rec["shank_accel"], dur))
+
+    checks.append(Check(
+        "subject stood still", still >= STILL_MIN_FRACTION,
+        f"{still:.0%} of samples below {STILL_GYRO_MAX} rad/s "
+        f"(need {STILL_MIN_FRACTION:.0%})"))
+    checks.append(Check(
+        "encoder steady during standing", enc_sd <= STILL_MAX_ENCODER_SD,
+        f"encoder sd = {enc_sd:.3f} deg over {len(enc)} samples "
+        f"(max {STILL_MAX_ENCODER_SD})"))
+    checks.append(Check(
+        "IMU report rate override took effect", imu_hz >= MIN_EFFECTIVE_IMU_HZ,
+        f"measured {imu_hz:.0f} Hz effective (need {MIN_EFFECTIVE_IMU_HZ:.0f}); "
+        f"below this the BNO085 is still on its old report interval"))
+    for seg in SEGMENTS:
+        mag = float(np.linalg.norm(_finite(rec[f"{seg}_accel"]).mean(axis=0)))
+        checks.append(Check(
+            f"{seg} accel reads 1 g at rest", 8.5 <= mag <= 11.0,
+            f"|mean accel| = {mag:.2f} m/s^2 (expect ~9.81)"))
+
+    return {"encoder_zero_deg": zero, "encoder_zero_sd": enc_sd,
+            "encoder_zero_n": int(len(enc)), "still_fraction": still,
+            "gravity": {s: gravity[s].tolist() for s in SEGMENTS},
+            "effective_imu_hz": imu_hz}, checks
+
+
+def analyse_sweep(neutral: dict, dorsi: dict, plantar: dict, sweep: dict,
+                  encoder_zero_deg: float) -> tuple[dict, list]:
+    """
+    Encoder sign, encoder-to-joint ratio, and the foot's sagittal axis.
+
+    Sign comes from the labelled holds and needs no IMU at all: if the encoder reads
+    higher in dorsiflexion than in neutral, then increasing raw degrees means
+    dorsiflexion. Ratio comes from regressing encoder rate against the foot's
+    sagittal angular velocity during the free sweep - both are rates, so there is no
+    integration drift and no need to estimate absolute tilt.
+
+    Two things that are easy to get wrong here:
+
+    The regression is deliberately run with the gyro as the predictor and the encoder
+    rate as the response, because the AS5600 is quantised at 0.088 deg and
+    differentiating it is noisy; putting the noisy variable on the predictor side
+    would bias the slope toward zero. That direction means the fitted slope is
+    d(raw)/d(joint) = 1 / (sign * ratio), so the ratio is the RECIPROCAL of the
+    slope, not the slope.
+
+    And the sweep cannot independently confirm the sign. The sagittal axis comes from
+    PCA, whose sign is arbitrary, so the sign of the slope carries that arbitrary
+    choice rather than any fact about the ankle. The axis is therefore oriented using
+    the holds, and the genuine independent confirmation of sign happens later, in
+    analyse_walking, against the Georgia Tech goniometer.
+    """
+    checks: list = []
+
+    def hold_level(rec: dict, label: str) -> float:
+        e = _finite(rec["encoder"])
+        if len(e) == 0:
+            raise ValueError(f"{label} hold recorded no encoder samples.")
+        return float(np.median(_unwrap_deg(e, encoder_zero_deg)))
+
+    e_neutral = hold_level(neutral, "neutral")
+    e_dorsi = hold_level(dorsi, "dorsiflexion")
+    e_plantar = hold_level(plantar, "plantarflexion")
+
+    d_dorsi = e_dorsi - e_neutral
+    d_plantar = e_plantar - e_neutral
+    sign = 1 if d_dorsi > 0 else -1
+    rom = abs(d_dorsi) + abs(d_plantar)
+
+    fg = _finite(sweep["foot_gyro"])
+    axis, var_ratio = principal_axis(fg)
+
+    t = sweep["time"]
+    ok = np.isfinite(sweep["encoder"]) & np.isfinite(sweep["foot_gyro"]).all(axis=1) \
+        & np.isfinite(t)
+    tt = t[ok]
+    enc = _unwrap_deg(sweep["encoder"][ok], encoder_zero_deg)
+    if len(tt) < 20:
+        raise ValueError("Sweep phase has too few usable samples to fit a ratio.")
+
+    d_enc = np.gradient(enc, tt)                   # raw encoder deg/s
+
+    # Orient the PCA axis so that positive angular velocity along it means increasing
+    # ankle angle in the direction the holds established as dorsiflexion. Without
+    # this the axis sign is a coin flip and the fitted slope's sign is meaningless.
+    gyro_ok = sweep["foot_gyro"][ok]                        # exactly len(tt) rows
+    if float(np.dot(gyro_ok @ axis, sign * d_enc)) < 0.0:
+        axis = -axis
+
+    omega_deg = np.degrees(gyro_ok @ axis)                  # joint deg/s from the IMU
+
+    # Least squares through the origin: a stationary ankle must give zero rate.
+    # Gyro is the predictor (it is the clean signal); see the note in the docstring.
+    denom = float(np.dot(omega_deg, omega_deg))
+    slope = float(np.dot(omega_deg, d_enc) / denom) if denom > 0 else 0.0
+    resid = d_enc - slope * omega_deg
+    ss_tot = float(np.sum((d_enc - d_enc.mean()) ** 2))
+    r2 = 1.0 - float(np.sum(resid ** 2)) / ss_tot if ss_tot > 0 else 0.0
+
+    # slope is d(raw)/d(joint) = 1 / (sign * ratio), so invert it for the ratio.
+    ratio = 1.0 / abs(slope) if abs(slope) > 1e-9 else float("nan")
+
+    shank_speed = float(np.mean(np.linalg.norm(_finite(sweep["shank_gyro"]), axis=1))) \
+        if len(_finite(sweep["shank_gyro"])) else float("nan")
+
+    checks.append(Check(
+        "held poses separate from neutral",
+        abs(d_dorsi) >= SWEEP_MIN_HOLD_SEPARATION
+        and abs(d_plantar) >= SWEEP_MIN_HOLD_SEPARATION,
+        f"dorsi {d_dorsi:+.1f} deg, plantar {d_plantar:+.1f} deg from neutral "
+        f"(each must exceed {SWEEP_MIN_HOLD_SEPARATION})"))
+    checks.append(Check(
+        "the two holds lie on opposite sides", d_dorsi * d_plantar < 0,
+        f"dorsi {d_dorsi:+.1f} and plantar {d_plantar:+.1f} must have opposite signs; "
+        f"same sign means the poses were confused or the encoder wrapped"))
+    checks.append(Check(
+        "ankle range of motion is usable", rom >= SWEEP_MIN_ROM_DEG,
+        f"total ROM = {rom:.1f} deg (need {SWEEP_MIN_ROM_DEG})"))
+    checks.append(Check(
+        "shank stayed still during sweeps", shank_speed <= SWEEP_MAX_SHANK_GYRO,
+        f"mean shank |gyro| = {shank_speed:.3f} rad/s (max {SWEEP_MAX_SHANK_GYRO}); "
+        f"a moving shank contaminates the ratio"))
+    checks.append(Check(
+        "encoder tracks the IMU during sweeps",
+        r2 >= SWEEP_MIN_R2 and np.isfinite(ratio),
+        f"rate regression R^2 = {r2:.3f}, ratio = {ratio:.4f} joint deg per encoder "
+        f"deg (need R^2 >= {SWEEP_MIN_R2})"))
+    checks.append(Check(
+        "encoder ratio is physically plausible",
+        bool(np.isfinite(ratio) and 0.2 <= ratio <= 5.0),
+        f"ratio = {ratio:.4f}; a magnet mounted directly on the joint axis should be "
+        f"near 1.0, and anything outside 0.2-5.0 suggests a linkage or a bad fit"))
+    checks.append(Check(
+        "sweep motion was planar", var_ratio >= 0.70,
+        f"sagittal axis explains {var_ratio:.0%} of sweep gyro variance", False))
+
+    return {"encoder_sign": int(sign), "encoder_ratio": float(ratio),
+            "encoder_rate_r2": float(r2), "rate_slope": float(slope),
+            "neutral_deg": e_neutral, "dorsi_deg": e_dorsi, "plantar_deg": e_plantar,
+            "dorsiflexion_rom_deg": abs(d_dorsi),
+            "plantarflexion_rom_deg": abs(d_plantar),
+            "foot_sagittal_axis": axis.tolist(),
+            "foot_sagittal_var_ratio": float(var_ratio),
+            "shank_mean_gyro": shank_speed}, checks
+
+
+def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
+                    max_reference_trials: int = 3,
+                    adaptive_fraction: float = 0.5,
+                    encoder_zero_deg: Optional[float] = None,
+                    encoder_sign: int = 1,
+                    encoder_ratio: float = 1.0) -> tuple[dict, list, dict]:
+    """
+    Fit the Georgia Tech to exo rotations from the walking phase.
+
+    Contact thresholds are taken adaptively from this recording rather than from the
+    controller's fixed counts, because a calibration run is exactly the moment to
+    measure what this particular FSR seating produces.
+    """
+    checks: list = []
+    dur = float(np.nanmax(rec["time"]) - np.nanmin(rec["time"]))
+    fs = len(rec["time"]) / dur if dur > 0 else TARGET_HZ
+
+    accel, gyro = {}, {}
+    for seg in SEGMENTS:
+        accel[seg] = _ffill_nan(rec[f"{seg}_accel"])
+        gyro[seg] = _ffill_nan(rec[f"{seg}_gyro"])
+
+    heel = _lowpass(_ffill_nan(rec["heel"]), fs)
+    toe = _lowpass(_ffill_nan(rec["toe"]), fs)
+
+    def level(x):
+        lo, hi = np.percentile(x, [10.0, 90.0])
+        return float(lo + adaptive_fraction * (hi - lo))
+
+    heel_thr, toe_thr = level(heel), level(toe)
+    heel_contact = (heel > heel_thr).astype(np.float64)
+    toe_contact = (toe >= toe_thr).astype(np.float64)
+    hs = np.where(np.diff(heel_contact.astype(int)) == 1)[0] + 1
+    bounds = stride_bounds(hs, len(heel_contact), fs)
+
+    checks.append(Check(
+        "enough strides for a stable fit", len(bounds) >= WALK_MIN_STRIDES,
+        f"{len(bounds)} usable strides in {dur:.0f} s (need {WALK_MIN_STRIDES})"))
+
+    imu_hz = min(_effective_hz(rec["foot_accel"], dur),
+                 _effective_hz(rec["shank_accel"], dur))
+    checks.append(Check(
+        "walking captured at full IMU rate", imu_hz >= MIN_EFFECTIVE_IMU_HZ,
+        f"measured {imu_hz:.0f} Hz effective (need {MIN_EFFECTIVE_IMU_HZ:.0f})"))
+
+    if len(bounds) < 3:
+        raise ValueError(
+            f"Only {len(bounds)} usable strides in the walking phase; cannot fit a "
+            "rotation. Check the FSR seating and walk for longer.")
+
+    hfs = [read_hf_trial(hf_root, reference_subject, t)
+           for t in list_hf_trials(hf_root, reference_subject)[:max_reference_trials]]
+    if not hfs:
+        raise RuntimeError(f"No Georgia Tech trials found for {reference_subject}.")
+
+    rotations, spreads, corrs = {}, {}, {}
+    for seg in SEGMENTS:
+        ex_a = mean_cycle(accel[seg], bounds)
+        ex_g = mean_cycle(gyro[seg], bounds)
+        cands, lags = [], []
+        for hf in hfs:
+            hb = stride_bounds(hf["heel_strikes"], len(hf["time"]), hf["fs"])
+            hf_a = mean_cycle(hf["accel"][seg] * G_TO_MS2, hb)
+            hf_g = mean_cycle(hf["gyro"][seg], hb)
+            lag, r, _ = _fit_lag_and_rotation(hf_a, hf_g, ex_a, ex_g)
+            cands.append(r)
+            lags.append(lag)
+        mean_r, rejected, spread = average_rotations(cands)
+        rotations[seg] = mean_r
+        spreads[seg] = spread
+
+        hb = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
+        hf_g0 = mean_cycle(hfs[0]["gyro"][seg], hb)
+        rotated = (mean_r @ hf_g0.T).T
+        corrs[seg] = float(np.corrcoef(rotated[:, 2],
+                                       np.roll(ex_g, lags[0], axis=0)[:, 2])[0, 1])
+
+    worst_spread = max(spreads.values())
+    worst_corr = min(corrs.values())
+    checks.append(Check(
+        "rotation fits agree across trials", worst_spread <= WALK_MAX_ROTATION_SPREAD_DEG,
+        ", ".join(f"{s}={spreads[s]:.2f} deg" for s in SEGMENTS)
+        + f" (max {WALK_MAX_ROTATION_SPREAD_DEG})"))
+    checks.append(Check(
+        "sagittal waveform matches Georgia Tech", worst_corr >= WALK_MIN_SAGITTAL_CORR,
+        ", ".join(f"{s} gyro_z r={corrs[s]:+.3f}" for s in SEGMENTS)
+        + f" (min {WALK_MIN_SAGITTAL_CORR:+.2f})"))
+
+    # Foot and shank are fitted independently, so nothing forces their signs to
+    # agree. Whatever relationship the exo's two sagittal gyros have, the rotated
+    # Georgia Tech data has to reproduce its sign.
+    ex_gf = mean_cycle(gyro["foot"], bounds)[:, 2]
+    ex_gs = mean_cycle(gyro["shank"], bounds)[:, 2]
+    r_exo = float(np.corrcoef(ex_gf, ex_gs)[0, 1])
+    hb = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
+    tf = (rotations["foot"] @ mean_cycle(hfs[0]["gyro"]["foot"], hb).T).T
+    ts = (rotations["shank"] @ mean_cycle(hfs[0]["gyro"]["shank"], hb).T).T
+    r_fixed = float(np.corrcoef(tf[:, 2], ts[:, 2])[0, 1])
+    # This is only informative when the exo's own two segments are actually related.
+    # On this hardware they correlate at about +0.96 because both IMUs are mounted
+    # alike, and then a sign mismatch is a genuine per-segment error. If the two
+    # segments happen to be weakly related, the sign of a near-zero correlation is
+    # noise and asserting on it would fail at random, so the check steps down to
+    # advisory rather than pretending to know something it does not.
+    informative = abs(r_exo) >= 0.5
+    checks.append(Check(
+        "foot and shank rotations are consistent",
+        (np.sign(r_fixed) == np.sign(r_exo) and abs(r_fixed) >= 0.4)
+        if informative else True,
+        f"exo foot/shank gyro_z r={r_exo:+.3f}, transformed GT r={r_fixed:+.3f}"
+        + ("; signs must match" if informative else
+           "; exo segments only weakly related, so this cannot confirm the signs"),
+        critical=informative))
+
+    # Independent confirmation of the encoder sign. The holds established it from the
+    # encoder alone; this checks it against the Georgia Tech goniometer, which is
+    # labelled dorsiflexion-positive. Nothing in this comparison touches the holds,
+    # so it is a real second opinion rather than a restatement of the first.
+    ankle_sign_corr = float("nan")
+    if encoder_zero_deg is not None:
+        enc_raw = _ffill_nan(rec["encoder"])
+        d = (enc_raw - encoder_zero_deg + 180.0) % 360.0 - 180.0
+        exo_ankle = encoder_sign * encoder_ratio * d
+        exo_cycle = mean_cycle(exo_ankle, bounds)
+        exo_cycle = exo_cycle - exo_cycle.mean()
+
+        hb0 = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
+        gt_cycle = mean_cycle(hfs[0]["ankle_angle_deg"], hb0)
+        gt_cycle = gt_cycle - gt_cycle.mean()
+
+        # The two heel-strike detectors fire at different points, so compare at the
+        # alignment that maximises absolute agreement and read the sign there.
+        best = 0.0
+        for lag in range(len(exo_cycle)):
+            r = float(np.corrcoef(gt_cycle, np.roll(exo_cycle, lag))[0, 1])
+            if abs(r) > abs(best):
+                best = r
+        ankle_sign_corr = best
+
+    checks.append(Check(
+        "encoder sign confirmed against Georgia Tech goniometer",
+        bool(np.isfinite(ankle_sign_corr) and ankle_sign_corr > 0.5),
+        f"ankle angle gait cycle vs GT ankle_sagittal: r={ankle_sign_corr:+.3f} "
+        f"(must be positive and above 0.5; negative means the held poses were "
+        f"swapped and the sign is inverted)"))
+
+    return {"strides": len(bounds), "effective_imu_hz": imu_hz,
+            "ankle_sign_corr": ankle_sign_corr,
+            "heel_threshold": heel_thr, "toe_threshold": toe_thr,
+            "rotation_spread_deg": spreads, "sagittal_corr": corrs,
+            "intersegment_corr_exo": r_exo, "intersegment_corr_fitted": r_fixed,
+            "rotations": {s: rotations[s].tolist() for s in SEGMENTS}}, checks, rotations
+
+
+def _ffill_nan(a: np.ndarray) -> np.ndarray:
+    """Forward then backward fill NaN along axis 0, matching the logger's hold."""
+    a = np.array(a, dtype=np.float64, copy=True)
+    if a.ndim == 1:
+        a = a[:, None]
+        squeeze = True
+    else:
+        squeeze = False
+    for j in range(a.shape[1]):
+        col = a[:, j]
+        idx = np.where(np.isfinite(col))[0]
+        if len(idx) == 0:
+            col[:] = 0.0
+            continue
+        first = idx[0]
+        col[:first] = col[first]
+        last_good = first
+        for i in range(first, len(col)):
+            if np.isfinite(col[i]):
+                last_good = i
+            else:
+                col[i] = col[last_good]
+    return a[:, 0] if squeeze else a
+
+
+# ---------------- orchestration ----------------
+def run_calibration(hf_root="mrsd-exo-ankle",
+                    out_dir=CALIB_DIR,
+                    reference_subject: str = "AB06",
+                    imu_report_hz: float = 200.0,
+                    fs: float = TARGET_HZ,
+                    interactive: bool = True,
+                    recorder=None,
+                    protocol=PROTOCOL) -> CalibrationResult:
+    """
+    Run the full guided calibration and write the results plus a transform module.
+
+    `recorder(spec) -> dict` can be injected to replay recorded phases instead of
+    reading hardware, which is how the offline tests exercise this path.
+    """
+    import datetime
+
+    stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    print("=" * 72)
+    print("  EXOSKELETON CALIBRATION")
+    print("=" * 72)
+    total = sum(p.seconds for p in protocol)
+    print(f"  {len(protocol)} phases, {total:.0f} s of recording plus setup time.")
+    print(f"  Reference dataset : {hf_root} (subject {reference_subject})")
+    print(f"  Output            : {out_dir}/")
+    print("\n  Wear the exoskeleton on the RIGHT leg before starting.")
+    print("  You will be told what to do and for how long before each phase.")
+
+    if recorder is None:
+        mod = load_sensor_hub(imu_report_hz)
+        hub = mod.SensorHub()
+
+        def recorder(spec):
+            prompt_phase(spec, interactive)
+            return record_phase(hub, spec.seconds, fs)
+    else:
+        hub = None
+
+    try:
+        recordings = {}
+        for spec in protocol:
+            recordings[spec.key] = recorder(spec)
+    finally:
+        if hub is not None:
+            hub.close()
+
+    print("\n" + "=" * 72)
+    print("  ANALYSING")
+    print("=" * 72)
+
+    checks: list = []
+    metrics: dict = {}
+
+    stand_m, stand_c = analyse_standing(recordings["standing"])
+    metrics["standing"] = stand_m
+    checks += stand_c
+    print(f"  encoder zero      : {stand_m['encoder_zero_deg']:.3f} deg "
+          f"(sd {stand_m['encoder_zero_sd']:.3f}, n={stand_m['encoder_zero_n']})")
+
+    sweep_m, sweep_c = analyse_sweep(recordings["neutral"], recordings["dorsi"],
+                                     recordings["plantar"], recordings["sweep"],
+                                     stand_m["encoder_zero_deg"])
+    metrics["sweep"] = sweep_m
+    checks += sweep_c
+    print(f"  encoder sign      : {sweep_m['encoder_sign']:+d} "
+          f"(dorsiflexion {'increases' if sweep_m['encoder_sign'] > 0 else 'decreases'} "
+          f"raw degrees)")
+    print(f"  encoder ratio     : {sweep_m['encoder_ratio']:.4f} joint deg per "
+          f"encoder deg (R^2 {sweep_m['encoder_rate_r2']:.3f})")
+    print(f"  ankle ROM         : {sweep_m['dorsiflexion_rom_deg']:.1f} deg dorsi / "
+          f"{sweep_m['plantarflexion_rom_deg']:.1f} deg plantar")
+
+    walk_m, walk_c, rotations = analyse_walking(
+        recordings["walking"], hf_root, reference_subject,
+        encoder_zero_deg=stand_m["encoder_zero_deg"],
+        encoder_sign=sweep_m["encoder_sign"],
+        encoder_ratio=sweep_m["encoder_ratio"])
+    metrics["walking"] = walk_m
+    checks += walk_c
+    print(f"  strides captured  : {walk_m['strides']}")
+    for seg in SEGMENTS:
+        print(f"  R[{seg}] spread    : {walk_m['rotation_spread_deg'][seg]:.2f} deg, "
+              f"sagittal r={walk_m['sagittal_corr'][seg]:+.3f}")
+
+    result = CalibrationResult(
+        stamp=stamp, rotations=rotations,
+        encoder_zero_deg=stand_m["encoder_zero_deg"],
+        encoder_sign=sweep_m["encoder_sign"],
+        encoder_ratio=sweep_m["encoder_ratio"],
+        heel_threshold=walk_m["heel_threshold"],
+        toe_threshold=walk_m["toe_threshold"],
+        checks=checks, metrics=metrics)
+
+    # ---- verdict ----
+    print("\n" + "=" * 72)
+    print("  CALIBRATION CHECKS")
+    print("=" * 72)
+    width = max(len(c.name) for c in checks) + 2
+    for c in checks:
+        tag = "PASS" if c.passed else ("FAIL" if c.critical else "WARN")
+        print(f"  [{tag}] {c.name:<{width}} {c.detail}")
+    hard = [c for c in checks if not c.passed and c.critical]
+    soft = [c for c in checks if not c.passed and not c.critical]
+    print("-" * 72)
+    print(f"  {len(checks) - len(hard) - len(soft)} passed, {len(hard)} failed, "
+          f"{len(soft)} warnings")
+
+    raw_path = out_dir / f"raw_{stamp}.npz"
+    flat = {f"{k}__{f}": v for k, rec in recordings.items() for f, v in rec.items()}
+    np.savez_compressed(raw_path, **flat)
+
+    json_path = out_dir / f"calibration_{stamp}.json"
+    json_path.write_text(json.dumps(result.to_json(), indent=2,
+                                default=_json_default), encoding="utf-8")
+
+    print(f"\n  raw recordings -> {raw_path}")
+    print(f"  calibration    -> {json_path}")
+
+    if hard:
+        print("\n  CALIBRATION FAILED. No transform module was written.")
+        print("  Fix the failures above and run again; the raw recordings are kept")
+        print("  so a borderline run can be re-analysed without re-walking.")
+        return result
+
+    module_path = out_dir / f"exo_transform_{stamp}.py"
+    emit_transform_module(result, module_path, hf_root=str(hf_root),
+                          reference_subject=reference_subject)
+    latest = out_dir / "exo_transform_latest.py"
+    latest.write_text(module_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+    print(f"  transform      -> {module_path}")
+    print(f"                 -> {latest}  (stable import name)")
+    print("\n  CALIBRATION SUCCEEDED.")
+    print(f"  Use it with:  from calibration.exo_transform_latest import features")
+    return result
+
+
+def emit_transform_module(result: CalibrationResult, path,
+                          hf_root: str = "mrsd-exo-ankle",
+                          reference_subject: str = "AB06") -> None:
+    """
+    Write a self-contained transform module from a calibration result.
+
+    The calibration values are baked in as literals, so the generated file imports
+    numpy and nothing else, reads no JSON at run time, and does not depend on
+    exo_frame.py. That makes it safe to copy onto the robot on its own.
+    """
+    path = Path(path)
+
+    def fmt(mat) -> str:
+        rows = ",\n".join("        [" + ", ".join(f"{v:+.12f}" for v in row) + "]"
+                          for row in np.asarray(mat))
+        return "np.array([\n" + rows + "\n    ], dtype=np.float64)"
+
+    passed = [c for c in result.checks if c.passed]
+    warned = [c for c in result.checks if not c.passed]
+    check_lines = "\n".join(
+        f"#   {'PASS' if c.passed else 'WARN'}  {c.name}: {c.detail}"
+        for c in result.checks)
+
+    src = f'''#!/usr/bin/env python3
+"""
+exo_transform_{result.stamp}.py
+
+Generated by exo_frame.run_calibration on {result.stamp}. Do not edit by hand;
+re-run the calibration instead.
+
+Self-contained: imports numpy only, holds every calibration value as a literal, and
+has no dependency on exo_frame.py. Copy it onto the robot as-is.
+
+Two entry points, both producing the same {N_FEATURES} columns in the same order:
+
+    features(...)          one live exo sample  -> feature vector   (deployment)
+    ingest_gt_trial(...)   a Georgia Tech trial -> (X, y)           (training)
+
+Calibration summary
+-------------------
+#   encoder zero  : {result.encoder_zero_deg:.4f} deg (raw AS5600, at neutral standing)
+#   encoder sign  : {result.encoder_sign:+d}
+#   encoder ratio : {result.encoder_ratio:.6f} joint deg per encoder deg
+#   contact       : heel > {result.heel_threshold:.1f}, toe >= {result.toe_threshold:.1f} counts
+#   reference     : {hf_root} subject {reference_subject}
+#   checks        : {len(passed)} passed, {len(warned)} not passed
+
+{check_lines}
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+
+__all__ = ["FEATURES", "TARGET", "features", "features_batch",
+           "ingest_exo_log", "ingest_gt_trial", "rotate_gt", "ankle_angle",
+           "CALIBRATION"]
+
+# ========================= Calibration constants =========================
+CALIBRATION_STAMP = "{result.stamp}"
+
+G_TO_MS2 = {G_TO_MS2!r}
+
+# Georgia Tech sensor axes -> this exoskeleton's sensor axes. Apply as R @ v.
+ROTATION_FOOT = {fmt(result.rotations["foot"])}
+
+ROTATION_SHANK = {fmt(result.rotations["shank"])}
+
+ROTATIONS = {{"foot": ROTATION_FOOT, "shank": ROTATION_SHANK}}
+
+# Raw AS5600 degrees at neutral standing. The exo is re-zeroed every run, so
+# override this with set_encoder_zero() if a run starts from a different reference.
+ENCODER_ZERO_DEG = {result.encoder_zero_deg!r}
+ENCODER_SIGN = {result.encoder_sign!r}
+ENCODER_RATIO = {result.encoder_ratio!r}
+
+HEEL_THRESHOLD = {result.heel_threshold!r}
+TOE_THRESHOLD = {result.toe_threshold!r}
+FSR_FILTER_CUTOFF = {FSR_FILTER_CUTOFF!r}
+
+SEGMENTS = {SEGMENTS!r}
+FEATURES = {FEATURES!r}
+TARGET = {TARGET!r}
+N_FEATURES = len(FEATURES)
+
+CALIBRATION = {{
+    "stamp": CALIBRATION_STAMP,
+    "encoder_zero_deg": ENCODER_ZERO_DEG,
+    "encoder_sign": ENCODER_SIGN,
+    "encoder_ratio": ENCODER_RATIO,
+    "heel_threshold": HEEL_THRESHOLD,
+    "toe_threshold": TOE_THRESHOLD,
+    "metrics": {result.metrics!r},
+}}
+
+_encoder_zero = ENCODER_ZERO_DEG
+
+
+# ========================= Deployment =========================
+def set_encoder_zero(raw_deg: float) -> None:
+    """Override the encoder reference for this run, read at the moment of zeroing."""
+    global _encoder_zero
+    _encoder_zero = float(raw_deg)
+
+
+def ankle_angle(raw_deg):
+    """Raw AS5600 degrees -> ankle angle in degrees, dorsiflexion positive."""
+    d = (np.asarray(raw_deg, dtype=np.float64) - _encoder_zero + 180.0) % 360.0 - 180.0
+    return ENCODER_SIGN * ENCODER_RATIO * d
+
+
+def features(foot_accel, foot_gyro, shank_accel, shank_gyro,
+             encoder_deg, toe_fsr, heel_fsr, out=None):
+    """
+    One live exo sample -> one feature vector. This is the control-loop hot path.
+
+    Inputs are the exo's own units: accel m/s^2, gyro rad/s, encoder raw degrees,
+    FSRs raw counts (filter them upstream as the controller does). No rotation is
+    applied: the training data was brought into this frame, not the other way round.
+    Pass `out`, a ({N_FEATURES},) float64 array, to avoid allocating per sample.
+    """
+    v = np.empty(N_FEATURES, dtype=np.float64) if out is None else out
+    v[0] = foot_accel[0]; v[1] = foot_accel[1]; v[2] = foot_accel[2]
+    v[3] = foot_gyro[0]; v[4] = foot_gyro[1]; v[5] = foot_gyro[2]
+    v[6] = shank_accel[0]; v[7] = shank_accel[1]; v[8] = shank_accel[2]
+    v[9] = shank_gyro[0]; v[10] = shank_gyro[1]; v[11] = shank_gyro[2]
+    d = (encoder_deg - _encoder_zero + 180.0) % 360.0 - 180.0
+    v[12] = ENCODER_SIGN * ENCODER_RATIO * d
+    v[13] = 1.0 if heel_fsr > HEEL_THRESHOLD else 0.0
+    v[14] = 1.0 if toe_fsr >= TOE_THRESHOLD else 0.0
+    return v
+
+
+def features_batch(foot_accel, foot_gyro, shank_accel, shank_gyro,
+                   encoder_deg, toe_fsr, heel_fsr):
+    """Vectorised `features` over (N, 3) blocks and (N,) scalars -> (N, {N_FEATURES})."""
+    n = len(encoder_deg)
+    out = np.empty((n, N_FEATURES), dtype=np.float64)
+    out[:, 0:3] = foot_accel
+    out[:, 3:6] = foot_gyro
+    out[:, 6:9] = shank_accel
+    out[:, 9:12] = shank_gyro
+    out[:, 12] = ankle_angle(encoder_deg)
+    out[:, 13] = np.asarray(heel_fsr) > HEEL_THRESHOLD
+    out[:, 14] = np.asarray(toe_fsr) >= TOE_THRESHOLD
+    return out
+
+
+# ========================= Training-side ingestion =========================
+def rotate_gt(accel_g, gyro, segment):
+    """Rotate one segment of Georgia Tech data into this exo's frame.
+
+    Accelerations are lifted from g into m/s^2 first; gyro is rad/s on both sides.
+    """
+    r = ROTATIONS[segment]
+    return (np.asarray(accel_g, np.float64) * G_TO_MS2) @ r.T, \\
+        np.asarray(gyro, np.float64) @ r.T
+
+
+def ingest_gt_trial(root, subject, trial):
+    """
+    One Georgia Tech trial -> (X, y) in this exo's frame, units and column order.
+
+    X is (N, {N_FEATURES}) matching FEATURES; y is the right-ankle moment normalised by
+    body mass, in N*m/kg, or None when the trial carries no moment or mass.
+    Requires pandas, which is imported here so the deployment path stays numpy-only.
+    """
+    import pandas as pd
+
+    base = Path(root) / "subjects" / subject
+    imu = pd.read_parquet(base / f"{{trial}}__imu.parquet")
+    idf = pd.read_parquet(base / f"{{trial}}__id.parquet")
+    gon = pd.read_parquet(base / f"{{trial}}__gon.parquet")
+    gc = pd.read_parquet(base / f"{{trial}}__gcRight.parquet")
+
+    t = imu["time_s"].to_numpy(np.float64)
+    n = len(t)
+    x = np.empty((n, N_FEATURES), dtype=np.float64)
+
+    for i, seg in enumerate(SEGMENTS):
+        a, g = rotate_gt(imu[[f"{{seg}}_Accel_{{c}}" for c in "XYZ"]].to_numpy(),
+                         imu[[f"{{seg}}_Gyro_{{c}}" for c in "XYZ"]].to_numpy(), seg)
+        x[:, 6 * i:6 * i + 3] = a
+        x[:, 6 * i + 3:6 * i + 6] = g
+
+    # The goniometer is already an anatomical angle, so it needs the sign convention
+    # but no rotation.
+    x[:, 12] = ENCODER_SIGN * np.interp(t, gon["time_s"].to_numpy(),
+                                        gon["ankle_sagittal"].to_numpy())
+
+    hs = np.where(np.diff(gc["HeelStrike"].to_numpy()) < -50.0)[0] + 1
+    to = np.where(np.diff(gc["ToeOff"].to_numpy()) < -50.0)[0] + 1
+    heel = np.zeros(n)
+    toe = np.zeros(n)
+    for i in hs:
+        nxt = to[to > i]
+        end = int(nxt[0]) if len(nxt) else n
+        heel[i:end] = 1.0
+        toe[i + (end - i) // 3:end] = 1.0
+    x[:, 13] = heel
+    x[:, 14] = toe
+
+    meta = pd.read_parquet(Path(root) / "metadata.parquet")
+    row = meta[(meta["subject"] == subject) & (meta["trial"] == trial)]
+    mass = float(row["weight_kg"].iloc[0]) if len(row) else None
+    moment = idf["ankle_angle_r_moment"].to_numpy(np.float64)
+    y = moment / mass if mass else None
+    return x, y
+
+
+def ingest_exo_log(path):
+    """
+    One exo `data_collection_*.csv` -> (X, timestamps) using this calibration.
+
+    The per-run encoder zero is recovered from the file's startup window, where the
+    encoder is already reporting but the IMUs have not yet produced a packet.
+    Requires pandas.
+    """
+    import pandas as pd
+
+    raw = pd.read_csv(path)
+    lead = int(np.argmax(raw["foot_ax"].notna().to_numpy()))
+    window = raw["ankle_encoder_deg"].iloc[:lead].dropna()
+    if len(window) == 0:
+        window = raw["ankle_encoder_deg"].dropna().iloc[:1]
+    zero = float(window.mean())
+
+    df = raw.interpolate(limit_direction="both")
+    t = df["timestamp_s"].to_numpy(np.float64)
+    fs = float(1.0 / np.median(np.diff(t)))
+
+    def lp(x):
+        dt = 1.0 / fs
+        a = 2 * np.pi * FSR_FILTER_CUTOFF * dt / (2 * np.pi * FSR_FILTER_CUTOFF * dt + 1)
+        y = np.empty_like(x)
+        acc = float(x[0])
+        for i in range(len(x)):
+            acc = a * float(x[i]) + (1.0 - a) * acc
+            y[i] = acc
+        return y
+
+    prev = _encoder_zero
+    try:
+        set_encoder_zero(zero)
+        x = features_batch(
+            df[[f"foot_a{{c}}" for c in "xyz"]].to_numpy(np.float64),
+            df[[f"foot_g{{c}}" for c in "xyz"]].to_numpy(np.float64),
+            df[[f"shank_a{{c}}" for c in "xyz"]].to_numpy(np.float64),
+            df[[f"shank_g{{c}}" for c in "xyz"]].to_numpy(np.float64),
+            df["ankle_encoder_deg"].to_numpy(np.float64),
+            lp(df["toe_fsr_raw"].to_numpy(np.float64)),
+            lp(df["heel_fsr_raw"].to_numpy(np.float64)))
+    finally:
+        set_encoder_zero(prev)
+    return x, t
+
+
+if __name__ == "__main__":
+    print(f"exo transform, calibration {{CALIBRATION_STAMP}}")
+    print(f"{{N_FEATURES}} features: {{', '.join(FEATURES)}}")
+    for _s in SEGMENTS:
+        print(f"\\nR[{{_s}}] =")
+        for _row in ROTATIONS[_s]:
+            print("    [" + "  ".join(f"{{_v:+.6f}}" for _v in _row) + "]")
+    print(f"\\nencoder: zero={{ENCODER_ZERO_DEG:.4f}} deg, sign={{ENCODER_SIGN:+d}}, "
+          f"ratio={{ENCODER_RATIO:.6f}}")
+    print(f"contact: heel>{{HEEL_THRESHOLD:.1f}}, toe>={{TOE_THRESHOLD:.1f}}")
+'''
+    path.write_text(src, encoding="utf-8")
+
+
 # ========================= CLI =========================
 def _cmd_fit(args) -> int:
     print("Fitting HF -> exo rotations")
@@ -770,12 +1795,24 @@ def _cmd_bench(args) -> int:
     return 0
 
 
+def _cmd_calibrate(args) -> int:
+    try:
+        result = run_calibration(hf_root=args.hf_root, out_dir=args.calib_dir,
+                                 reference_subject=args.reference_subject,
+                                 imu_report_hz=args.imu_hz,
+                                 interactive=not args.no_prompt)
+    except (RuntimeError, FileNotFoundError) as exc:
+        print(f"\nCalibration could not start.\n\n{exc}")
+        return 1
+    return 0 if result.ok else 1
+
+
 def main() -> int:
     import argparse
 
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=("fit", "build", "bench"))
+    p.add_argument("command", choices=("fit", "build", "bench", "calibrate"))
     p.add_argument("--hf-root", default="mrsd-exo-ankle")
     p.add_argument("--exo-dir", default="Data collection/data")
     p.add_argument("--out", default="exo_frame_calibration.json")
@@ -783,8 +1820,17 @@ def main() -> int:
     p.add_argument("--fsr-mode", choices=("fixed", "adaptive"), default="fixed")
     p.add_argument("--exclude", nargs="*", default=["20260404_214949"],
                    help="exo filename substrings to skip")
+    p.add_argument("--calib-dir", default="calibration",
+                   help="where calibration runs and generated transforms are written")
+    p.add_argument("--reference-subject", dest="reference_subject", default="AB06",
+                   help="Georgia Tech subject used as the rotation reference")
+    p.add_argument("--imu-hz", type=float, default=200.0,
+                   help="IMU report rate to force during calibration")
+    p.add_argument("--no-prompt", action="store_true",
+                   help="skip the ENTER confirmation before each phase")
     args = p.parse_args()
-    return {"fit": _cmd_fit, "build": _cmd_build, "bench": _cmd_bench}[args.command](args)
+    return {"fit": _cmd_fit, "build": _cmd_build, "bench": _cmd_bench,
+            "calibrate": _cmd_calibrate}[args.command](args)
 
 
 if __name__ == "__main__":

@@ -2,10 +2,10 @@ __pycache__/
 *.pyc
 
 # Downloaded Hugging Face dataset snapshots
-mrsd-exo-ankle/
+# mrsd-exo-ankle/
 
 # Generated exo-frame training data (rebuild with: python exo_frame.py build)
 training_data/
 
 # Test artefacts from test_calibration.py
-calibration/_test_output/
+# calibration/_test_output/

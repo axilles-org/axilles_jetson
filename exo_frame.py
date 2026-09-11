@@ -714,6 +714,24 @@ SWEEP_MIN_R2 = 0.75              # encoder rate vs IMU rate regression
 SWEEP_MAX_SHANK_GYRO = 0.60      # rad/s mean; the shank is meant to stay put
 SWEEP_MIN_HOLD_SEPARATION = 4.0  # deg between neutral and each held pose
 
+# Hip-swing acceptance. The point of this phase is that with the knee and ankle
+# held, foot and shank move as one rigid body, so both IMUs see the same physical
+# angular velocity. That only holds if the ankle really did stay put.
+HIPSWING_MAX_ENCODER_SD = 2.5      # deg; larger means the ankle moved and the
+                                   # rigid-body assumption is broken
+HIPSWING_MIN_GYRO = 0.50           # rad/s mean; smaller means the leg barely moved
+HIPSWING_MAX_RESIDUAL = 0.25       # Kabsch residual as a fraction of |gyro|
+HIPSWING_MIN_VAR_RATIO = 0.70      # the swing should be planar
+
+# How far the two independent estimates of R_foot<-shank may disagree. One comes
+# from standing gravity plus the swing axis, the other from Kabsch on the swing
+# gyro alone; the latter is rank-limited, so this is generous by design.
+HIPSWING_METHOD_TOL_DEG = 25.0
+
+# Stability of the derived Georgia Tech foot<-shank relationship across calibration
+# runs. That relationship is a property of their hardware, so it must not move.
+GT_RELATION_DRIFT_DEG = 10.0
+
 # Walking acceptance.
 WALK_MIN_STRIDES = 20
 WALK_MAX_ROTATION_SPREAD_DEG = 8.0
@@ -752,6 +770,11 @@ PROTOCOL = (
     PhaseSpec("sweep", 10.0, "SLOW SWEEPS",
               "Sweep the ankle smoothly up and down, about 5 full cycles.\n"
               "Keep it SLOW, and keep your shank still. Only the ankle moves."),
+    PhaseSpec("hipswing", 10.0, "HIP SWINGS",
+              "Stand on your LEFT leg, holding a support for balance.\n"
+              "Swing the RIGHT leg forward and back from the HIP, about 5 cycles.\n"
+              "Keep the knee STRAIGHT and the ankle STILL - the whole leg swings\n"
+              "as one piece. Do not let the ankle flap."),
     PhaseSpec("walking", 60.0, "LEVEL WALKING",
               "Walk at a comfortable, steady pace on level ground.\n"
               "Keep walking until told to stop."),
@@ -798,6 +821,25 @@ class CalibrationResult:
             "checks": [{"name": c.name, "passed": bool(c.passed), "detail": c.detail,
                         "critical": bool(c.critical)} for c in self.checks],
         }
+
+
+def _previous_gt_relations(out_dir) -> list:
+    """
+    Derived Georgia Tech foot<-shank relationships from earlier calibration runs.
+
+    Only runs that passed are considered; a failed run's rotations are not something
+    to measure drift against.
+    """
+    found = []
+    for path in sorted(Path(out_dir).glob("calibration_*.json")):
+        try:
+            d = json.loads(path.read_text(encoding="utf-8"))
+            rel = d.get("metrics", {}).get("derived", {}).get("r_foot_from_shank_gt")
+            if rel and d.get("ok"):
+                found.append((path.name, np.array(rel, dtype=np.float64)))
+        except (ValueError, OSError):
+            continue
+    return found
 
 
 def _json_default(o):
@@ -930,6 +972,24 @@ def prompt_phase(spec: PhaseSpec, interactive: bool = True) -> None:
         print(f"    starting in {k}...", end="\r", flush=True)
         time.sleep(1.0)
     print("    RECORDING NOW              ")
+
+
+def phase_complete(spec: PhaseSpec, index: int, total: int,
+                   interactive: bool = True) -> None:
+    """
+    Stop after a phase and wait to be released into the next one.
+
+    Each phase is gated at both ends deliberately. Rolling straight from one
+    recording into the next prompt gives no room to change posture, catch balance
+    after standing on one leg, or simply rest, and a rushed phase is a phase that
+    fails its quality checks.
+    """
+    print(f"\n  -- {spec.title} complete ({index} of {total}) --")
+    if interactive:
+        if index < total:
+            input("  Press ENTER when you are ready for the next phase...")
+        else:
+            input("  Press ENTER to analyse the recordings...")
 
 
 # ---------------- per-phase analysis ----------------
@@ -1124,6 +1184,164 @@ def analyse_sweep(neutral: dict, dorsi: dict, plantar: dict, sweep: dict,
             "shank_mean_gyro": shank_speed}, checks
 
 
+def two_direction_rotation(g_from: np.ndarray, w_from: np.ndarray,
+                           g_to: np.ndarray, w_to: np.ndarray) -> np.ndarray:
+    """
+    Rotation taking `from`-frame coordinates to `to`-frame coordinates.
+
+    Built from two physical directions observed in both frames - here gravity while
+    standing, and the hip-swing axis. Two non-parallel directions pin all three
+    degrees of freedom, which matters because the swing on its own cannot: a planar
+    swing produces angular velocity along a single axis, leaving rotation about that
+    axis completely unconstrained. Gravity supplies the missing direction.
+    """
+    def basis(g, w):
+        e1 = _unit(g)
+        e2 = w - np.dot(w, e1) * e1
+        if np.linalg.norm(e2) < 1e-8:
+            raise ValueError("Gravity and the swing axis are parallel; "
+                             "cannot build a frame from this recording.")
+        e2 = _unit(e2)
+        return np.column_stack([e1, e2, np.cross(e1, e2)])
+
+    return basis(g_to, w_to) @ basis(g_from, w_from).T
+
+
+def analyse_hipswing(standing: dict, hipswing: dict,
+                     encoder_zero_deg: float) -> tuple[dict, list]:
+    """
+    Shank sagittal axis, and the relationship between the two exo IMU frames.
+
+    With the knee and ankle held, the foot and shank swing as one rigid body, so
+    both IMUs observe the same physical angular velocity expressed in their own
+    frames. That makes the swing axis a shared direction, and combined with gravity
+    from the standing phase it determines R_foot<-shank outright.
+
+    This is the only phase that measures the shank directly. Without it the shank's
+    sagittal axis is never observed on its own - it is only implied by the walking
+    fit against Georgia Tech - which leaves the two segments calibrated on very
+    unequal evidence.
+
+    Note what this does NOT do. R_foot<-shank cannot constrain the two Georgia Tech
+    rotations, because that would also require the Georgia Tech foot<-shank
+    relationship, and their walking data never contains a rigid foot-shank epoch to
+    measure it from: fitting one segment's gyro onto the other's at mid-stance
+    leaves a residual around 70% of signal. The relationship is therefore recorded
+    as a derived quantity and checked for drift across runs, not imposed.
+    """
+    checks: list = []
+
+    enc = _finite(hipswing["encoder"])
+    enc_sd = float(np.std(_unwrap_deg(enc, encoder_zero_deg))) if len(enc) else float("nan")
+
+    fg = _finite(hipswing["foot_gyro"])
+    sg = _finite(hipswing["shank_gyro"])
+    if len(fg) < 20 or len(sg) < 20:
+        raise ValueError("Hip-swing phase has too few usable IMU samples.")
+
+    foot_speed = float(np.mean(np.linalg.norm(fg, axis=1)))
+    shank_speed = float(np.mean(np.linalg.norm(sg, axis=1)))
+
+    foot_axis, foot_var = principal_axis(fg)
+    shank_axis, shank_var = principal_axis(sg)
+
+    # PCA signs are arbitrary. Both segments share one angular velocity, so orient
+    # them to agree with each other.
+    n = min(len(fg), len(sg))
+    if float(np.dot(fg[:n] @ foot_axis, sg[:n] @ shank_axis)) < 0.0:
+        shank_axis = -shank_axis
+
+    g_foot = _unit(_finite(standing["foot_accel"]).mean(axis=0))
+    g_shank = _unit(_finite(standing["shank_accel"]).mean(axis=0))
+
+    r_fs = two_direction_rotation(g_shank, shank_axis, g_foot, foot_axis)
+
+    # Best-achievable fit, used to judge whether the motion was rigid at all. Kabsch
+    # on a planar swing is rank-limited, so this measures rigidity, not R_fs.
+    r_kabsch, _ = kabsch(sg[:n].T, fg[:n].T)
+    residual = float(np.linalg.norm(r_kabsch @ sg[:n].T - fg[:n].T) / np.sqrt(n))
+    residual_frac = residual / foot_speed if foot_speed > 0 else float("nan")
+    method_gap = rotation_angle(r_fs, r_kabsch)
+
+    # How well the rotation we actually keep reproduces the measured swing. This
+    # tests two of the three degrees of freedom; it cannot test rotation about the
+    # swing axis, because rotating a vector about itself changes nothing. That
+    # remaining degree of freedom is fixed by standing gravity, and is watched over
+    # time by the cross-run drift check rather than from within this phase.
+    applied = float(np.linalg.norm(r_fs @ sg[:n].T - fg[:n].T) / np.sqrt(n))
+    applied_frac = applied / foot_speed if foot_speed > 0 else float("nan")
+
+    checks.append(Check(
+        "ankle stayed still during hip swings", enc_sd <= HIPSWING_MAX_ENCODER_SD,
+        f"encoder sd = {enc_sd:.2f} deg (max {HIPSWING_MAX_ENCODER_SD}); a moving "
+        f"ankle breaks the rigid-body assumption this phase depends on"))
+    checks.append(Check(
+        "the leg actually swung", shank_speed >= HIPSWING_MIN_GYRO,
+        f"mean shank |gyro| = {shank_speed:.3f} rad/s "
+        f"(need {HIPSWING_MIN_GYRO}), foot {foot_speed:.3f}"))
+    checks.append(Check(
+        "foot and shank moved as one body", residual_frac <= HIPSWING_MAX_RESIDUAL,
+        f"one rotation explains the pair to {residual_frac:.1%} of signal "
+        f"(max {HIPSWING_MAX_RESIDUAL:.0%}); higher means the knee or ankle moved"))
+    checks.append(Check(
+        "swing was planar", min(foot_var, shank_var) >= HIPSWING_MIN_VAR_RATIO,
+        f"swing axis explains {foot_var:.0%} of foot and {shank_var:.0%} of shank "
+        f"gyro variance", False))
+    checks.append(Check(
+        "R_foot<-shank reproduces the swing", applied_frac <= HIPSWING_MAX_RESIDUAL,
+        f"applying it to the shank gyro predicts the foot gyro to {applied_frac:.1%} "
+        f"of signal (max {HIPSWING_MAX_RESIDUAL:.0%}). Tests two of three axes: "
+        f"rotation about the swing axis cannot be tested from a planar swing, and "
+        f"is fixed by standing gravity instead"))
+
+    return {"shank_sagittal_axis": shank_axis.tolist(),
+            "applied_residual_fraction": float(applied_frac),
+            "shank_sagittal_var_ratio": float(shank_var),
+            "foot_sagittal_axis": foot_axis.tolist(),
+            "foot_sagittal_var_ratio": float(foot_var),
+            "r_foot_from_shank": r_fs.tolist(),
+            "r_foot_from_shank_kabsch": r_kabsch.tolist(),
+            "method_gap_deg": float(method_gap),
+            "rigid_residual_fraction": float(residual_frac),
+            "encoder_sd_deg": enc_sd,
+            "foot_mean_gyro": foot_speed,
+            "shank_mean_gyro": shank_speed}, checks
+
+
+def constrain_rotations(stacked: dict, r_fs_gt: np.ndarray,
+                        r_fs_exo: np.ndarray) -> tuple[dict, float]:
+    """
+    Re-fit both rotations subject to R_foot @ R_fs_gt == R_fs_exo @ R_shank.
+
+    Derivation. For any physical vector, going Georgia-Tech-shank -> exo-foot by
+    either route must agree, which gives that constraint and hence
+    R_foot = R_fs_exo @ R_shank @ R_fs_gt^-1. Substituting into the combined
+    least-squares objective, and using that R_fs_exo is orthogonal so it can be
+    moved across the norm, turns the two separate Procrustes problems into one:
+
+        minimise  || R_shank [P_s , R_fs_gt^-1 P_f] - [Q_s , R_fs_exo^-1 Q_f] ||
+
+    So a single Kabsch on the stacked pair yields R_shank, and R_foot follows
+    exactly. Both rotations end up informed by both segments' walking data.
+
+    This is only sound when `r_fs_gt` is genuinely known. It is a property of the
+    Georgia Tech hardware that their walking data cannot reveal - fitting one of
+    their segments' gyro onto the other's at mid-stance leaves ~70% residual - so it
+    has to come from an earlier calibration that was trusted. That is why this is
+    opt-in and never the default.
+    """
+    p_s, q_s = stacked["shank"]
+    p_f, q_f = stacked["foot"]
+    inv_gt = np.asarray(r_fs_gt, dtype=np.float64).T
+    inv_exo = np.asarray(r_fs_exo, dtype=np.float64).T
+
+    p = np.hstack([p_s, inv_gt @ p_f])
+    q = np.hstack([q_s, inv_exo @ q_f])
+    r_shank, residual = kabsch(p, q)
+    r_foot = np.asarray(r_fs_exo, dtype=np.float64) @ r_shank @ inv_gt
+    return {"foot": r_foot, "shank": r_shank}, float(residual)
+
+
 def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
                     max_reference_trials: int = 3,
                     adaptive_fraction: float = 0.5,
@@ -1179,7 +1397,7 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
     if not hfs:
         raise RuntimeError(f"No Georgia Tech trials found for {reference_subject}.")
 
-    rotations, spreads, corrs = {}, {}, {}
+    rotations, spreads, corrs, stacked = {}, {}, {}, {}
     for seg in SEGMENTS:
         ex_a = mean_cycle(accel[seg], bounds)
         ex_g = mean_cycle(gyro[seg], bounds)
@@ -1194,6 +1412,13 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
         mean_r, rejected, spread = average_rotations(cands)
         rotations[seg] = mean_r
         spreads[seg] = spread
+
+        # Kept at the first trial's alignment so a constrained re-fit can reuse them.
+        hb0 = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
+        stacked[seg] = (
+            _stack(mean_cycle(hfs[0]["accel"][seg] * G_TO_MS2, hb0),
+                   mean_cycle(hfs[0]["gyro"][seg], hb0)),
+            _stack(np.roll(ex_a, lags[0], axis=0), np.roll(ex_g, lags[0], axis=0)))
 
         hb = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
         hf_g0 = mean_cycle(hfs[0]["gyro"][seg], hb)
@@ -1272,6 +1497,7 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
 
     return {"strides": len(bounds), "effective_imu_hz": imu_hz,
             "ankle_sign_corr": ankle_sign_corr,
+            "stacked": stacked,
             "heel_threshold": heel_thr, "toe_threshold": toe_thr,
             "rotation_spread_deg": spreads, "sagittal_corr": corrs,
             "intersegment_corr_exo": r_exo, "intersegment_corr_fitted": r_fixed,
@@ -1311,6 +1537,7 @@ def run_calibration(hf_root="mrsd-exo-ankle",
                     fs: float = TARGET_HZ,
                     interactive: bool = True,
                     recorder=None,
+                    constrain: bool = False,
                     protocol=PROTOCOL) -> CalibrationResult:
     """
     Run the full guided calibration and write the results plus a transform module.
@@ -1346,8 +1573,10 @@ def run_calibration(hf_root="mrsd-exo-ankle",
 
     try:
         recordings = {}
-        for spec in protocol:
+        for i, spec in enumerate(protocol, start=1):
             recordings[spec.key] = recorder(spec)
+            if hub is not None:
+                phase_complete(spec, i, len(protocol), interactive)
     finally:
         if hub is not None:
             hub.close()
@@ -1378,6 +1607,15 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     print(f"  ankle ROM         : {sweep_m['dorsiflexion_rom_deg']:.1f} deg dorsi / "
           f"{sweep_m['plantarflexion_rom_deg']:.1f} deg plantar")
 
+    hip_m, hip_c = analyse_hipswing(recordings["standing"], recordings["hipswing"],
+                                    stand_m["encoder_zero_deg"])
+    metrics["hipswing"] = hip_m
+    checks += hip_c
+    print(f"  shank axis        : {np.round(hip_m['shank_sagittal_axis'], 3).tolist()} "
+          f"({hip_m['shank_sagittal_var_ratio']:.0%} of swing variance)")
+    print(f"  rigid-body fit    : {hip_m['rigid_residual_fraction']:.1%} residual, "
+          f"methods agree to {hip_m['method_gap_deg']:.1f} deg")
+
     walk_m, walk_c, rotations = analyse_walking(
         recordings["walking"], hf_root, reference_subject,
         encoder_zero_deg=stand_m["encoder_zero_deg"],
@@ -1389,6 +1627,55 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     for seg in SEGMENTS:
         print(f"  R[{seg}] spread    : {walk_m['rotation_spread_deg'][seg]:.2f} deg, "
               f"sagittal r={walk_m['sagittal_corr'][seg]:+.3f}")
+
+    # The Georgia Tech foot<-shank relationship, derived rather than measured:
+    #   R_fs_exo = R_foot @ R_fs_gt @ R_shank^-1   =>   R_fs_gt = R_foot^-1 @ R_fs_exo @ R_shank
+    # It is a fixed property of their hardware, so it must come out the same on
+    # every calibration of every exo. Drift means an IMU moved, or a phase was done
+    # badly. It is recorded and checked, never imposed - imposing it would require
+    # trusting a value nothing in this run can verify.
+    r_fs_exo = np.array(hip_m["r_foot_from_shank"], dtype=np.float64)
+    stacked = walk_m.pop("stacked")
+
+    prior = _previous_gt_relations(out_dir)
+
+    if constrain:
+        if not prior:
+            raise RuntimeError(
+                "--constrain-segments needs a Georgia Tech foot<-shank relationship "
+                "from an earlier passing calibration, and none was found in "
+                f"{out_dir}. Run the calibration normally first; that run records the "
+                "relationship, and once you have runs that agree you can constrain "
+                "against it."
+            )
+        name, r_fs_gt_prior = prior[-1]
+        constrained, resid = constrain_rotations(stacked, r_fs_gt_prior, r_fs_exo)
+        moved = {s: rotation_angle(constrained[s], rotations[s]) for s in SEGMENTS}
+        print(f"\n  constrained against {name}: residual {resid:.4f}, rotations moved "
+              + ", ".join(f"{s} {moved[s]:.2f} deg" for s in SEGMENTS))
+        checks.append(Check(
+            "constraint did not distort the fit", max(moved.values()) <= 10.0,
+            ", ".join(f"{s} moved {moved[s]:.2f} deg" for s in SEGMENTS)
+            + " (max 10.0); a large move means the stored relationship disagrees "
+              "with this run's independent fit"))
+        metrics["constrained"] = {"source": name, "residual": resid,
+                                  "moved_deg": moved}
+        rotations = constrained
+
+    r_fs_gt = rotations["foot"].T @ r_fs_exo @ rotations["shank"]
+    metrics["derived"] = {"r_foot_from_shank_gt": r_fs_gt.tolist()}
+    if prior:
+        drifts = [rotation_angle(r_fs_gt, p) for _, p in prior]
+        worst = max(drifts)
+        checks.append(Check(
+            "Georgia Tech segment relationship is stable across runs",
+            worst <= GT_RELATION_DRIFT_DEG,
+            f"differs from {len(prior)} earlier run(s) by up to {worst:.1f} deg "
+            f"(max {GT_RELATION_DRIFT_DEG}); this is fixed hardware, so drift means "
+            f"an IMU moved or a phase was done badly", False))
+        print(f"  GT relation drift : {worst:.1f} deg vs {len(prior)} earlier run(s)")
+    else:
+        print(f"  GT relation       : first run, recorded as the baseline")
 
     result = CalibrationResult(
         stamp=stamp, rotations=rotations,
@@ -1800,7 +2087,8 @@ def _cmd_calibrate(args) -> int:
         result = run_calibration(hf_root=args.hf_root, out_dir=args.calib_dir,
                                  reference_subject=args.reference_subject,
                                  imu_report_hz=args.imu_hz,
-                                 interactive=not args.no_prompt)
+                                 interactive=not args.no_prompt,
+                                 constrain=args.constrain_segments)
     except (RuntimeError, FileNotFoundError) as exc:
         print(f"\nCalibration could not start.\n\n{exc}")
         return 1
@@ -1828,6 +2116,10 @@ def main() -> int:
                    help="IMU report rate to force during calibration")
     p.add_argument("--no-prompt", action="store_true",
                    help="skip the ENTER confirmation before each phase")
+    p.add_argument("--constrain-segments", action="store_true",
+                   help="force the foot and shank rotations to stay mutually "
+                        "consistent, using the Georgia Tech segment "
+                        "relationship recorded by an earlier passing run")
     args = p.parse_args()
     return {"fit": _cmd_fit, "build": _cmd_build, "bench": _cmd_bench,
             "calibrate": _cmd_calibrate}[args.command](args)

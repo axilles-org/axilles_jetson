@@ -10,7 +10,7 @@ __pycache__/
 >>>>>>> Stashed changes
 
 # Downloaded Hugging Face dataset snapshots
-mrsd-exo-ankle/
+# mrsd-exo-ankle/
 
 # Generated exo-frame training data (rebuild with: python exo_frame.py build)
 training_data/

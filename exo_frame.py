@@ -714,6 +714,24 @@ SWEEP_MIN_R2 = 0.75              # encoder rate vs IMU rate regression
 SWEEP_MAX_SHANK_GYRO = 0.60      # rad/s mean; the shank is meant to stay put
 SWEEP_MIN_HOLD_SEPARATION = 4.0  # deg between neutral and each held pose
 
+# Hip-swing acceptance. The point of this phase is that with the knee and ankle
+# held, foot and shank move as one rigid body, so both IMUs see the same physical
+# angular velocity. That only holds if the ankle really did stay put.
+HIPSWING_MAX_ENCODER_SD = 2.5      # deg; larger means the ankle moved and the
+                                   # rigid-body assumption is broken
+HIPSWING_MIN_GYRO = 0.50           # rad/s mean; smaller means the leg barely moved
+HIPSWING_MAX_RESIDUAL = 0.25       # Kabsch residual as a fraction of |gyro|
+HIPSWING_MIN_VAR_RATIO = 0.70      # the swing should be planar
+
+# How far the two independent estimates of R_foot<-shank may disagree. One comes
+# from standing gravity plus the swing axis, the other from Kabsch on the swing
+# gyro alone; the latter is rank-limited, so this is generous by design.
+HIPSWING_METHOD_TOL_DEG = 25.0
+
+# Stability of the derived Georgia Tech foot<-shank relationship across calibration
+# runs. That relationship is a property of their hardware, so it must not move.
+GT_RELATION_DRIFT_DEG = 10.0
+
 # Walking acceptance.
 WALK_MIN_STRIDES = 20
 WALK_MAX_ROTATION_SPREAD_DEG = 8.0
@@ -752,6 +770,11 @@ PROTOCOL = (
     PhaseSpec("sweep", 10.0, "SLOW SWEEPS",
               "Sweep the ankle smoothly up and down, about 5 full cycles.\n"
               "Keep it SLOW, and keep your shank still. Only the ankle moves."),
+    PhaseSpec("hipswing", 10.0, "HIP SWINGS",
+              "Stand on your LEFT leg, holding a support for balance.\n"
+              "Swing the RIGHT leg forward and back from the HIP, about 5 cycles.\n"
+              "Keep the knee STRAIGHT and the ankle STILL - the whole leg swings\n"
+              "as one piece. Do not let the ankle flap."),
     PhaseSpec("walking", 60.0, "LEVEL WALKING",
               "Walk at a comfortable, steady pace on level ground.\n"
               "Keep walking until told to stop."),
@@ -798,6 +821,25 @@ class CalibrationResult:
             "checks": [{"name": c.name, "passed": bool(c.passed), "detail": c.detail,
                         "critical": bool(c.critical)} for c in self.checks],
         }
+
+
+def _previous_gt_relations(out_dir) -> list:
+    """
+    Derived Georgia Tech foot<-shank relationships from earlier calibration runs.
+
+    Only runs that passed are considered; a failed run's rotations are not something
+    to measure drift against.
+    """
+    found = []
+    for path in sorted(Path(out_dir).glob("calibration_*.json")):
+        try:
+            d = json.loads(path.read_text(encoding="utf-8"))
+            rel = d.get("metrics", {}).get("derived", {}).get("r_foot_from_shank_gt")
+            if rel and d.get("ok"):
+                found.append((path.name, np.array(rel, dtype=np.float64)))
+        except (ValueError, OSError):
+            continue
+    return found
 
 
 def _json_default(o):
@@ -864,56 +906,371 @@ def load_sensor_hub(imu_report_hz: float = 200.0, verbose: bool = True):
     return mod
 
 
+_SLEEP_MARGIN: Optional[float] = None
+
+
+def _sleep_margin() -> float:
+    """
+    How early to stop sleeping and start spinning, measured rather than assumed.
+
+    A short wait costs far more than it asks for on some platforms: on Windows an
+    Event.wait(1 ms) measures around 4 ms and time.sleep(1 ms) around 16 ms, while
+    Linux delivers close to the requested 1 ms. Sizing the spin window from the
+    machine's actual behaviour keeps the loop on rate everywhere, instead of hitting
+    target on the Jetson and silently running at a third of it elsewhere.
+
+    Measured once and cached; the result is clamped so a noisy measurement cannot
+    make the loop spin for an absurd fraction of every period.
+    """
+    global _SLEEP_MARGIN
+    if _SLEEP_MARGIN is None:
+        import threading
+        import time
+
+        ev = threading.Event()
+        worst = 0.0
+        for _ in range(12):
+            t = time.perf_counter()
+            ev.wait(0.001)
+            worst = max(worst, time.perf_counter() - t)
+        _SLEEP_MARGIN = float(min(0.020, max(0.0015, worst)))
+    return _SLEEP_MARGIN
+
+
 def record_phase(hub, seconds: float, fs: float = TARGET_HZ,
                  progress: bool = True) -> dict:
     """
-    Poll every sensor at `fs` for `seconds` and return raw arrays.
+    Record every sensor for `seconds` of wall-clock time and return raw arrays.
+
+    Two things this gets right that the obvious implementation does not.
+
+    The loop is bounded by elapsed TIME, not by sample count. Reading four I2C
+    devices takes however long it takes, and a fixed `for i in range(seconds * fs)`
+    silently runs long whenever the bus cannot keep up - a 10 s phase becoming 30 s,
+    with the countdown sailing past zero into negative numbers. Here the phase ends
+    when the clock says so and the arrays are truncated to whatever was actually
+    captured.
+
+    And the sensors are polled on background threads rather than serially in the
+    sampling loop, mirroring data_collection.py. Four blocking I2C transactions per
+    tick cannot fit in a 5 ms budget; with workers feeding a cache, the sampling loop
+    only has to copy the latest values.
 
     Ticks where an IMU has not yet produced a packet are left as NaN rather than
     back-filled, so the analysis can measure the true update rate instead of being
     fooled by held values.
     """
+    import threading
     import time
 
-    n = int(round(seconds * fs))
-    period = 1.0 / fs
+    period = 1.0 / fs if fs > 0 else 0.005
+    # Room for the target rate plus headroom, so a fast bus is never truncated.
+    n_max = int(round(seconds * fs * 1.2)) + 16
+
     out = {
-        "time": np.full(n, np.nan),
-        "foot_accel": np.full((n, 3), np.nan), "foot_gyro": np.full((n, 3), np.nan),
-        "shank_accel": np.full((n, 3), np.nan), "shank_gyro": np.full((n, 3), np.nan),
-        "encoder": np.full(n, np.nan),
-        "toe": np.full(n, np.nan), "heel": np.full(n, np.nan),
+        "time": np.full(n_max, np.nan),
+        "foot_accel": np.full((n_max, 3), np.nan),
+        "foot_gyro": np.full((n_max, 3), np.nan),
+        "shank_accel": np.full((n_max, 3), np.nan),
+        "shank_gyro": np.full((n_max, 3), np.nan),
+        "encoder": np.full(n_max, np.nan),
+        "toe": np.full(n_max, np.nan), "heel": np.full(n_max, np.nan),
     }
 
+    stop = threading.Event()
+    lock = threading.Lock()
+    cache = {"foot": None, "shank": None, "enc": None, "toe": None, "heel": None}
+
+    def worker(task):
+        # Same cadence discipline as data_collection._periodic_worker: wake often
+        # enough to stay fresh without spinning the CPU flat out.
+        next_t = time.perf_counter()
+        while not stop.is_set():
+            now = time.perf_counter()
+            if now < next_t:
+                stop.wait(timeout=min(0.001, next_t - now))
+                continue
+            try:
+                task()
+            except Exception:
+                # A dropped I2C read must not kill the phase; the sample simply
+                # keeps its previous cached value and the rate check will notice.
+                pass
+            next_t += period
+            if next_t <= now:
+                next_t = now + period
+
+    def read_foot():
+        pkt = hub.read_imu_foot()
+        if pkt is not None:
+            with lock:
+                cache["foot"] = pkt
+
+    def read_shank():
+        pkt = hub.read_imu_shank()
+        if pkt is not None:
+            with lock:
+                cache["shank"] = pkt
+
+    def read_aux():
+        enc = hub.read_encoder()["ankle_encoder_deg"]
+        fsr = hub.read_fsr()
+        with lock:
+            cache["enc"] = enc
+            cache["toe"] = fsr["toe_fsr_raw"]
+            cache["heel"] = fsr["heel_fsr_raw"]
+
+    threads = [threading.Thread(target=worker, args=(read_foot,), daemon=True),
+               threading.Thread(target=worker, args=(read_shank,), daemon=True),
+               threading.Thread(target=worker, args=(read_aux,), daemon=True)]
+    for t in threads:
+        t.start()
+
+    margin = _sleep_margin()
+
+    i = 0
     t0 = time.perf_counter()
     next_t = t0
-    for i in range(n):
-        now = time.perf_counter()
-        if now < next_t:
-            time.sleep(min(period, next_t - now))
-        out["time"][i] = time.perf_counter() - t0
+    next_print = t0
+    try:
+        while True:
+            now = time.perf_counter()
+            elapsed = now - t0
+            if elapsed >= seconds or i >= n_max:
+                break
+            remaining = next_t - now
+            if remaining > 0.0:
+                # Sleep while there is more margin than this machine's sleep can
+                # overshoot, then spin out the rest. See _sleep_margin.
+                if remaining > margin:
+                    stop.wait(timeout=remaining - margin)
+                    continue
+                while time.perf_counter() < next_t:
+                    pass
 
-        f = hub.read_imu_foot()
-        s = hub.read_imu_shank()
-        if f is not None:
-            out["foot_accel"][i] = np.asarray(f["accel"][:3], dtype=np.float64)
-            out["foot_gyro"][i] = np.asarray(f["gyro"][:3], dtype=np.float64)
-        if s is not None:
-            out["shank_accel"][i] = np.asarray(s["accel"][:3], dtype=np.float64)
-            out["shank_gyro"][i] = np.asarray(s["gyro"][:3], dtype=np.float64)
+            with lock:
+                f, s = cache["foot"], cache["shank"]
+                enc, toe, heel = cache["enc"], cache["toe"], cache["heel"]
 
-        out["encoder"][i] = hub.read_encoder()["ankle_encoder_deg"]
-        fsr = hub.read_fsr()
-        out["toe"][i] = fsr["toe_fsr_raw"]
-        out["heel"][i] = fsr["heel_fsr_raw"]
+            out["time"][i] = elapsed
+            if f is not None:
+                out["foot_accel"][i] = np.asarray(f["accel"][:3], dtype=np.float64)
+                out["foot_gyro"][i] = np.asarray(f["gyro"][:3], dtype=np.float64)
+            if s is not None:
+                out["shank_accel"][i] = np.asarray(s["accel"][:3], dtype=np.float64)
+                out["shank_gyro"][i] = np.asarray(s["gyro"][:3], dtype=np.float64)
+            if enc is not None:
+                out["encoder"][i] = enc
+            if toe is not None:
+                out["toe"][i] = toe
+            if heel is not None:
+                out["heel"][i] = heel
+            i += 1
 
-        next_t += period
-        if progress and fs > 0 and i % int(fs) == 0:
-            print(f"\r    {seconds - out['time'][i]:5.1f} s remaining ",
-                  end="", flush=True)
+            next_t += period
+            if next_t <= now:
+                # Behind schedule: reset rather than accumulate debt, or the loop
+                # would try to "catch up" forever and never sleep again.
+                next_t = now + period
+
+            # Throttled: at 200 Hz an unthrottled print is 200 lines a second, which
+            # floods the terminal and steals time from the sampling loop itself.
+            if progress and now >= next_print:
+                print(f"\r    {max(0.0, seconds - elapsed):5.1f} s remaining ",
+                      end="", flush=True)
+                next_print = now + 0.2
+    except KeyboardInterrupt:
+        stop.set()
+        for t in threads:
+            t.join(timeout=1.0)
+        raise
+    finally:
+        stop.set()
+        for t in threads:
+            t.join(timeout=1.0)
+
+    if i == 0:
+        raise RuntimeError(
+            f"Recorded no samples in {seconds:.0f} s. The sensor hub returned nothing "
+            "at all - check the I2C wiring and addresses before retrying."
+        )
+
+    for key in out:
+        out[key] = out[key][:i]
+
+    achieved = i / seconds if seconds > 0 else 0.0
     if progress:
-        print("\r    done.                      ")
+        print(f"\r    done: {i} samples in {seconds:.0f} s "
+              f"({achieved:.0f} Hz achieved, {fs:.0f} Hz target)")
+        if achieved < 0.8 * fs:
+            print(f"    NOTE: the sampling loop reached only {achieved:.0f} Hz. "
+                  f"The I2C bus is the limit, not the IMU report rate.")
     return out
+
+
+def channel_health(rec: dict) -> dict:
+    """
+    Per-channel update rate and variability for one recording.
+
+    This exists because a sensor that has quietly stopped reporting looks exactly
+    like a sensor reading a perfectly steady value: the drivers in
+    data_collection.py swallow OSError and hand back the last good sample, so a dead
+    I2C read shows up as suspiciously clean data rather than as an error. An update
+    rate far below the sampling rate, or a standard deviation of exactly zero across
+    thousands of samples, is the signature.
+    """
+    t = rec["time"]
+    dur = float(t[-1] - t[0]) if len(t) > 1 else 0.0
+    out = {"duration_s": dur, "samples": int(len(t)),
+           "sample_hz": float(len(t) / dur) if dur > 0 else 0.0}
+
+    for name in ("foot_accel", "foot_gyro", "shank_accel", "shank_gyro",
+                 "encoder", "toe", "heel"):
+        v = np.asarray(rec[name], dtype=np.float64)
+        finite = np.isfinite(v).all(axis=1) if v.ndim == 2 else np.isfinite(v)
+        vv = v[finite]
+        if len(vv) < 2:
+            out[name] = {"update_hz": 0.0, "std": 0.0, "finite_fraction": 0.0}
+            continue
+        changed = (np.any(np.diff(vv, axis=0) != 0.0, axis=1) if vv.ndim == 2
+                   else (np.diff(vv) != 0.0))
+        out[name] = {
+            "update_hz": float(np.sum(changed) / dur) if dur > 0 else 0.0,
+            "std": float(np.mean(np.std(vv, axis=0)) if vv.ndim == 2 else np.std(vv)),
+            "finite_fraction": float(finite.mean()),
+        }
+    return out
+
+
+def plot_phase(rec: dict, title: str, path) -> bool:
+    """
+    Save a multi-panel plot of one recorded phase. Returns False if unavailable.
+
+    Uses the Agg backend so it works over SSH with no display; the file is written
+    for later inspection rather than shown.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except Exception:
+        return False
+
+    t = rec["time"]
+    health = channel_health(rec)
+
+    fig, ax = plt.subplots(5, 1, figsize=(13, 14), sharex=True)
+    fig.suptitle(f"{title}   ({health['samples']} samples, "
+                 f"{health['sample_hz']:.0f} Hz)", fontsize=13)
+
+    for row, (key, label) in enumerate((("foot_gyro", "Foot gyro (rad/s)"),
+                                        ("foot_accel", "Foot accel (m/s^2)"),
+                                        ("shank_gyro", "Shank gyro (rad/s)"),
+                                        ("shank_accel", "Shank accel (m/s^2)"))):
+        v = np.asarray(rec[key], dtype=np.float64)
+        for j, axis_name in enumerate("xyz"):
+            ax[row].plot(t, v[:, j], lw=0.8, label=axis_name)
+        hz = health[key]["update_hz"]
+        ax[row].set_ylabel(label)
+        ax[row].legend(loc="upper right", ncol=3, fontsize=8)
+        ax[row].grid(True, alpha=0.3)
+        ax[row].set_title(f"updates at {hz:.0f} Hz", fontsize=8, loc="left")
+
+    enc = np.asarray(rec["encoder"], dtype=np.float64)
+    ax[4].plot(t, enc, color="tab:orange", lw=1.0, label="encoder (deg)")
+    ax[4].set_ylabel("Encoder (deg)")
+    ax[4].grid(True, alpha=0.3)
+    h = health["encoder"]
+    ax[4].set_title(f"updates at {h['update_hz']:.1f} Hz, sd {h['std']:.4f} deg, "
+                    f"range {np.nanmax(enc) - np.nanmin(enc):.2f} deg",
+                    fontsize=8, loc="left")
+
+    fsr = ax[4].twinx()
+    fsr.plot(t, rec["toe"], color="tab:red", lw=0.7, alpha=0.6, label="toe FSR")
+    fsr.plot(t, rec["heel"], color="tab:green", lw=0.7, alpha=0.6, label="heel FSR")
+    fsr.set_ylabel("FSR (counts)")
+    lines = ax[4].get_lines() + fsr.get_lines()
+    ax[4].legend(lines, [l.get_label() for l in lines], loc="upper right", fontsize=8)
+    ax[4].set_xlabel("Time (s)")
+
+    fig.tight_layout(rect=[0, 0.01, 1, 0.98])
+    fig.savefig(path, dpi=110)
+    plt.close(fig)
+    return True
+
+
+def plot_sweep_diagnostic(sweep: dict, metrics: dict, path) -> bool:
+    """
+    Plot what the encoder-to-joint ratio regression actually saw.
+
+    The ratio comes from regressing encoder rate against the foot's sagittal angular
+    velocity. When that fit is poor the single R^2 number says nothing about why, so
+    this draws both rate traces against each other and as a scatter. A cloud with no
+    slope means the encoder and the IMU disagree about the motion; a tilted line with
+    scatter means they agree but one is noisy.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except Exception:
+        return False
+
+    t = sweep["time"]
+    ok = np.isfinite(sweep["encoder"]) & np.isfinite(sweep["foot_gyro"]).all(axis=1)
+    tt, enc = t[ok], sweep["encoder"][ok]
+    axis = np.asarray(metrics.get("foot_sagittal_axis", [0, 0, 1]), dtype=np.float64)
+    omega = np.degrees(sweep["foot_gyro"][ok] @ axis)
+    d_enc = np.gradient(enc, tt) if len(tt) > 2 else np.zeros_like(enc)
+
+    fig, ax = plt.subplots(3, 1, figsize=(13, 10))
+    fig.suptitle("Sweep diagnostic: encoder rate vs IMU sagittal rate", fontsize=13)
+
+    ax[0].plot(tt, enc, color="tab:orange", lw=1.0)
+    ax[0].set_ylabel("Encoder (deg)")
+    ax[0].grid(True, alpha=0.3)
+    ax[0].set_title(f"range {enc.max() - enc.min():.2f} deg", fontsize=8, loc="left")
+
+    ax[1].plot(tt, d_enc, lw=0.8, label="d(encoder)/dt")
+    ax[1].plot(tt, omega, lw=0.8, label="IMU rate about sagittal axis")
+    ax[1].set_ylabel("deg/s")
+    ax[1].set_xlabel("Time (s)")
+    ax[1].legend(loc="upper right", fontsize=8)
+    ax[1].grid(True, alpha=0.3)
+    ax[1].set_title("these two should trace the same shape", fontsize=8, loc="left")
+
+    ax[2].scatter(omega, d_enc, s=3, alpha=0.3)
+    r2 = metrics.get("encoder_rate_r2", float("nan"))
+    ratio = metrics.get("encoder_ratio", float("nan"))
+    if np.isfinite(ratio) and ratio != 0:
+        xs = np.linspace(omega.min(), omega.max(), 10)
+        ax[2].plot(xs, xs / (metrics.get("encoder_sign", 1) * ratio), "r-", lw=1.2,
+                   label=f"fit: ratio={ratio:.3f}")
+        ax[2].legend(loc="upper left", fontsize=8)
+    ax[2].set_xlabel("IMU sagittal rate (deg/s)")
+    ax[2].set_ylabel("d(encoder)/dt (deg/s)")
+    ax[2].grid(True, alpha=0.3)
+    ax[2].set_title(f"R^2 = {r2:.3f}  (a shapeless cloud means the encoder is not "
+                    f"tracking the ankle)", fontsize=8, loc="left")
+
+    fig.tight_layout(rect=[0, 0.01, 1, 0.97])
+    fig.savefig(path, dpi=110)
+    plt.close(fig)
+    return True
+
+
+def _wait_for_enter(message: str) -> None:
+    """
+    Block until ENTER, tolerating a stdin that cannot be read.
+
+    If the calibration is launched with stdin redirected or closed, `input` raises
+    rather than blocking, and an unguarded prompt would abort the run between two
+    phases with the subject mid-pose.
+    """
+    try:
+        input(message)
+    except (EOFError, KeyboardInterrupt):
+        print(f"{message}  [stdin unavailable, continuing]")
 
 
 def prompt_phase(spec: PhaseSpec, interactive: bool = True) -> None:
@@ -925,11 +1282,28 @@ def prompt_phase(spec: PhaseSpec, interactive: bool = True) -> None:
     for line in spec.instruction.splitlines():
         print(f"    {line}")
     if interactive:
-        input("\n  Press ENTER when you are in position and ready...")
+        _wait_for_enter("\n  Press ENTER when you are in position and ready...")
     for k in (3, 2, 1):
         print(f"    starting in {k}...", end="\r", flush=True)
         time.sleep(1.0)
     print("    RECORDING NOW              ")
+
+
+def phase_complete(spec: PhaseSpec, index: int, total: int,
+                   interactive: bool = True) -> None:
+    """
+    Stop after a phase and wait to be released into the next one.
+
+    Each phase is gated at both ends deliberately. Rolling straight from one
+    recording into the next prompt gives no room to change posture, catch balance
+    after standing on one leg, or simply rest, and a rushed phase is a phase that
+    fails its quality checks.
+    """
+    print(f"\n  -- {spec.title} complete ({index} of {total}) --")
+    if interactive:
+        _wait_for_enter("  Press ENTER when you are ready for the next phase..."
+                        if index < total else
+                        "  Press ENTER to analyse the recordings...")
 
 
 # ---------------- per-phase analysis ----------------
@@ -1106,6 +1480,12 @@ def analyse_sweep(neutral: dict, dorsi: dict, plantar: dict, sweep: dict,
         f"rate regression R^2 = {r2:.3f}, ratio = {ratio:.4f} joint deg per encoder "
         f"deg (need R^2 >= {SWEEP_MIN_R2})"))
     checks.append(Check(
+        "encoder moved during the sweep",
+        float(np.ptp(enc)) >= SWEEP_MIN_ROM_DEG * 0.5,
+        f"encoder spanned {float(np.ptp(enc)):.2f} deg across the sweep "
+        f"(need {SWEEP_MIN_ROM_DEG * 0.5:.1f}); a small span with a large IMU "
+        f"excursion means the magnet is not following the joint"))
+    checks.append(Check(
         "encoder ratio is physically plausible",
         bool(np.isfinite(ratio) and 0.2 <= ratio <= 5.0),
         f"ratio = {ratio:.4f}; a magnet mounted directly on the joint axis should be "
@@ -1122,6 +1502,217 @@ def analyse_sweep(neutral: dict, dorsi: dict, plantar: dict, sweep: dict,
             "foot_sagittal_axis": axis.tolist(),
             "foot_sagittal_var_ratio": float(var_ratio),
             "shank_mean_gyro": shank_speed}, checks
+
+
+def preflight_reference(hf_root, subject: str) -> list[str]:
+    """
+    Check the Georgia Tech reference is present and usable, BEFORE any recording.
+
+    This used to be discovered inside analyse_walking, which meant a missing dataset
+    surfaced only after the full 105 s protocol had been performed - and because the
+    exception escaped before the raw recordings were written, every one of those
+    seconds was lost. Nothing about this check needs the hardware, so it belongs at
+    the very start.
+    """
+    root = Path(hf_root)
+    if not root.exists():
+        raise FileNotFoundError(
+            f"Reference dataset not found at '{root.resolve()}'.\n"
+            f"The rotation fit needs the Georgia Tech parquet trials. Either copy the "
+            f"mrsd-exo-ankle folder next to exo_frame.py, or point at it with "
+            f"--hf-root /path/to/mrsd-exo-ankle."
+        )
+
+    subjects_dir = root / "subjects"
+    if not subjects_dir.is_dir():
+        raise FileNotFoundError(
+            f"'{root.resolve()}' exists but has no 'subjects/' directory, so it is not "
+            f"a mrsd-exo-ankle snapshot. Contents: "
+            f"{sorted(p.name for p in root.iterdir())[:8]}"
+        )
+
+    available = sorted(p.name for p in subjects_dir.iterdir() if p.is_dir())
+    if subject not in available:
+        raise FileNotFoundError(
+            f"Subject '{subject}' is not in '{subjects_dir.resolve()}'.\n"
+            f"Available: {available if available else '(none)'}\n"
+            f"Pick one with --reference-subject, or download {subject} into the "
+            f"snapshot."
+        )
+
+    trials = list_hf_trials(root, subject)
+    if not trials:
+        raise FileNotFoundError(
+            f"Subject '{subject}' has no *__imu.parquet trials in "
+            f"{(subjects_dir / subject).resolve()}. The download is incomplete."
+        )
+
+    missing = [f"{t}__{k}" for t in trials[:3] for k in ("imu", "id", "gon", "gcRight")
+               if not (subjects_dir / subject / f"{t}__{k}.parquet").exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"Subject '{subject}' is missing parquet files needed by the fit: "
+            f"{missing[:6]}. Re-download the snapshot."
+        )
+    return trials
+
+
+def two_direction_rotation(g_from: np.ndarray, w_from: np.ndarray,
+                           g_to: np.ndarray, w_to: np.ndarray) -> np.ndarray:
+    """
+    Rotation taking `from`-frame coordinates to `to`-frame coordinates.
+
+    Built from two physical directions observed in both frames - here gravity while
+    standing, and the hip-swing axis. Two non-parallel directions pin all three
+    degrees of freedom, which matters because the swing on its own cannot: a planar
+    swing produces angular velocity along a single axis, leaving rotation about that
+    axis completely unconstrained. Gravity supplies the missing direction.
+    """
+    def basis(g, w):
+        e1 = _unit(g)
+        e2 = w - np.dot(w, e1) * e1
+        if np.linalg.norm(e2) < 1e-8:
+            raise ValueError("Gravity and the swing axis are parallel; "
+                             "cannot build a frame from this recording.")
+        e2 = _unit(e2)
+        return np.column_stack([e1, e2, np.cross(e1, e2)])
+
+    return basis(g_to, w_to) @ basis(g_from, w_from).T
+
+
+def analyse_hipswing(standing: dict, hipswing: dict,
+                     encoder_zero_deg: float) -> tuple[dict, list]:
+    """
+    Shank sagittal axis, and the relationship between the two exo IMU frames.
+
+    With the knee and ankle held, the foot and shank swing as one rigid body, so
+    both IMUs observe the same physical angular velocity expressed in their own
+    frames. That makes the swing axis a shared direction, and combined with gravity
+    from the standing phase it determines R_foot<-shank outright.
+
+    This is the only phase that measures the shank directly. Without it the shank's
+    sagittal axis is never observed on its own - it is only implied by the walking
+    fit against Georgia Tech - which leaves the two segments calibrated on very
+    unequal evidence.
+
+    Note what this does NOT do. R_foot<-shank cannot constrain the two Georgia Tech
+    rotations, because that would also require the Georgia Tech foot<-shank
+    relationship, and their walking data never contains a rigid foot-shank epoch to
+    measure it from: fitting one segment's gyro onto the other's at mid-stance
+    leaves a residual around 70% of signal. The relationship is therefore recorded
+    as a derived quantity and checked for drift across runs, not imposed.
+    """
+    checks: list = []
+
+    enc = _finite(hipswing["encoder"])
+    enc_sd = float(np.std(_unwrap_deg(enc, encoder_zero_deg))) if len(enc) else float("nan")
+
+    fg = _finite(hipswing["foot_gyro"])
+    sg = _finite(hipswing["shank_gyro"])
+    if len(fg) < 20 or len(sg) < 20:
+        raise ValueError("Hip-swing phase has too few usable IMU samples.")
+
+    foot_speed = float(np.mean(np.linalg.norm(fg, axis=1)))
+    shank_speed = float(np.mean(np.linalg.norm(sg, axis=1)))
+
+    foot_axis, foot_var = principal_axis(fg)
+    shank_axis, shank_var = principal_axis(sg)
+
+    # PCA signs are arbitrary. Both segments share one angular velocity, so orient
+    # them to agree with each other.
+    n = min(len(fg), len(sg))
+    if float(np.dot(fg[:n] @ foot_axis, sg[:n] @ shank_axis)) < 0.0:
+        shank_axis = -shank_axis
+
+    g_foot = _unit(_finite(standing["foot_accel"]).mean(axis=0))
+    g_shank = _unit(_finite(standing["shank_accel"]).mean(axis=0))
+
+    r_fs = two_direction_rotation(g_shank, shank_axis, g_foot, foot_axis)
+
+    # Best-achievable fit, used to judge whether the motion was rigid at all. Kabsch
+    # on a planar swing is rank-limited, so this measures rigidity, not R_fs.
+    r_kabsch, _ = kabsch(sg[:n].T, fg[:n].T)
+    residual = float(np.linalg.norm(r_kabsch @ sg[:n].T - fg[:n].T) / np.sqrt(n))
+    residual_frac = residual / foot_speed if foot_speed > 0 else float("nan")
+    method_gap = rotation_angle(r_fs, r_kabsch)
+
+    # How well the rotation we actually keep reproduces the measured swing. This
+    # tests two of the three degrees of freedom; it cannot test rotation about the
+    # swing axis, because rotating a vector about itself changes nothing. That
+    # remaining degree of freedom is fixed by standing gravity, and is watched over
+    # time by the cross-run drift check rather than from within this phase.
+    applied = float(np.linalg.norm(r_fs @ sg[:n].T - fg[:n].T) / np.sqrt(n))
+    applied_frac = applied / foot_speed if foot_speed > 0 else float("nan")
+
+    checks.append(Check(
+        "ankle stayed still during hip swings", enc_sd <= HIPSWING_MAX_ENCODER_SD,
+        f"encoder sd = {enc_sd:.2f} deg (max {HIPSWING_MAX_ENCODER_SD}); a moving "
+        f"ankle breaks the rigid-body assumption this phase depends on"))
+    checks.append(Check(
+        "the leg actually swung", shank_speed >= HIPSWING_MIN_GYRO,
+        f"mean shank |gyro| = {shank_speed:.3f} rad/s "
+        f"(need {HIPSWING_MIN_GYRO}), foot {foot_speed:.3f}"))
+    checks.append(Check(
+        "foot and shank moved as one body", residual_frac <= HIPSWING_MAX_RESIDUAL,
+        f"one rotation explains the pair to {residual_frac:.1%} of signal "
+        f"(max {HIPSWING_MAX_RESIDUAL:.0%}); higher means the knee or ankle moved"))
+    checks.append(Check(
+        "swing was planar", min(foot_var, shank_var) >= HIPSWING_MIN_VAR_RATIO,
+        f"swing axis explains {foot_var:.0%} of foot and {shank_var:.0%} of shank "
+        f"gyro variance", False))
+    checks.append(Check(
+        "R_foot<-shank reproduces the swing", applied_frac <= HIPSWING_MAX_RESIDUAL,
+        f"applying it to the shank gyro predicts the foot gyro to {applied_frac:.1%} "
+        f"of signal (max {HIPSWING_MAX_RESIDUAL:.0%}). Tests two of three axes: "
+        f"rotation about the swing axis cannot be tested from a planar swing, and "
+        f"is fixed by standing gravity instead"))
+
+    return {"shank_sagittal_axis": shank_axis.tolist(),
+            "applied_residual_fraction": float(applied_frac),
+            "shank_sagittal_var_ratio": float(shank_var),
+            "foot_sagittal_axis": foot_axis.tolist(),
+            "foot_sagittal_var_ratio": float(foot_var),
+            "r_foot_from_shank": r_fs.tolist(),
+            "r_foot_from_shank_kabsch": r_kabsch.tolist(),
+            "method_gap_deg": float(method_gap),
+            "rigid_residual_fraction": float(residual_frac),
+            "encoder_sd_deg": enc_sd,
+            "foot_mean_gyro": foot_speed,
+            "shank_mean_gyro": shank_speed}, checks
+
+
+def constrain_rotations(stacked: dict, r_fs_gt: np.ndarray,
+                        r_fs_exo: np.ndarray) -> tuple[dict, float]:
+    """
+    Re-fit both rotations subject to R_foot @ R_fs_gt == R_fs_exo @ R_shank.
+
+    Derivation. For any physical vector, going Georgia-Tech-shank -> exo-foot by
+    either route must agree, which gives that constraint and hence
+    R_foot = R_fs_exo @ R_shank @ R_fs_gt^-1. Substituting into the combined
+    least-squares objective, and using that R_fs_exo is orthogonal so it can be
+    moved across the norm, turns the two separate Procrustes problems into one:
+
+        minimise  || R_shank [P_s , R_fs_gt^-1 P_f] - [Q_s , R_fs_exo^-1 Q_f] ||
+
+    So a single Kabsch on the stacked pair yields R_shank, and R_foot follows
+    exactly. Both rotations end up informed by both segments' walking data.
+
+    This is only sound when `r_fs_gt` is genuinely known. It is a property of the
+    Georgia Tech hardware that their walking data cannot reveal - fitting one of
+    their segments' gyro onto the other's at mid-stance leaves ~70% residual - so it
+    has to come from an earlier calibration that was trusted. That is why this is
+    opt-in and never the default.
+    """
+    p_s, q_s = stacked["shank"]
+    p_f, q_f = stacked["foot"]
+    inv_gt = np.asarray(r_fs_gt, dtype=np.float64).T
+    inv_exo = np.asarray(r_fs_exo, dtype=np.float64).T
+
+    p = np.hstack([p_s, inv_gt @ p_f])
+    q = np.hstack([q_s, inv_exo @ q_f])
+    r_shank, residual = kabsch(p, q)
+    r_foot = np.asarray(r_fs_exo, dtype=np.float64) @ r_shank @ inv_gt
+    return {"foot": r_foot, "shank": r_shank}, float(residual)
 
 
 def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
@@ -1179,7 +1770,7 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
     if not hfs:
         raise RuntimeError(f"No Georgia Tech trials found for {reference_subject}.")
 
-    rotations, spreads, corrs = {}, {}, {}
+    rotations, spreads, corrs, stacked = {}, {}, {}, {}
     for seg in SEGMENTS:
         ex_a = mean_cycle(accel[seg], bounds)
         ex_g = mean_cycle(gyro[seg], bounds)
@@ -1194,6 +1785,13 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
         mean_r, rejected, spread = average_rotations(cands)
         rotations[seg] = mean_r
         spreads[seg] = spread
+
+        # Kept at the first trial's alignment so a constrained re-fit can reuse them.
+        hb0 = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
+        stacked[seg] = (
+            _stack(mean_cycle(hfs[0]["accel"][seg] * G_TO_MS2, hb0),
+                   mean_cycle(hfs[0]["gyro"][seg], hb0)),
+            _stack(np.roll(ex_a, lags[0], axis=0), np.roll(ex_g, lags[0], axis=0)))
 
         hb = stride_bounds(hfs[0]["heel_strikes"], len(hfs[0]["time"]), hfs[0]["fs"])
         hf_g0 = mean_cycle(hfs[0]["gyro"][seg], hb)
@@ -1272,6 +1870,7 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
 
     return {"strides": len(bounds), "effective_imu_hz": imu_hz,
             "ankle_sign_corr": ankle_sign_corr,
+            "stacked": stacked,
             "heel_threshold": heel_thr, "toe_threshold": toe_thr,
             "rotation_spread_deg": spreads, "sagittal_corr": corrs,
             "intersegment_corr_exo": r_exo, "intersegment_corr_fitted": r_fixed,
@@ -1279,28 +1878,35 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
 
 
 def _ffill_nan(a: np.ndarray) -> np.ndarray:
-    """Forward then backward fill NaN along axis 0, matching the logger's hold."""
-    a = np.array(a, dtype=np.float64, copy=True)
-    if a.ndim == 1:
-        a = a[:, None]
-        squeeze = True
-    else:
-        squeeze = False
-    for j in range(a.shape[1]):
-        col = a[:, j]
-        idx = np.where(np.isfinite(col))[0]
-        if len(idx) == 0:
-            col[:] = 0.0
-            continue
-        first = idx[0]
-        col[:first] = col[first]
-        last_good = first
-        for i in range(first, len(col)):
-            if np.isfinite(col[i]):
-                last_good = i
-            else:
-                col[i] = col[last_good]
-    return a[:, 0] if squeeze else a
+    """
+    Forward then backward fill NaN along axis 0, matching the logger's hold.
+
+    Vectorised via a running maximum over the indices of valid samples, because the
+    per-element Python version ran 200 Hz x 60 s x every column on the walking phase.
+    """
+    arr = np.array(a, dtype=np.float64, copy=True)
+    squeeze = arr.ndim == 1
+    if squeeze:
+        arr = arr[:, None]
+
+    n, m = arr.shape
+    if n == 0:
+        return arr[:, 0] if squeeze else arr
+
+    valid = np.isfinite(arr)
+    # Index of the most recent valid sample at or before each row, per column.
+    idx = np.where(valid, np.arange(n)[:, None], -1)
+    np.maximum.accumulate(idx, axis=0, out=idx)
+
+    # Leading NaN have no earlier sample, so they take the first valid one instead.
+    any_valid = valid.any(axis=0)
+    first = np.argmax(valid, axis=0)
+    idx = np.where(idx < 0, first[None, :], idx)
+
+    out = arr[idx, np.arange(m)[None, :]]
+    if not any_valid.all():
+        out[:, ~any_valid] = 0.0          # a channel that never reported at all
+    return out[:, 0] if squeeze else out
 
 
 # ---------------- orchestration ----------------
@@ -1311,6 +1917,7 @@ def run_calibration(hf_root="mrsd-exo-ankle",
                     fs: float = TARGET_HZ,
                     interactive: bool = True,
                     recorder=None,
+                    constrain: bool = False,
                     protocol=PROTOCOL) -> CalibrationResult:
     """
     Run the full guided calibration and write the results plus a transform module.
@@ -1334,9 +1941,19 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     print("\n  Wear the exoskeleton on the RIGHT leg before starting.")
     print("  You will be told what to do and for how long before each phase.")
 
+    # Verified before a single second is recorded. Discovering a missing
+    # dataset after the protocol has been performed wastes the whole session.
+    ref_trials = preflight_reference(hf_root, reference_subject)
+    print(f"  Reference verified: {len(ref_trials)} trial(s) for {reference_subject}")
+
+    plot_dir = out_dir / f"plots_{stamp}"
+
     if recorder is None:
         mod = load_sensor_hub(imu_report_hz)
         hub = mod.SensorHub()
+        # Measure the timer granularity now rather than inside the first
+        # phase, so it costs nothing once the subject is in position.
+        print(f"  Timer granularity : {_sleep_margin() * 1000:.1f} ms")
 
         def recorder(spec):
             prompt_phase(spec, interactive)
@@ -1346,18 +1963,49 @@ def run_calibration(hf_root="mrsd-exo-ankle",
 
     try:
         recordings = {}
-        for spec in protocol:
+        for i, spec in enumerate(protocol, start=1):
             recordings[spec.key] = recorder(spec)
+            if hub is not None:
+                phase_complete(spec, i, len(protocol), interactive)
     finally:
         if hub is not None:
             hub.close()
+
+    # Written before anything is analysed. An analysis failure must never cost
+    # the recordings, which are the expensive part of the session.
+    raw_path = out_dir / f"raw_{stamp}.npz"
+    flat = {f"{k}__{f}": v for k, rec in recordings.items() for f, v in rec.items()}
+    np.savez_compressed(raw_path, **flat)
+    print("")
+    print(f"  raw recordings saved -> {raw_path}")
+
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    plotted = sum(plot_phase(recordings[s.key], f"{s.key.upper()}: {s.title}",
+                             plot_dir / f"{s.key}.png") for s in protocol)
+    print(f"  {plotted} phase plot(s) -> {plot_dir}/" if plotted
+          else "  (matplotlib unavailable, no plots written)")
+
+    print("")
+    print("=" * 72)
+    print("  CHANNEL HEALTH")
+    print("=" * 72)
+    print("  phase       samples   rate  footIMU shankIMU  encoder    enc sd")
+    health_all = {}
+    for spec in protocol:
+        h = channel_health(recordings[spec.key])
+        health_all[spec.key] = h
+        print(f"  {spec.key:<10}{h['samples']:>9}{h['sample_hz']:>6.0f}H"
+              f"{h['foot_gyro']['update_hz']:>8.0f}H"
+              f"{h['shank_gyro']['update_hz']:>8.0f}H"
+              f"{h['encoder']['update_hz']:>8.1f}H"
+              f"{h['encoder']['std']:>10.4f}")
 
     print("\n" + "=" * 72)
     print("  ANALYSING")
     print("=" * 72)
 
     checks: list = []
-    metrics: dict = {}
+    metrics: dict = {"health": health_all}
 
     stand_m, stand_c = analyse_standing(recordings["standing"])
     metrics["standing"] = stand_m
@@ -1378,6 +2026,22 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     print(f"  ankle ROM         : {sweep_m['dorsiflexion_rom_deg']:.1f} deg dorsi / "
           f"{sweep_m['plantarflexion_rom_deg']:.1f} deg plantar")
 
+    # Drawn whether or not the regression succeeded: when it fails, this plot is the
+    # fastest way to see whether the encoder and the IMU disagree about the motion or
+    # simply agree noisily.
+    if plot_sweep_diagnostic(recordings["sweep"], sweep_m,
+                             plot_dir / "sweep_diagnostic.png"):
+        print(f"  sweep diagnostic  -> {plot_dir / 'sweep_diagnostic.png'}")
+
+    hip_m, hip_c = analyse_hipswing(recordings["standing"], recordings["hipswing"],
+                                    stand_m["encoder_zero_deg"])
+    metrics["hipswing"] = hip_m
+    checks += hip_c
+    print(f"  shank axis        : {np.round(hip_m['shank_sagittal_axis'], 3).tolist()} "
+          f"({hip_m['shank_sagittal_var_ratio']:.0%} of swing variance)")
+    print(f"  rigid-body fit    : {hip_m['rigid_residual_fraction']:.1%} residual, "
+          f"methods agree to {hip_m['method_gap_deg']:.1f} deg")
+
     walk_m, walk_c, rotations = analyse_walking(
         recordings["walking"], hf_root, reference_subject,
         encoder_zero_deg=stand_m["encoder_zero_deg"],
@@ -1389,6 +2053,55 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     for seg in SEGMENTS:
         print(f"  R[{seg}] spread    : {walk_m['rotation_spread_deg'][seg]:.2f} deg, "
               f"sagittal r={walk_m['sagittal_corr'][seg]:+.3f}")
+
+    # The Georgia Tech foot<-shank relationship, derived rather than measured:
+    #   R_fs_exo = R_foot @ R_fs_gt @ R_shank^-1   =>   R_fs_gt = R_foot^-1 @ R_fs_exo @ R_shank
+    # It is a fixed property of their hardware, so it must come out the same on
+    # every calibration of every exo. Drift means an IMU moved, or a phase was done
+    # badly. It is recorded and checked, never imposed - imposing it would require
+    # trusting a value nothing in this run can verify.
+    r_fs_exo = np.array(hip_m["r_foot_from_shank"], dtype=np.float64)
+    stacked = walk_m.pop("stacked")
+
+    prior = _previous_gt_relations(out_dir)
+
+    if constrain:
+        if not prior:
+            raise RuntimeError(
+                "--constrain-segments needs a Georgia Tech foot<-shank relationship "
+                "from an earlier passing calibration, and none was found in "
+                f"{out_dir}. Run the calibration normally first; that run records the "
+                "relationship, and once you have runs that agree you can constrain "
+                "against it."
+            )
+        name, r_fs_gt_prior = prior[-1]
+        constrained, resid = constrain_rotations(stacked, r_fs_gt_prior, r_fs_exo)
+        moved = {s: rotation_angle(constrained[s], rotations[s]) for s in SEGMENTS}
+        print(f"\n  constrained against {name}: residual {resid:.4f}, rotations moved "
+              + ", ".join(f"{s} {moved[s]:.2f} deg" for s in SEGMENTS))
+        checks.append(Check(
+            "constraint did not distort the fit", max(moved.values()) <= 10.0,
+            ", ".join(f"{s} moved {moved[s]:.2f} deg" for s in SEGMENTS)
+            + " (max 10.0); a large move means the stored relationship disagrees "
+              "with this run's independent fit"))
+        metrics["constrained"] = {"source": name, "residual": resid,
+                                  "moved_deg": moved}
+        rotations = constrained
+
+    r_fs_gt = rotations["foot"].T @ r_fs_exo @ rotations["shank"]
+    metrics["derived"] = {"r_foot_from_shank_gt": r_fs_gt.tolist()}
+    if prior:
+        drifts = [rotation_angle(r_fs_gt, p) for _, p in prior]
+        worst = max(drifts)
+        checks.append(Check(
+            "Georgia Tech segment relationship is stable across runs",
+            worst <= GT_RELATION_DRIFT_DEG,
+            f"differs from {len(prior)} earlier run(s) by up to {worst:.1f} deg "
+            f"(max {GT_RELATION_DRIFT_DEG}); this is fixed hardware, so drift means "
+            f"an IMU moved or a phase was done badly", False))
+        print(f"  GT relation drift : {worst:.1f} deg vs {len(prior)} earlier run(s)")
+    else:
+        print(f"  GT relation       : first run, recorded as the baseline")
 
     result = CalibrationResult(
         stamp=stamp, rotations=rotations,
@@ -1413,15 +2126,10 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     print(f"  {len(checks) - len(hard) - len(soft)} passed, {len(hard)} failed, "
           f"{len(soft)} warnings")
 
-    raw_path = out_dir / f"raw_{stamp}.npz"
-    flat = {f"{k}__{f}": v for k, rec in recordings.items() for f, v in rec.items()}
-    np.savez_compressed(raw_path, **flat)
-
     json_path = out_dir / f"calibration_{stamp}.json"
     json_path.write_text(json.dumps(result.to_json(), indent=2,
                                 default=_json_default), encoding="utf-8")
 
-    print(f"\n  raw recordings -> {raw_path}")
     print(f"  calibration    -> {json_path}")
 
     if hard:
@@ -1800,7 +2508,8 @@ def _cmd_calibrate(args) -> int:
         result = run_calibration(hf_root=args.hf_root, out_dir=args.calib_dir,
                                  reference_subject=args.reference_subject,
                                  imu_report_hz=args.imu_hz,
-                                 interactive=not args.no_prompt)
+                                 interactive=not args.no_prompt,
+                                 constrain=args.constrain_segments)
     except (RuntimeError, FileNotFoundError) as exc:
         print(f"\nCalibration could not start.\n\n{exc}")
         return 1
@@ -1828,6 +2537,10 @@ def main() -> int:
                    help="IMU report rate to force during calibration")
     p.add_argument("--no-prompt", action="store_true",
                    help="skip the ENTER confirmation before each phase")
+    p.add_argument("--constrain-segments", action="store_true",
+                   help="force the foot and shank rotations to stay mutually "
+                        "consistent, using the Georgia Tech segment "
+                        "relationship recorded by an earlier passing run")
     args = p.parse_args()
     return {"fit": _cmd_fit, "build": _cmd_build, "bench": _cmd_bench,
             "calibrate": _cmd_calibrate}[args.command](args)

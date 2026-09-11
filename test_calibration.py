@@ -91,12 +91,15 @@ def _raw_from_joint(joint_deg):
 
 def build_static_phases(rot_foot, rot_shank):
     """Standing, the three holds, and the free sweep, in the synthetic exo frame."""
-    # Gravity as the real exo measures it, rotated the same way as everything else,
-    # so the 1 g check is meaningful and the frames stay self-consistent.
-    g_foot = np.array([10.888, -2.515, -1.132])
-    g_shank = np.array([9.321, 1.880, -1.462])
-    g_foot = rot_foot @ (g_foot / np.linalg.norm(g_foot) * 9.80665)
-    g_shank = rot_shank @ (g_shank / np.linalg.norm(g_shank) * 9.80665)
+    # Gravity is ONE physical direction, so both segments must see the same base
+    # vector rotated into their own frames. Giving each its own base vector would
+    # make the synthetic gyro and the synthetic gravity imply different values of
+    # R_foot<-shank, and the hip-swing analysis would be scored against data that
+    # contradicts itself.
+    g_base = np.array([10.888, -2.515, -1.132])
+    g_base = g_base / np.linalg.norm(g_base) * 9.80665
+    g_foot = rot_foot @ g_base
+    g_shank = rot_shank @ g_base
 
     # The ankle axis, expressed in the synthetic foot frame.
     axis = rot_foot @ np.array([0.018, -0.180, 0.984])
@@ -135,6 +138,20 @@ def build_static_phases(rot_foot, rot_shank):
     phases["sweep"] = _phase(m, g_foot + _noise((m, 3), 0.08, 41),
                              g_shank + _noise((m, 3), 0.05, 42),
                              gyro, _noise((m, 3), 0.02, 43), raw)
+
+    # Hip swing: the whole leg turns about one axis, so foot and shank share a
+    # single physical angular velocity. Expressed in their own frames that is
+    # R_foot @ w and R_shank @ w, which is exactly what the analysis must undo.
+    m = int(10 * FS)
+    t = np.arange(m) / FS
+    world_axis = np.array([0.0, 1.0, 0.0])          # medio-lateral in world terms
+    rate = np.radians(45.0) * 2 * np.pi * 0.5 * np.cos(2 * np.pi * 0.5 * t)
+    w_world = rate[:, None] * world_axis[None, :]
+    w_foot = w_world @ rot_foot.T + _noise((m, 3), 0.01, 60)
+    w_shank = w_world @ rot_shank.T + _noise((m, 3), 0.01, 61)
+    phases["hipswing"] = _phase(
+        m, g_foot + _noise((m, 3), 0.10, 62), g_shank + _noise((m, 3), 0.10, 63),
+        w_foot, w_shank, TRUE_ZERO + _noise(m, 0.2, 64))
     return phases
 
 
@@ -283,6 +300,20 @@ def main() -> int:
                f"{err:.3f} deg from injected (tol {ROTATION_TOL_DEG}, inter-trial "
                f"spread {result.metrics['walking']['rotation_spread_deg'][seg]:.2f})",
                failures)
+
+    # The hip swing must recover the relationship between the two injected exo
+    # frames: with the leg rigid, R_foot<-shank is exactly rot_foot @ rot_shank^T.
+    hip = result.metrics["hipswing"]
+    true_fs = rot_foot @ rot_shank.T
+    err = E.rotation_angle(np.array(hip["r_foot_from_shank"]), true_fs)
+    report("hip swing recovers R_foot<-shank", err <= 5.0,
+           f"{err:.3f} deg from the injected relationship (tol 5.0)", failures)
+    report("shank sagittal axis is measured",
+           hip["shank_sagittal_var_ratio"] >= 0.90,
+           f"axis explains {hip['shank_sagittal_var_ratio']:.1%} of shank swing "
+           f"variance", failures)
+    report("rigid-body fit is tight", hip["rigid_residual_fraction"] <= 0.05,
+           f"{hip['rigid_residual_fraction']:.2%} residual", failures)
 
     # ---------------- run 2: swapped holds ----------------
     print("\n" + "=" * 92)

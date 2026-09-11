@@ -1,13 +1,8 @@
-<<<<<<< Updated upstream
-__pycache__/
-*.pyc
-=======
-<<<<<<< HEAD
+	<<<<<<< HEAD
 *.pyc
 =======
 __pycache__/
 *.pyc
->>>>>>> Stashed changes
 
 # Downloaded Hugging Face dataset snapshots
 mrsd-exo-ankle/
@@ -17,7 +12,4 @@ training_data/
 
 # Test artefacts from test_calibration.py
 calibration/_test_output/
-<<<<<<< Updated upstream
-=======
 >>>>>>> origin/atirav
->>>>>>> Stashed changes

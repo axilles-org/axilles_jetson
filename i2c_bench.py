@@ -199,11 +199,12 @@ def main() -> int:
         try:
             from adafruit_bno08x import (BNO_REPORT_ACCELEROMETER,
                                          BNO_REPORT_GYROSCOPE)
-            from adafruit_bno08x.i2c import BNO08X_I2C
-            from adafruit_extended_bus import ExtI2C
 
-            i2c = ExtI2C(mod.I2C_BUS)
-            bno = BNO08X_I2C(i2c, address=mod.IMU_FOOT_ADDR)
+            # Taken off the loaded module, not re-imported: the package exports
+            # ExtendedI2C and data_collection.py aliases it to ExtI2C, so importing
+            # the alias name here fails.
+            i2c = mod.ExtI2C(mod.I2C_BUS)
+            bno = mod.BNO08X_I2C(i2c, address=mod.IMU_FOOT_ADDR)
             time.sleep(mod.BOOT_DELAY)
             interval = max(1000, int(1_000_000 / 200.0))
             for feat in (BNO_REPORT_ACCELEROMETER, BNO_REPORT_GYROSCOPE):

@@ -62,10 +62,12 @@ def measure(mod, address, features, max_packets, report_hz, seconds):
     Returns (calls_per_s, per_feature_hz, median_ms). per_feature_hz counts how often
     each report's VALUE actually changes, which is the rate the gait cycle sees.
     """
-    from adafruit_bno08x.i2c import BNO08X_I2C
-    from adafruit_extended_bus import ExtI2C
-
-    i2c = ExtI2C(mod.I2C_BUS)
+    # Reuse the classes data_collection.py already imported rather than importing
+    # them again here. The package exports ExtendedI2C, which that module aliases to
+    # ExtI2C; importing the alias name directly fails, and taking them off the loaded
+    # module means this can never drift from whatever actually works on the robot.
+    BNO08X_I2C = mod.BNO08X_I2C
+    i2c = mod.ExtI2C(mod.I2C_BUS)
     try:
         bno = BNO08X_I2C(i2c, address=address)
         time.sleep(mod.BOOT_DELAY)
@@ -167,6 +169,13 @@ def main() -> int:
         try:
             calls, per_f, med, detail = measure(mod, addr, feats, mp,
                                                 args.report_hz, args.seconds)
+        except (ImportError, AttributeError, NameError) as exc:
+            # A setup problem will fail identically for every configuration, so stop
+            # rather than printing the same error five times.
+            print(f"\n  Cannot open the IMU: {exc}")
+            print("  This is a setup problem, not a measurement result, so the")
+            print("  remaining configurations are skipped.")
+            return 1
         except Exception as exc:
             print(f"  {label:<36}   failed: {exc}")
             continue

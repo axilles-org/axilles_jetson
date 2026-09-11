@@ -906,56 +906,220 @@ def load_sensor_hub(imu_report_hz: float = 200.0, verbose: bool = True):
     return mod
 
 
+_SLEEP_MARGIN: Optional[float] = None
+
+
+def _sleep_margin() -> float:
+    """
+    How early to stop sleeping and start spinning, measured rather than assumed.
+
+    A short wait costs far more than it asks for on some platforms: on Windows an
+    Event.wait(1 ms) measures around 4 ms and time.sleep(1 ms) around 16 ms, while
+    Linux delivers close to the requested 1 ms. Sizing the spin window from the
+    machine's actual behaviour keeps the loop on rate everywhere, instead of hitting
+    target on the Jetson and silently running at a third of it elsewhere.
+
+    Measured once and cached; the result is clamped so a noisy measurement cannot
+    make the loop spin for an absurd fraction of every period.
+    """
+    global _SLEEP_MARGIN
+    if _SLEEP_MARGIN is None:
+        import threading
+        import time
+
+        ev = threading.Event()
+        worst = 0.0
+        for _ in range(12):
+            t = time.perf_counter()
+            ev.wait(0.001)
+            worst = max(worst, time.perf_counter() - t)
+        _SLEEP_MARGIN = float(min(0.020, max(0.0015, worst)))
+    return _SLEEP_MARGIN
+
+
 def record_phase(hub, seconds: float, fs: float = TARGET_HZ,
                  progress: bool = True) -> dict:
     """
-    Poll every sensor at `fs` for `seconds` and return raw arrays.
+    Record every sensor for `seconds` of wall-clock time and return raw arrays.
+
+    Two things this gets right that the obvious implementation does not.
+
+    The loop is bounded by elapsed TIME, not by sample count. Reading four I2C
+    devices takes however long it takes, and a fixed `for i in range(seconds * fs)`
+    silently runs long whenever the bus cannot keep up - a 10 s phase becoming 30 s,
+    with the countdown sailing past zero into negative numbers. Here the phase ends
+    when the clock says so and the arrays are truncated to whatever was actually
+    captured.
+
+    And the sensors are polled on background threads rather than serially in the
+    sampling loop, mirroring data_collection.py. Four blocking I2C transactions per
+    tick cannot fit in a 5 ms budget; with workers feeding a cache, the sampling loop
+    only has to copy the latest values.
 
     Ticks where an IMU has not yet produced a packet are left as NaN rather than
     back-filled, so the analysis can measure the true update rate instead of being
     fooled by held values.
     """
+    import threading
     import time
 
-    n = int(round(seconds * fs))
-    period = 1.0 / fs
+    period = 1.0 / fs if fs > 0 else 0.005
+    # Room for the target rate plus headroom, so a fast bus is never truncated.
+    n_max = int(round(seconds * fs * 1.2)) + 16
+
     out = {
-        "time": np.full(n, np.nan),
-        "foot_accel": np.full((n, 3), np.nan), "foot_gyro": np.full((n, 3), np.nan),
-        "shank_accel": np.full((n, 3), np.nan), "shank_gyro": np.full((n, 3), np.nan),
-        "encoder": np.full(n, np.nan),
-        "toe": np.full(n, np.nan), "heel": np.full(n, np.nan),
+        "time": np.full(n_max, np.nan),
+        "foot_accel": np.full((n_max, 3), np.nan),
+        "foot_gyro": np.full((n_max, 3), np.nan),
+        "shank_accel": np.full((n_max, 3), np.nan),
+        "shank_gyro": np.full((n_max, 3), np.nan),
+        "encoder": np.full(n_max, np.nan),
+        "toe": np.full(n_max, np.nan), "heel": np.full(n_max, np.nan),
     }
 
+    stop = threading.Event()
+    lock = threading.Lock()
+    cache = {"foot": None, "shank": None, "enc": None, "toe": None, "heel": None}
+
+    def worker(task):
+        # Same cadence discipline as data_collection._periodic_worker: wake often
+        # enough to stay fresh without spinning the CPU flat out.
+        next_t = time.perf_counter()
+        while not stop.is_set():
+            now = time.perf_counter()
+            if now < next_t:
+                stop.wait(timeout=min(0.001, next_t - now))
+                continue
+            try:
+                task()
+            except Exception:
+                # A dropped I2C read must not kill the phase; the sample simply
+                # keeps its previous cached value and the rate check will notice.
+                pass
+            next_t += period
+            if next_t <= now:
+                next_t = now + period
+
+    def read_foot():
+        pkt = hub.read_imu_foot()
+        if pkt is not None:
+            with lock:
+                cache["foot"] = pkt
+
+    def read_shank():
+        pkt = hub.read_imu_shank()
+        if pkt is not None:
+            with lock:
+                cache["shank"] = pkt
+
+    def read_aux():
+        enc = hub.read_encoder()["ankle_encoder_deg"]
+        fsr = hub.read_fsr()
+        with lock:
+            cache["enc"] = enc
+            cache["toe"] = fsr["toe_fsr_raw"]
+            cache["heel"] = fsr["heel_fsr_raw"]
+
+    threads = [threading.Thread(target=worker, args=(read_foot,), daemon=True),
+               threading.Thread(target=worker, args=(read_shank,), daemon=True),
+               threading.Thread(target=worker, args=(read_aux,), daemon=True)]
+    for t in threads:
+        t.start()
+
+    margin = _sleep_margin()
+
+    i = 0
     t0 = time.perf_counter()
     next_t = t0
-    for i in range(n):
-        now = time.perf_counter()
-        if now < next_t:
-            time.sleep(min(period, next_t - now))
-        out["time"][i] = time.perf_counter() - t0
+    next_print = t0
+    try:
+        while True:
+            now = time.perf_counter()
+            elapsed = now - t0
+            if elapsed >= seconds or i >= n_max:
+                break
+            remaining = next_t - now
+            if remaining > 0.0:
+                # Sleep while there is more margin than this machine's sleep can
+                # overshoot, then spin out the rest. See _sleep_margin.
+                if remaining > margin:
+                    stop.wait(timeout=remaining - margin)
+                    continue
+                while time.perf_counter() < next_t:
+                    pass
 
-        f = hub.read_imu_foot()
-        s = hub.read_imu_shank()
-        if f is not None:
-            out["foot_accel"][i] = np.asarray(f["accel"][:3], dtype=np.float64)
-            out["foot_gyro"][i] = np.asarray(f["gyro"][:3], dtype=np.float64)
-        if s is not None:
-            out["shank_accel"][i] = np.asarray(s["accel"][:3], dtype=np.float64)
-            out["shank_gyro"][i] = np.asarray(s["gyro"][:3], dtype=np.float64)
+            with lock:
+                f, s = cache["foot"], cache["shank"]
+                enc, toe, heel = cache["enc"], cache["toe"], cache["heel"]
 
-        out["encoder"][i] = hub.read_encoder()["ankle_encoder_deg"]
-        fsr = hub.read_fsr()
-        out["toe"][i] = fsr["toe_fsr_raw"]
-        out["heel"][i] = fsr["heel_fsr_raw"]
+            out["time"][i] = elapsed
+            if f is not None:
+                out["foot_accel"][i] = np.asarray(f["accel"][:3], dtype=np.float64)
+                out["foot_gyro"][i] = np.asarray(f["gyro"][:3], dtype=np.float64)
+            if s is not None:
+                out["shank_accel"][i] = np.asarray(s["accel"][:3], dtype=np.float64)
+                out["shank_gyro"][i] = np.asarray(s["gyro"][:3], dtype=np.float64)
+            if enc is not None:
+                out["encoder"][i] = enc
+            if toe is not None:
+                out["toe"][i] = toe
+            if heel is not None:
+                out["heel"][i] = heel
+            i += 1
 
-        next_t += period
-        if progress and fs > 0 and i % int(fs) == 0:
-            print(f"\r    {seconds - out['time'][i]:5.1f} s remaining ",
-                  end="", flush=True)
+            next_t += period
+            if next_t <= now:
+                # Behind schedule: reset rather than accumulate debt, or the loop
+                # would try to "catch up" forever and never sleep again.
+                next_t = now + period
+
+            # Throttled: at 200 Hz an unthrottled print is 200 lines a second, which
+            # floods the terminal and steals time from the sampling loop itself.
+            if progress and now >= next_print:
+                print(f"\r    {max(0.0, seconds - elapsed):5.1f} s remaining ",
+                      end="", flush=True)
+                next_print = now + 0.2
+    except KeyboardInterrupt:
+        stop.set()
+        for t in threads:
+            t.join(timeout=1.0)
+        raise
+    finally:
+        stop.set()
+        for t in threads:
+            t.join(timeout=1.0)
+
+    if i == 0:
+        raise RuntimeError(
+            f"Recorded no samples in {seconds:.0f} s. The sensor hub returned nothing "
+            "at all - check the I2C wiring and addresses before retrying."
+        )
+
+    for key in out:
+        out[key] = out[key][:i]
+
+    achieved = i / seconds if seconds > 0 else 0.0
     if progress:
-        print("\r    done.                      ")
+        print(f"\r    done: {i} samples in {seconds:.0f} s "
+              f"({achieved:.0f} Hz achieved, {fs:.0f} Hz target)")
+        if achieved < 0.8 * fs:
+            print(f"    NOTE: the sampling loop reached only {achieved:.0f} Hz. "
+                  f"The I2C bus is the limit, not the IMU report rate.")
     return out
+
+
+def _wait_for_enter(message: str) -> None:
+    """
+    Block until ENTER, tolerating a stdin that cannot be read.
+
+    If the calibration is launched with stdin redirected or closed, `input` raises
+    rather than blocking, and an unguarded prompt would abort the run between two
+    phases with the subject mid-pose.
+    """
+    try:
+        input(message)
+    except (EOFError, KeyboardInterrupt):
+        print(f"{message}  [stdin unavailable, continuing]")
 
 
 def prompt_phase(spec: PhaseSpec, interactive: bool = True) -> None:
@@ -967,7 +1131,7 @@ def prompt_phase(spec: PhaseSpec, interactive: bool = True) -> None:
     for line in spec.instruction.splitlines():
         print(f"    {line}")
     if interactive:
-        input("\n  Press ENTER when you are in position and ready...")
+        _wait_for_enter("\n  Press ENTER when you are in position and ready...")
     for k in (3, 2, 1):
         print(f"    starting in {k}...", end="\r", flush=True)
         time.sleep(1.0)
@@ -986,10 +1150,9 @@ def phase_complete(spec: PhaseSpec, index: int, total: int,
     """
     print(f"\n  -- {spec.title} complete ({index} of {total}) --")
     if interactive:
-        if index < total:
-            input("  Press ENTER when you are ready for the next phase...")
-        else:
-            input("  Press ENTER to analyse the recordings...")
+        _wait_for_enter("  Press ENTER when you are ready for the next phase..."
+                        if index < total else
+                        "  Press ENTER to analyse the recordings...")
 
 
 # ---------------- per-phase analysis ----------------
@@ -1505,28 +1668,35 @@ def analyse_walking(rec: dict, hf_root, reference_subject: str = "AB06",
 
 
 def _ffill_nan(a: np.ndarray) -> np.ndarray:
-    """Forward then backward fill NaN along axis 0, matching the logger's hold."""
-    a = np.array(a, dtype=np.float64, copy=True)
-    if a.ndim == 1:
-        a = a[:, None]
-        squeeze = True
-    else:
-        squeeze = False
-    for j in range(a.shape[1]):
-        col = a[:, j]
-        idx = np.where(np.isfinite(col))[0]
-        if len(idx) == 0:
-            col[:] = 0.0
-            continue
-        first = idx[0]
-        col[:first] = col[first]
-        last_good = first
-        for i in range(first, len(col)):
-            if np.isfinite(col[i]):
-                last_good = i
-            else:
-                col[i] = col[last_good]
-    return a[:, 0] if squeeze else a
+    """
+    Forward then backward fill NaN along axis 0, matching the logger's hold.
+
+    Vectorised via a running maximum over the indices of valid samples, because the
+    per-element Python version ran 200 Hz x 60 s x every column on the walking phase.
+    """
+    arr = np.array(a, dtype=np.float64, copy=True)
+    squeeze = arr.ndim == 1
+    if squeeze:
+        arr = arr[:, None]
+
+    n, m = arr.shape
+    if n == 0:
+        return arr[:, 0] if squeeze else arr
+
+    valid = np.isfinite(arr)
+    # Index of the most recent valid sample at or before each row, per column.
+    idx = np.where(valid, np.arange(n)[:, None], -1)
+    np.maximum.accumulate(idx, axis=0, out=idx)
+
+    # Leading NaN have no earlier sample, so they take the first valid one instead.
+    any_valid = valid.any(axis=0)
+    first = np.argmax(valid, axis=0)
+    idx = np.where(idx < 0, first[None, :], idx)
+
+    out = arr[idx, np.arange(m)[None, :]]
+    if not any_valid.all():
+        out[:, ~any_valid] = 0.0          # a channel that never reported at all
+    return out[:, 0] if squeeze else out
 
 
 # ---------------- orchestration ----------------
@@ -1564,6 +1734,9 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     if recorder is None:
         mod = load_sensor_hub(imu_report_hz)
         hub = mod.SensorHub()
+        # Measure the timer granularity now rather than inside the first
+        # phase, so it costs nothing once the subject is in position.
+        print(f"  Timer granularity : {_sleep_margin() * 1000:.1f} ms")
 
         def recorder(spec):
             prompt_phase(spec, interactive)

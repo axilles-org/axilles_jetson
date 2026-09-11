@@ -1108,6 +1108,157 @@ def record_phase(hub, seconds: float, fs: float = TARGET_HZ,
     return out
 
 
+def channel_health(rec: dict) -> dict:
+    """
+    Per-channel update rate and variability for one recording.
+
+    This exists because a sensor that has quietly stopped reporting looks exactly
+    like a sensor reading a perfectly steady value: the drivers in
+    data_collection.py swallow OSError and hand back the last good sample, so a dead
+    I2C read shows up as suspiciously clean data rather than as an error. An update
+    rate far below the sampling rate, or a standard deviation of exactly zero across
+    thousands of samples, is the signature.
+    """
+    t = rec["time"]
+    dur = float(t[-1] - t[0]) if len(t) > 1 else 0.0
+    out = {"duration_s": dur, "samples": int(len(t)),
+           "sample_hz": float(len(t) / dur) if dur > 0 else 0.0}
+
+    for name in ("foot_accel", "foot_gyro", "shank_accel", "shank_gyro",
+                 "encoder", "toe", "heel"):
+        v = np.asarray(rec[name], dtype=np.float64)
+        finite = np.isfinite(v).all(axis=1) if v.ndim == 2 else np.isfinite(v)
+        vv = v[finite]
+        if len(vv) < 2:
+            out[name] = {"update_hz": 0.0, "std": 0.0, "finite_fraction": 0.0}
+            continue
+        changed = (np.any(np.diff(vv, axis=0) != 0.0, axis=1) if vv.ndim == 2
+                   else (np.diff(vv) != 0.0))
+        out[name] = {
+            "update_hz": float(np.sum(changed) / dur) if dur > 0 else 0.0,
+            "std": float(np.mean(np.std(vv, axis=0)) if vv.ndim == 2 else np.std(vv)),
+            "finite_fraction": float(finite.mean()),
+        }
+    return out
+
+
+def plot_phase(rec: dict, title: str, path) -> bool:
+    """
+    Save a multi-panel plot of one recorded phase. Returns False if unavailable.
+
+    Uses the Agg backend so it works over SSH with no display; the file is written
+    for later inspection rather than shown.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except Exception:
+        return False
+
+    t = rec["time"]
+    health = channel_health(rec)
+
+    fig, ax = plt.subplots(5, 1, figsize=(13, 14), sharex=True)
+    fig.suptitle(f"{title}   ({health['samples']} samples, "
+                 f"{health['sample_hz']:.0f} Hz)", fontsize=13)
+
+    for row, (key, label) in enumerate((("foot_gyro", "Foot gyro (rad/s)"),
+                                        ("foot_accel", "Foot accel (m/s^2)"),
+                                        ("shank_gyro", "Shank gyro (rad/s)"),
+                                        ("shank_accel", "Shank accel (m/s^2)"))):
+        v = np.asarray(rec[key], dtype=np.float64)
+        for j, axis_name in enumerate("xyz"):
+            ax[row].plot(t, v[:, j], lw=0.8, label=axis_name)
+        hz = health[key]["update_hz"]
+        ax[row].set_ylabel(label)
+        ax[row].legend(loc="upper right", ncol=3, fontsize=8)
+        ax[row].grid(True, alpha=0.3)
+        ax[row].set_title(f"updates at {hz:.0f} Hz", fontsize=8, loc="left")
+
+    enc = np.asarray(rec["encoder"], dtype=np.float64)
+    ax[4].plot(t, enc, color="tab:orange", lw=1.0, label="encoder (deg)")
+    ax[4].set_ylabel("Encoder (deg)")
+    ax[4].grid(True, alpha=0.3)
+    h = health["encoder"]
+    ax[4].set_title(f"updates at {h['update_hz']:.1f} Hz, sd {h['std']:.4f} deg, "
+                    f"range {np.nanmax(enc) - np.nanmin(enc):.2f} deg",
+                    fontsize=8, loc="left")
+
+    fsr = ax[4].twinx()
+    fsr.plot(t, rec["toe"], color="tab:red", lw=0.7, alpha=0.6, label="toe FSR")
+    fsr.plot(t, rec["heel"], color="tab:green", lw=0.7, alpha=0.6, label="heel FSR")
+    fsr.set_ylabel("FSR (counts)")
+    lines = ax[4].get_lines() + fsr.get_lines()
+    ax[4].legend(lines, [l.get_label() for l in lines], loc="upper right", fontsize=8)
+    ax[4].set_xlabel("Time (s)")
+
+    fig.tight_layout(rect=[0, 0.01, 1, 0.98])
+    fig.savefig(path, dpi=110)
+    plt.close(fig)
+    return True
+
+
+def plot_sweep_diagnostic(sweep: dict, metrics: dict, path) -> bool:
+    """
+    Plot what the encoder-to-joint ratio regression actually saw.
+
+    The ratio comes from regressing encoder rate against the foot's sagittal angular
+    velocity. When that fit is poor the single R^2 number says nothing about why, so
+    this draws both rate traces against each other and as a scatter. A cloud with no
+    slope means the encoder and the IMU disagree about the motion; a tilted line with
+    scatter means they agree but one is noisy.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except Exception:
+        return False
+
+    t = sweep["time"]
+    ok = np.isfinite(sweep["encoder"]) & np.isfinite(sweep["foot_gyro"]).all(axis=1)
+    tt, enc = t[ok], sweep["encoder"][ok]
+    axis = np.asarray(metrics.get("foot_sagittal_axis", [0, 0, 1]), dtype=np.float64)
+    omega = np.degrees(sweep["foot_gyro"][ok] @ axis)
+    d_enc = np.gradient(enc, tt) if len(tt) > 2 else np.zeros_like(enc)
+
+    fig, ax = plt.subplots(3, 1, figsize=(13, 10))
+    fig.suptitle("Sweep diagnostic: encoder rate vs IMU sagittal rate", fontsize=13)
+
+    ax[0].plot(tt, enc, color="tab:orange", lw=1.0)
+    ax[0].set_ylabel("Encoder (deg)")
+    ax[0].grid(True, alpha=0.3)
+    ax[0].set_title(f"range {enc.max() - enc.min():.2f} deg", fontsize=8, loc="left")
+
+    ax[1].plot(tt, d_enc, lw=0.8, label="d(encoder)/dt")
+    ax[1].plot(tt, omega, lw=0.8, label="IMU rate about sagittal axis")
+    ax[1].set_ylabel("deg/s")
+    ax[1].set_xlabel("Time (s)")
+    ax[1].legend(loc="upper right", fontsize=8)
+    ax[1].grid(True, alpha=0.3)
+    ax[1].set_title("these two should trace the same shape", fontsize=8, loc="left")
+
+    ax[2].scatter(omega, d_enc, s=3, alpha=0.3)
+    r2 = metrics.get("encoder_rate_r2", float("nan"))
+    ratio = metrics.get("encoder_ratio", float("nan"))
+    if np.isfinite(ratio) and ratio != 0:
+        xs = np.linspace(omega.min(), omega.max(), 10)
+        ax[2].plot(xs, xs / (metrics.get("encoder_sign", 1) * ratio), "r-", lw=1.2,
+                   label=f"fit: ratio={ratio:.3f}")
+        ax[2].legend(loc="upper left", fontsize=8)
+    ax[2].set_xlabel("IMU sagittal rate (deg/s)")
+    ax[2].set_ylabel("d(encoder)/dt (deg/s)")
+    ax[2].grid(True, alpha=0.3)
+    ax[2].set_title(f"R^2 = {r2:.3f}  (a shapeless cloud means the encoder is not "
+                    f"tracking the ankle)", fontsize=8, loc="left")
+
+    fig.tight_layout(rect=[0, 0.01, 1, 0.97])
+    fig.savefig(path, dpi=110)
+    plt.close(fig)
+    return True
+
+
 def _wait_for_enter(message: str) -> None:
     """
     Block until ENTER, tolerating a stdin that cannot be read.
@@ -1329,6 +1480,12 @@ def analyse_sweep(neutral: dict, dorsi: dict, plantar: dict, sweep: dict,
         f"rate regression R^2 = {r2:.3f}, ratio = {ratio:.4f} joint deg per encoder "
         f"deg (need R^2 >= {SWEEP_MIN_R2})"))
     checks.append(Check(
+        "encoder moved during the sweep",
+        float(np.ptp(enc)) >= SWEEP_MIN_ROM_DEG * 0.5,
+        f"encoder spanned {float(np.ptp(enc)):.2f} deg across the sweep "
+        f"(need {SWEEP_MIN_ROM_DEG * 0.5:.1f}); a small span with a large IMU "
+        f"excursion means the magnet is not following the joint"))
+    checks.append(Check(
         "encoder ratio is physically plausible",
         bool(np.isfinite(ratio) and 0.2 <= ratio <= 5.0),
         f"ratio = {ratio:.4f}; a magnet mounted directly on the joint axis should be "
@@ -1345,6 +1502,59 @@ def analyse_sweep(neutral: dict, dorsi: dict, plantar: dict, sweep: dict,
             "foot_sagittal_axis": axis.tolist(),
             "foot_sagittal_var_ratio": float(var_ratio),
             "shank_mean_gyro": shank_speed}, checks
+
+
+def preflight_reference(hf_root, subject: str) -> list[str]:
+    """
+    Check the Georgia Tech reference is present and usable, BEFORE any recording.
+
+    This used to be discovered inside analyse_walking, which meant a missing dataset
+    surfaced only after the full 105 s protocol had been performed - and because the
+    exception escaped before the raw recordings were written, every one of those
+    seconds was lost. Nothing about this check needs the hardware, so it belongs at
+    the very start.
+    """
+    root = Path(hf_root)
+    if not root.exists():
+        raise FileNotFoundError(
+            f"Reference dataset not found at '{root.resolve()}'.\n"
+            f"The rotation fit needs the Georgia Tech parquet trials. Either copy the "
+            f"mrsd-exo-ankle folder next to exo_frame.py, or point at it with "
+            f"--hf-root /path/to/mrsd-exo-ankle."
+        )
+
+    subjects_dir = root / "subjects"
+    if not subjects_dir.is_dir():
+        raise FileNotFoundError(
+            f"'{root.resolve()}' exists but has no 'subjects/' directory, so it is not "
+            f"a mrsd-exo-ankle snapshot. Contents: "
+            f"{sorted(p.name for p in root.iterdir())[:8]}"
+        )
+
+    available = sorted(p.name for p in subjects_dir.iterdir() if p.is_dir())
+    if subject not in available:
+        raise FileNotFoundError(
+            f"Subject '{subject}' is not in '{subjects_dir.resolve()}'.\n"
+            f"Available: {available if available else '(none)'}\n"
+            f"Pick one with --reference-subject, or download {subject} into the "
+            f"snapshot."
+        )
+
+    trials = list_hf_trials(root, subject)
+    if not trials:
+        raise FileNotFoundError(
+            f"Subject '{subject}' has no *__imu.parquet trials in "
+            f"{(subjects_dir / subject).resolve()}. The download is incomplete."
+        )
+
+    missing = [f"{t}__{k}" for t in trials[:3] for k in ("imu", "id", "gon", "gcRight")
+               if not (subjects_dir / subject / f"{t}__{k}.parquet").exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"Subject '{subject}' is missing parquet files needed by the fit: "
+            f"{missing[:6]}. Re-download the snapshot."
+        )
+    return trials
 
 
 def two_direction_rotation(g_from: np.ndarray, w_from: np.ndarray,
@@ -1731,6 +1941,13 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     print("\n  Wear the exoskeleton on the RIGHT leg before starting.")
     print("  You will be told what to do and for how long before each phase.")
 
+    # Verified before a single second is recorded. Discovering a missing
+    # dataset after the protocol has been performed wastes the whole session.
+    ref_trials = preflight_reference(hf_root, reference_subject)
+    print(f"  Reference verified: {len(ref_trials)} trial(s) for {reference_subject}")
+
+    plot_dir = out_dir / f"plots_{stamp}"
+
     if recorder is None:
         mod = load_sensor_hub(imu_report_hz)
         hub = mod.SensorHub()
@@ -1754,12 +1971,41 @@ def run_calibration(hf_root="mrsd-exo-ankle",
         if hub is not None:
             hub.close()
 
+    # Written before anything is analysed. An analysis failure must never cost
+    # the recordings, which are the expensive part of the session.
+    raw_path = out_dir / f"raw_{stamp}.npz"
+    flat = {f"{k}__{f}": v for k, rec in recordings.items() for f, v in rec.items()}
+    np.savez_compressed(raw_path, **flat)
+    print("")
+    print(f"  raw recordings saved -> {raw_path}")
+
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    plotted = sum(plot_phase(recordings[s.key], f"{s.key.upper()}: {s.title}",
+                             plot_dir / f"{s.key}.png") for s in protocol)
+    print(f"  {plotted} phase plot(s) -> {plot_dir}/" if plotted
+          else "  (matplotlib unavailable, no plots written)")
+
+    print("")
+    print("=" * 72)
+    print("  CHANNEL HEALTH")
+    print("=" * 72)
+    print("  phase       samples   rate  footIMU shankIMU  encoder    enc sd")
+    health_all = {}
+    for spec in protocol:
+        h = channel_health(recordings[spec.key])
+        health_all[spec.key] = h
+        print(f"  {spec.key:<10}{h['samples']:>9}{h['sample_hz']:>6.0f}H"
+              f"{h['foot_gyro']['update_hz']:>8.0f}H"
+              f"{h['shank_gyro']['update_hz']:>8.0f}H"
+              f"{h['encoder']['update_hz']:>8.1f}H"
+              f"{h['encoder']['std']:>10.4f}")
+
     print("\n" + "=" * 72)
     print("  ANALYSING")
     print("=" * 72)
 
     checks: list = []
-    metrics: dict = {}
+    metrics: dict = {"health": health_all}
 
     stand_m, stand_c = analyse_standing(recordings["standing"])
     metrics["standing"] = stand_m
@@ -1779,6 +2025,13 @@ def run_calibration(hf_root="mrsd-exo-ankle",
           f"encoder deg (R^2 {sweep_m['encoder_rate_r2']:.3f})")
     print(f"  ankle ROM         : {sweep_m['dorsiflexion_rom_deg']:.1f} deg dorsi / "
           f"{sweep_m['plantarflexion_rom_deg']:.1f} deg plantar")
+
+    # Drawn whether or not the regression succeeded: when it fails, this plot is the
+    # fastest way to see whether the encoder and the IMU disagree about the motion or
+    # simply agree noisily.
+    if plot_sweep_diagnostic(recordings["sweep"], sweep_m,
+                             plot_dir / "sweep_diagnostic.png"):
+        print(f"  sweep diagnostic  -> {plot_dir / 'sweep_diagnostic.png'}")
 
     hip_m, hip_c = analyse_hipswing(recordings["standing"], recordings["hipswing"],
                                     stand_m["encoder_zero_deg"])
@@ -1873,15 +2126,10 @@ def run_calibration(hf_root="mrsd-exo-ankle",
     print(f"  {len(checks) - len(hard) - len(soft)} passed, {len(hard)} failed, "
           f"{len(soft)} warnings")
 
-    raw_path = out_dir / f"raw_{stamp}.npz"
-    flat = {f"{k}__{f}": v for k, rec in recordings.items() for f, v in rec.items()}
-    np.savez_compressed(raw_path, **flat)
-
     json_path = out_dir / f"calibration_{stamp}.json"
     json_path.write_text(json.dumps(result.to_json(), indent=2,
                                 default=_json_default), encoding="utf-8")
 
-    print(f"\n  raw recordings -> {raw_path}")
     print(f"  calibration    -> {json_path}")
 
     if hard:

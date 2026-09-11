@@ -50,13 +50,40 @@ Gravity is not optional there: a planar swing is rank-1 in gyro, leaving rotatio
 
 | File | Contents |
 |---|---|
-| `calibration_<stamp>.json` | Every measured quantity, every quality metric, and the pass/fail verdict per check |
 | `raw_<stamp>.npz` | Raw per-phase recordings, so a run can be re-analysed without re-walking |
+| `plots_<stamp>/<phase>.png` | One plot per phase: both IMUs' accel and gyro, the encoder, and both FSRs, each annotated with its measured update rate |
+| `plots_<stamp>/sweep_diagnostic.png` | What the encoder-ratio regression actually saw — both rate traces and their scatter |
+| `calibration_<stamp>.json` | Every measured quantity, every quality metric, and the pass/fail verdict per check |
 | `exo_transform_<stamp>.py` | Self-contained importable transform, numpy-only |
 
 The newest transform is also copied to `exo_transform_latest.py`. **A transform is
-written only if every critical check passes** — a failed run leaves the raw
-recordings and nothing else.
+written only if every critical check passes.**
+
+The raw recordings and the plots are written *before* any analysis runs, so an
+analysis failure never costs you the session. The reference dataset is likewise
+verified before the first phase, not after the last, for the same reason.
+
+## Reading the diagnostics
+
+Before the checks, the run prints a channel-health table:
+
+```
+  phase       samples   rate  footIMU shankIMU  encoder    enc sd
+  standing       2000   200H     200H     200H   200.0H    0.0490
+  sweep          2000   200H     200H     200H   170.0H    8.4865
+```
+
+`update_hz` counts how often a channel's value actually *changes*, which is not the
+same as the sampling rate. It matters because the drivers in `data_collection.py`
+swallow `OSError` and hand back the last good sample — so a dead I2C read looks like
+a perfectly steady reading rather than an error. An update rate far below the
+sampling rate, or a standard deviation of exactly zero across thousands of samples,
+is that failure showing itself.
+
+The sweep diagnostic is the one to open when `encoder tracks the IMU during sweeps`
+fails. A clean diagonal in the scatter means the encoder and IMU agree; a shapeless
+cloud means they disagree about the motion entirely, which points at the magnet
+rather than at the maths.
 
 ```python
 from calibration.exo_transform_latest import features, ingest_gt_trial

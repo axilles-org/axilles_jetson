@@ -767,3 +767,79 @@ def cluster_report(fits, mad_k=3.0):
                 angle_median=float(np.median(ang)),
                 angle_p90=float(np.percentile(ang, 90)),
                 dp_spread_mm=float(np.median(dpd) * 1000))
+
+
+# ---------------------------------------------------------------------------
+# phase alignment BEFORE fitting
+# ---------------------------------------------------------------------------
+#
+# Heel strike is detected differently on each side (GaTech: force plate;
+# exo: FSR threshold), so the two templates can be offset in phase. That
+# offset is a property of the EVENT DETECTION, so it must be the same for
+# every segment. Estimating it per segment inside the fit lets it absorb
+# orientation / gait mismatch instead (the -5% foot vs 0% shank symptom).
+#
+# |w| is invariant to the unknown rotation dR, so cross-correlating |w|
+# templates gives the phase offset without knowing dR at all.
+
+def circ_shift(X, s):
+    """
+    Fractional circular shift of a template, (n, ...) with the last row a
+    duplicate of the first (cycle_ensemble samples 0% and 100% inclusive).
+    Y[i] = X[i - s], matching np.roll's sign convention.
+    """
+    X = np.asarray(X, float)
+    shp = X.shape
+    n = shp[0] - 1
+    B = X[:n].reshape(n, -1)
+    idx = (np.arange(n) - s) % n
+    i0 = np.floor(idx).astype(int)
+    f = (idx - i0)[:, None]
+    Y = B[i0] * (1 - f) + B[(i0 + 1) % n] * f
+    Y = np.vstack([Y, Y[:1]])
+    return Y.reshape(shp)
+
+
+def _shifted_template(t, s):
+    u = object.__new__(Template)
+    u.__dict__.update(t.__dict__)
+    u.A, u.G, u.M = circ_shift(t.A, s), circ_shift(t.G, s), circ_shift(t.M, s)
+    u.A_sd, u.G_sd = circ_shift(t.A_sd, s), circ_shift(t.G_sd, s)
+    return u
+
+
+Template.shifted = _shifted_template
+
+
+def phase_offset(src_tpls, tgt_tpls, max_shift=10.0):
+    """
+    One phase offset (percent of gait cycle, fractional) shared by all
+    segments, from rotation-invariant |w| templates. Returns (shift, score)
+    where score is the normalised correlation at the optimum (1 = identical
+    shape). Apply with tgt.shifted(shift).
+    """
+    def prof(t):
+        m = np.linalg.norm(t.G[:-1], axis=1)
+        m = m - m.mean()
+        return m / (np.linalg.norm(m) + 1e-12)
+
+    segs = [s for s in src_tpls if s in tgt_tpls]
+    if not segs:
+        raise ValueError("no common segments for phase alignment")
+    P = [prof(src_tpls[s]) for s in segs]
+    Q = [prof(tgt_tpls[s]) for s in segs]
+    n = len(P[0])
+    k = int(np.ceil(max_shift))
+    lags = np.arange(-k, k + 1)
+    corr = np.array([np.mean([p @ np.roll(q, L) for p, q in zip(P, Q)])
+                     for L in lags])
+    i = int(np.argmax(corr))
+    s = float(lags[i])
+    if 0 < i < len(lags) - 1:                     # parabolic sub-percent refine
+        y0, y1, y2 = corr[i - 1], corr[i], corr[i + 1]
+        den = y0 - 2 * y1 + y2
+        if abs(den) > 1e-12:
+            s += 0.5 * (y0 - y2) / den
+    # templates are 100 points spanning one cycle, so one sample ~= 1 %;
+    # returned in template samples, which is what Template.shifted expects
+    return s, float(corr[i])

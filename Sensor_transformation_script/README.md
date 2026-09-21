@@ -31,7 +31,7 @@ are **not** handled by this code.
 ## 2. Quick start
 
 ```bash
-pip install numpy scipy pandas pyarrow matplotlib
+pip install numpy scipy pandas pyarrow matplotlib spm1d
 
 # 0. check the exo log is readable and what the columns map to
 python3 sniff.py data_collection_XXXX.csv
@@ -45,6 +45,14 @@ python3 run_alignment.py \
     --exo-log data_collection_XXXX.csv \
     --speed 0.85 1.10 \
     --out-root mrsd-exo-ankle-tx
+
+# 3. waveform comparison: before vs after, CMC / LFM / SPM + plots
+python3 compare_waveforms.py \
+    --gatech-root mrsd-exo-ankle \
+    --tx-root mrsd-exo-ankle-tx \
+    --exo-log data_collection_XXXX.csv \
+    --transforms transforms.json \
+    --out-dir comparison
 ```
 
 Add `--mirror` if the exo is on the **left** leg (GaTech IMUs are right-side).
@@ -61,6 +69,7 @@ Add `--drop-outliers` to exclude flagged subjects from the transformed dataset.
 | `run_alignment.py` | **Main entry point.** Multi-subject: fits one transform per GaTech subject against one exo log, prints the report, writes `transforms.json` and the transformed dataset. |
 | `align_core.py` | All the math. No file I/O. Frame helpers, stride templates, phase alignment, Kang-style joint fit, clustering, transform application. |
 | `align_io.py` | Loaders. Reads the HF Parquet layout and our exo CSVs into a common `Recording` (SI units, gyro bias removed, heel strikes as sample indices). Handles NaN gaps and held-sample interpolation. |
+| `compare_waveforms.py` | **Evaluation.** Waveform comparison of GaTech vs exo, before and after the transform: CMC, Linear Fit Method, SPM. Writes plots and `comparison_report.json`. See §7.1. |
 | `sniff.py` | Auto-maps exo log columns (time, foot/shank accel/gyro/quat, encoder, FSRs). Run standalone to inspect a log. |
 | `plot_log.py` | Diagnostic plot: raw vs interpolated gyro, the angular acceleration each produces, power spectrum with true Nyquist. Writes `log_check.png`. |
 | `test_multisubject.py` | End-to-end test on a fake 8-subject dataset with known mounts. Run after any code change. |
@@ -251,6 +260,40 @@ Same layout as the input. Per trial:
 | dp_perp spread | < 15 mm | > 25 mm | lever arm unstable |
 | `[dp at bound]` | absent | present | offset ran to ±30 cm; unreliable |
 
+### 7.1 Waveform comparison (`compare_waveforms.py`)
+
+Standard gait-biomechanics methods for comparing curves over the gait cycle.
+Reported per channel (ax ay az gx gy gz), before and after the transform.
+
+| Metric | Ideal | What it tells you |
+|---|---|---|
+| **CMC** (Kadaba 1989; Ferrari 2010) | 1.0 | Overall similarity. > 0.9 very good, 0.75–0.9 good, 0.6–0.75 moderate, < 0.6 poor. `nan` = offsets so large the formula breaks (poor). |
+| **a1** (Linear Fit Method, Iosa 2014) | 1.0 | **Scale** mismatch: speed, lever arm, sensor gain |
+| **a0** | 0 | **Offset** mismatch: gravity orientation, bias (same units as the channel) |
+| **R²** | 1.0 | **Shape** mismatch: genuinely different motion |
+| **SPM sig** (Pataky; `spm1d`) | 0 % | Share of the gait cycle where the difference is statistically significant |
+| **max Δ** | small | Largest difference inside the significant regions, as % of the channel's range. **Read this alongside SPM:** with consistent strides, even tiny differences become significant. Significant but under ~10 % is usually unimportant. |
+
+How to read it:
+- CMC and LFM compare each GaTech subject's mean stride with your mean stride,
+  summarised as the median across subjects.
+- SPM compares the subject-mean strides against your individual strides. With
+  one exo subject, a significant region means "this person on this exo differs
+  from the GaTech population here" — sensor placement, normal person-to-person
+  differences, and exo-induced gait change all contribute. It shows **where** to
+  look: mismatch at push-off points at the foot lever arm or foot flex; in swing,
+  more likely speed or cadence.
+- **Before** numbers are poor by construction: GaTech's X is not your X until
+  the transform is applied.
+- Channels that barely move during a stride are marked **low signal** and
+  skipped; CMC and LFM on a near-flat line are meaningless.
+
+Outputs: `comparison/comparison_<segment>.png` (mean ± SD strides, before/after
+vs exo, SPM regions shaded) and `comparison/comparison_report.json`.
+
+Synthetic test result (known geometry, small deliberate gait difference):
+CMC 0.53 → 1.00, R² 0.84 → 1.00, a1 ≈ 0.92–0.98, max Δ 56–129 % → 4–6 %.
+
 **Physical sanity check (do this with a ruler):**
 
 | Segment | Expected `dp_perp` | Preliminary result |
@@ -297,7 +340,10 @@ accuracy in particular degrades fast with gait differences (synthetic test:
    `scripts/prepare.py` / `scripts/train.py` at `mrsd-exo-ankle-tx` instead of
    `mrsd-exo-ankle`. Keep the same subject split. Note that the IMU files now hold
    only foot and shank columns; adjust `prepare.py` if it expects thigh or trunk.
-5. **Run the comparison that actually matters.** Train two models, identical except
+5. **Run `compare_waveforms.py`** and check CMC/R² rose, a1 is near 1, and any
+   SPM-significant regions have a small max Δ. Look at where the grey regions
+   sit in the plots.
+6. **Run the comparison that actually matters.** Train two models, identical except
    for the input data:
    - **A:** original GaTech data
    - **B:** transformed GaTech data
@@ -306,7 +352,7 @@ accuracy in particular degrades fast with gait differences (synthetic test:
    FSR heel strikes as labels, and torque RMSE (N·m/kg) where available.
    Kang et al. reported gait phase error falling from 11.4 % to 2.65 % with their
    transform. **If B clearly beats A, the method is validated.**
-6. **Add augmentation (optional, manual for now).** The writer uses point estimates.
+7. **Add augmentation (optional, manual for now).** The writer uses point estimates.
    To train over the measured uncertainty, perturb each subject's fit before
    transforming:
 
@@ -342,6 +388,7 @@ them is not.)
 | `dR scatter >10 deg` warning | gait mismatch | re-record at matched speed/cadence, exo off |
 | `[dp at bound]` | offset unconstrained | usually too few strides or low ODR |
 | `Unable to find a usable engine` | no Parquet library | `pip install pyarrow` |
+| SPM method shows `pointwise-bonferroni` | `spm1d` not installed | `pip install spm1d` (fallback is more conservative) |
 | Transform made things **worse** | sign, unit or left/right error | check units line; try `--mirror` |
 
 ---
@@ -372,6 +419,12 @@ them is not.)
   Enables Personalization of Exoskeleton Assistance During Locomotion in Patients
   Affected by Stroke.* IEEE T-RO 41:4941–4959, 2025. Sec. V: the joint six-parameter
   IMU transform this pipeline's fitting step follows. Corresponding author at CMU MechE.
+- Ferrari et al. 2010, *Gait & Posture* 31:540–542 (CMC for comparing gait
+  waveforms); Kadaba et al. 1989, *J. Orthop. Res.* 7:849–860 (original CMC).
+- Iosa et al. 2014, *Computational and Mathematical Methods in Medicine* (Linear
+  Fit Method).
+- Pataky 2012, *Computer Methods in Biomechanics and Biomedical Engineering*
+  (Statistical Parametric Mapping, spm1d).
 - Camargo, Ramanathan, Flanagan, Young. *A comprehensive, open-source dataset of lower
   limb biomechanics…* J. Biomech. 119:110320, 2021. Source dataset.
 - Scherpereel et al. *Deep domain adaptation eliminates costly data required for

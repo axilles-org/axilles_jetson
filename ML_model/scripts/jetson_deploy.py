@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import json
 import signal
 import sys
 import time
@@ -24,53 +23,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from exo.config import Config, replace
+from exo.deploy.dashboard_info import build_model_info
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
 from exo.deploy.motor import MIT_T_MAX, MotorInterface
 from exo.deploy.runtime import ExoController
 
-from dashboard.backend.run_logger import RunLogger, ModelInfo
-
-
-def _build_model_info(run_dir: Path, cfg: Config) -> ModelInfo:
-    """
-    Assemble ModelInfo from whatever this checkpoint directory actually has.
-    Older checkpoints (like tcn_mid_stance_lastN_20260831_212705) predate
-    wandb_run.json, so that part is best-effort — everything else
-    (architecture, feature set, offline test metrics) always exists because
-    ExoController itself depends on deploy_metadata.json being present.
-    """
-    def _load_json(name: str) -> dict:
-        p = run_dir / name
-        if p.exists():
-            return json.loads(p.read_text())
-        return {}
-
-    model_meta = _load_json("model_meta.json")
-    deploy_meta = _load_json("deploy_metadata.json")
-    test_metrics = _load_json("test_metrics.json")
-    wandb_run = _load_json("wandb_run.json")
-
-    architecture = {
-        **model_meta.get("model", {}),
-        "feature_names": model_meta.get("feature_names"),
-        "num_features": model_meta.get("num_features"),
-        "window_length": model_meta.get("window_length"),
-        "num_training_subjects": model_meta.get("num_training_subjects"),
-        "backend": cfg.deploy.backend,
-        "control_rate_hz": deploy_meta.get("control_rate_hz"),
-        "assistance_scale": cfg.deploy.assistance_scale,
-        "test_rmse_nm_per_kg": test_metrics.get("rmse_nm_per_kg"),
-        "test_mae_nm_per_kg": test_metrics.get("mae_nm_per_kg"),
-    }
-
-    return ModelInfo(
-        name=run_dir.name,
-        wandb_run_url=wandb_run.get("run_url"),
-        wandb_run_id=wandb_run.get("run_id"),
-        wandb_project=wandb_run.get("project"),
-        architecture=architecture,
-        checkpoint_ref=str(run_dir),
-    )
+from dashboard.backend.run_logger import RunLogger
 
 _STOP = False
 
@@ -147,7 +105,7 @@ def main() -> None:
             "dry_run": bool(args.dry_run),
             "replay_source": args.replay,
         },
-        model_info=_build_model_info(run_dir, cfg),
+        model_info=build_model_info(run_dir, cfg),
     )
     run_logger.start()
     print(f"Run ID: {run_logger.run_id}")

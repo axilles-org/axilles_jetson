@@ -71,6 +71,16 @@ export default function LaunchPage() {
 
   async function handleLaunch() {
     setError(null);
+    if (isMl && !replayFile) {
+      const proceed = confirm(
+        "No replay CSV selected — this will try to read live sensors " +
+          "(BNO085 IMUs, AS5600 encoder, FSR over I2C), which only exist on " +
+          "the Jetson itself and will fail immediately on a dev machine.\n\n" +
+          "Pick a bundled sample or drop a CSV first, unless you're running " +
+          "this on the Jetson with hardware attached.\n\nLaunch anyway?"
+      );
+      if (!proceed) return;
+    }
     try {
       const controller = !isMl ? "tbe" : mode === "mock" ? "ml-mock" : "ml-dry-run";
       const body = {

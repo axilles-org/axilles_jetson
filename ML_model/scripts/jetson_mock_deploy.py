@@ -32,10 +32,16 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+# repo root (two levels up from ML_model/scripts) so dashboard/ is importable,
+# same pattern used by TBE_controller/main.py and jetson_deploy.py.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from exo.config import Config, replace
+from exo.deploy.dashboard_info import build_model_info
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
 from exo.deploy.runtime import ExoController
+
+from dashboard.backend.run_logger import RunLogger
 
 
 def main() -> None:
@@ -63,6 +69,23 @@ def main() -> None:
 
     controller = ExoController(run_dir, cfg.deploy, subject_mass_kg=args.mass)
     controller.reset()
+
+    # Trial tracking, same as jetson_deploy.py: mock runs get recorded and
+    # streamed live too, not just powered ones — this is the no-torque,
+    # no-CAN-bus validation path, and it's useful to see it in the
+    # dashboard's history alongside everything else.
+    run_logger = RunLogger(
+        meta={
+            "controller": "ML_control (TCN) — mock, no torque path",
+            "run_dir": str(run_dir),
+            "subject_mass_kg": args.mass,
+            "control_rate_hz": rate,
+            "replay_source": args.replay,
+        },
+        model_info=build_model_info(run_dir, cfg),
+    )
+    run_logger.start()
+    print(f"Run ID: {run_logger.run_id}")
 
     if args.replay:
         sensors = ReplaySensors(args.replay, rate)
@@ -94,12 +117,14 @@ def main() -> None:
             pred_kg = out["predicted_nm_per_kg"]
             pred_nm = pred_kg * args.mass
 
-            writer.writerow({
+            row = {
                 "t_s": round(t_now, 4), **{k: round(raw[k], 5) for k in FRAME_KEYS},
                 "predicted_nm_per_kg": round(pred_kg, 5), "predicted_nm": round(pred_nm, 4),
                 "would_command_nm": round(out["command_nm"], 4),
                 "stance": int(out["stance"]), "ramp": round(out["ramp"], 3),
-                "buffer_ready": int(out["buffer_ready"])})
+                "buffer_ready": int(out["buffer_ready"])}
+            writer.writerow(row)
+            run_logger.log_sample(t=loop_start, **row)
 
             t_ms = int(time.time() * 1000)
             tp.send("ml_pred_nm_per_kg,ML", pred_kg, t_ms)
@@ -124,6 +149,12 @@ def main() -> None:
 
     except KeyboardInterrupt:
         print("\ninterrupted")
+        run_logger.stop(status="completed")
+    except Exception:
+        run_logger.stop(status="crashed")
+        raise
+    else:
+        run_logger.stop(status="completed")
     finally:
         csv_file.close()
         sensors.shutdown()

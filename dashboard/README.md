@@ -102,8 +102,11 @@ modes it's able to build are:
   script at all; torque transmission isn't in the code path.
 - `ml-dry-run` → `jetson_deploy.py --dry-run` (never `--arm`) — exercises
   the full command path (ramp, clamp, MIT packing) through `MotorInterface`
-  with `dry_run=True`, so nothing reaches a CAN bus, but the run gets the
-  full `ModelInfo`/telemetry wiring that only `jetson_deploy.py` has.
+  with `dry_run=True`, so nothing reaches a CAN bus.
+
+Both are fully wired to `RunLogger`/`ModelInfo` (via
+`ML_model/src/exo/deploy/dashboard_info.py`, shared by both scripts), so
+either mode shows up live on the Live page and in the Runs history.
 
 A **powered** (`--arm`) run stays CLI-only, same as before this dashboard
 existed — see `ML_model/docs/DEPLOYMENT.md` for that progression and its
@@ -119,10 +122,7 @@ land within a few seconds.
 
 ## Known gaps
 
-- `ML_model/src/exo/data/` isn't committed on this branch (or on
-  `ML_control`/`main`) — without it, `ExoController` can't import and
-  neither deploy script will run. Worth fixing at the source; in the
-  meantime, copy it in from wherever your team's local checkout has it.
-- `jetson_mock_deploy.py` has no `RunLogger` wiring, so mock runs show up
-  live in the Launch console but not in the Runs history or the Live page —
-  use `ml-dry-run` mode instead if you want a run recorded.
+- `ML_model/src/exo/data/` wasn't committed anywhere in this repo's history
+  (`ML_control`, `main`, or this branch) until this branch's dashboard work
+  added it — pulled from a teammate's local checkout. Still worth confirming
+  it's not similarly missing on any other branch you're working from.

@@ -186,11 +186,11 @@ def build_argv(
 
         # ml-mock: jetson_mock_deploy.py has no --arm flag at all — torque
         # transmission is structurally impossible, not just unrequested.
-        # ml-dry-run: jetson_deploy.py --dry-run (no --arm) — same guarantee
-        # (MotorInterface stays dry_run, --arm is never passed by this
-        # function), but also exercises the full RunLogger/ModelInfo wiring
-        # (architecture, test metrics, W&B link) that only jetson_deploy.py
-        # populates.
+        # It never touches MotorInterface/the CAN bus (no motor code path
+        # exists in this script), whereas ml-dry-run exercises the full
+        # command path (ramp, clamp, MIT packing) with dry_run=True. Both
+        # are fully wired to RunLogger/ModelInfo, so either shows up live
+        # and in history.
         script = "scripts/jetson_mock_deploy.py" if controller == "ml-mock" else "scripts/jetson_deploy.py"
         argv = [
             "python3",

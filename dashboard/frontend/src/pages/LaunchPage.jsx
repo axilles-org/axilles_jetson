@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import DropZone from "../components/DropZone.jsx";
 import {
   listModels,
+  listSamples,
   uploadReplayCsv,
   launchJob,
   stopJob,
@@ -10,8 +11,14 @@ import {
 
 const POLL_MS = 1000;
 
+function fmtSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  return `${(bytes / 1024).toFixed(0)} KB`;
+}
+
 export default function LaunchPage() {
   const [models, setModels] = useState([]);
+  const [samples, setSamples] = useState([]);
   const [selectedModelId, setSelectedModelId] = useState("tbe");
   const [mode, setMode] = useState("mock"); // mock | dry-run (armed is never offered here)
   const [mass, setMass] = useState(72);
@@ -26,6 +33,7 @@ export default function LaunchPage() {
 
   useEffect(() => {
     listModels().then(setModels);
+    listSamples().then(setSamples);
     getJobStatus().then(setJob);
   }, []);
 
@@ -213,12 +221,35 @@ export default function LaunchPage() {
           {isMl && (
             <>
               <h3 style={{ marginTop: 16 }}>Replay CSV (optional)</h3>
+
+              {samples.length > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                  <select
+                    value={replayFile?.isSample ? replayFile.path : ""}
+                    onChange={(e) => {
+                      const s = samples.find((x) => x.path === e.target.value);
+                      if (s) setReplayFile({ path: s.path, filename: s.filename, isSample: true });
+                    }}
+                    disabled={isRunning}
+                    style={{ width: "100%", padding: 6, marginBottom: 6 }}
+                  >
+                    <option value="">Use a bundled sample...</option>
+                    {samples.map((s) => (
+                      <option key={s.path} value={s.path}>
+                        {s.filename} ({fmtSize(s.size_bytes)})
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ fontSize: 12, color: "var(--text-dim)" }}>or drop your own below</div>
+                </div>
+              )}
+
               <DropZone
                 accept=".csv"
                 label={
                   uploading
                     ? "Uploading..."
-                    : replayFile
+                    : replayFile && !replayFile.isSample
                     ? `${replayFile.filename} (uploaded)`
                     : "Drop a data_collection_*.csv here, or use live sensors if omitted"
                 }
@@ -227,7 +258,7 @@ export default function LaunchPage() {
               />
               {replayFile && !isRunning && (
                 <button style={{ marginTop: 8 }} onClick={() => setReplayFile(null)}>
-                  Clear
+                  Clear ({replayFile.filename})
                 </button>
               )}
             </>

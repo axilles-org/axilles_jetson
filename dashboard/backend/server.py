@@ -34,6 +34,7 @@ DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
 DB_PATH = DATA_ROOT / "runs.db"
 UPLOADS_ROOT = DATA_ROOT / "uploads"
+SAMPLE_DATA_ROOT = Path(__file__).resolve().parent / "sample_data"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ML_MODEL_RUNS = REPO_ROOT / "ML_model" / "runs"
@@ -409,10 +410,22 @@ def list_models() -> list[dict[str, Any]]:
             if (run_dir / "best.engine").exists():
                 backends.append("trt")
 
+            # Optional one-line friendly name, e.g. "Ankle Assist v1" — falls
+            # back to the raw checkpoint folder name (a training timestamp
+            # stamp) if a team hasn't set one. Add/edit it any time with:
+            #   echo "My Model Name" > ML_model/runs/<checkpoint>/display_name.txt
+            display_name_path = run_dir / "display_name.txt"
+            display_name = (
+                display_name_path.read_text().strip()
+                if display_name_path.exists()
+                else run_dir.name
+            )
+
             models.append({
                 "id": run_dir.name,
                 "controller": "ml",
-                "name": run_dir.name,
+                "name": display_name,
+                "checkpoint_id": run_dir.name,
                 "kind": "tcn",
                 "run_dir": str(run_dir.relative_to(REPO_ROOT / "ML_model")),
                 "backends": backends,
@@ -422,6 +435,24 @@ def list_models() -> list[dict[str, Any]]:
             })
 
     return models
+
+
+# ---------------------------------------------------------------------- #
+# Sample replay CSVs bundled with the dashboard (dashboard/backend/sample_data/)
+# ---------------------------------------------------------------------- #
+
+@app.get("/api/samples")
+def list_samples() -> list[dict[str, Any]]:
+    if not SAMPLE_DATA_ROOT.exists():
+        return []
+    out = []
+    for p in sorted(SAMPLE_DATA_ROOT.glob("*.csv")):
+        out.append({
+            "filename": p.name,
+            "path": str(p),
+            "size_bytes": p.stat().st_size,
+        })
+    return out
 
 
 # ---------------------------------------------------------------------- #

@@ -26,13 +26,14 @@ dashboard/backend  (FastAPI)
   /api/runs/{id}/diff/{id}                          architecture/config diff between two runs
   /api/runs/{id}/export, /api/runs/import           zip a run for another machine, or pull one in
   /api/models                                        checkpoints under ML_model/runs/ + TBE
+  /api/samples                                        bundled sample CSVs (dashboard/backend/sample_data/)
   /api/uploads/replay                                drag-and-drop a data_collection_*.csv
   /api/launch, /api/launch/status, /api/launch/stop  start/stop/poll a controller subprocess
   /ws/live                                            live sample stream, fanned out to all connected browsers
 
 dashboard/frontend  (React + Vite + uPlot)
   Live    real-time charts for whichever run is currently streaming
-  Launch  pick a model, optionally drop a replay CSV, start/stop, watch the console
+  Launch  pick a model, optionally pick a bundled sample or drop your own replay CSV, start/stop, watch the console
   Runs    history table (filter/search), compare two runs' architecture, import/export
 ```
 
@@ -83,6 +84,13 @@ Every run's metadata also carries a `ModelInfo`:
 `meta` key-by-key — use it to see exactly what changed between two trials
 (e.g. `assistance_scale: 0.1 → 0.15`) without opening either checkpoint by
 hand.
+
+**Model display names**: `/api/models` shows a checkpoint's raw folder name
+(a training timestamp, e.g. `tcn_mid_stance_lastN_20260831_212705`) unless
+that checkpoint has a `display_name.txt`. Give it a real name with:
+```bash
+echo "Ankle Assist TCN v1" > ML_model/runs/<checkpoint>/display_name.txt
+```
 
 ## Safety
 

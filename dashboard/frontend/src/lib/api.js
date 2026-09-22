@@ -42,6 +42,11 @@ export async function listModels() {
   return res.json();
 }
 
+export async function listSamples() {
+  const res = await fetch(`${API_BASE}/samples`);
+  return res.json();
+}
+
 export async function uploadReplayCsv(file) {
   const form = new FormData();
   form.append("file", file);

@@ -13,7 +13,7 @@ Published streams:
     - Encoder angle (own plot)
 
 Run:
-    python3 BNO085/live_all_sensor_plot.py
+    python3 Sensor_Tests/live_all_sensor_plot.py
     Teleplot: UDP 127.0.0.1:47269
 
 Open VS Code Teleplot extension and listen on UDP 127.0.0.1:47269.

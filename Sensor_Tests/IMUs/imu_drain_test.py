@@ -46,9 +46,10 @@ TARGET_HZ = 100.0        # what the gait cycle needs per feature
 
 
 def load_dc():
-    path = Path("Data collection") / "data_collection.py"
+    repo_root = Path(__file__).resolve().parents[2]
+    path = repo_root / "Data collection" / "data_collection.py"
     if not path.exists():
-        raise FileNotFoundError(f"Cannot find {path}. Run from the repository root.")
+        raise FileNotFoundError(f"Cannot find {path}.")
     spec = importlib.util.spec_from_file_location("_dc", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

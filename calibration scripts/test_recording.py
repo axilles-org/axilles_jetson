@@ -11,8 +11,15 @@ These exist because the first version of record_phase ran a fixed SAMPLE COUNT
 instead of a wall-clock duration, so when the bus could not keep up a 10 s phase
 silently ran 30 s and the countdown went negative.
 """
+import sys
+from pathlib import Path
+
 import time
 import numpy as np
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
 import exo_frame as E
 
 fails = []

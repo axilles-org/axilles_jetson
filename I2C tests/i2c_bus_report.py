@@ -35,7 +35,7 @@ Four questions, four sections, in order:
      400 kHz bus is healthy; ~98 kHz would mean the bus is really at 100 kHz.
 
   3. HOW FAST THE DATA COMES FROM THE FULL SYSTEM
-     Measured by running the real reader — BNO085/sensor_parse.py's SensorHub,
+     Measured by running the real reader — Sensor_Tests/sensor_parse.py's SensorHub,
      unmodified — for a fixed wall-clock window.  These are the rates every
      other script in the repo gets.
 
@@ -299,8 +299,8 @@ def _report_ids(sp) -> dict:
 
 
 def _load_sensor_parse():
-    """Import BNO085/sensor_parse.py and hand back the module."""
-    sys.path.insert(0, str(Path(__file__).resolve().parent / "BNO085"))
+    """Import Sensor_Tests/sensor_parse.py and hand back the module."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "Sensor_Tests"))
     import sensor_parse                       # noqa: E402  (path set above)
     return sensor_parse
 
@@ -811,7 +811,7 @@ def main():
         sp  = _load_sensor_parse()
         res = measure_sensor_hub(args.bus, args.duration)
     except ImportError as exc:
-        print(f"  Cannot import SensorHub from BNO085/sensor_parse.py: {exc}")
+        print(f"  Cannot import SensorHub from Sensor_Tests/sensor_parse.py: {exc}")
         return
     except KeyboardInterrupt:
         print("  Aborted during sensor init.")

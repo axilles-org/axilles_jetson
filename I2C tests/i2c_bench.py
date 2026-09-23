@@ -133,9 +133,9 @@ def main() -> int:
 
     # Import the hub the same way the calibration does.
     import importlib.util
-    path = Path("Data collection") / "data_collection.py"
+    path = Path(__file__).resolve().parent.parent / "Data collection" / "data_collection.py"
     if not path.exists():
-        print(f"\nCannot find {path}. Run from the repository root.")
+        print(f"\nCannot find {path}.")
         return 1
     spec = importlib.util.spec_from_file_location("_dc", path)
     mod = importlib.util.module_from_spec(spec)

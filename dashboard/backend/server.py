@@ -178,15 +178,30 @@ def get_run(run_id: str) -> dict[str, Any]:
         conn.close()
 
 
+_ABSENT = object()  # sentinel distinct from a real None/null value in the config
+
+
 def _diff_dict(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
-    """Flat key-level diff between two (usually small, hyperparameter-shaped)
-    dicts. Returns only keys that differ or exist on one side only."""
+    """
+    Flat key-level diff between two (usually small, hyperparameter-shaped)
+    dicts. Returns only keys that differ or exist on one side only — which
+    legitimately happens between controller modes, e.g. jetson_mock_deploy.py
+    runs have no assistance_scale/torque_cap_nm/armed at all, since mock
+    mode doesn't compute or apply those. A key present on one side and
+    absent on the other is reported as such (`null`, via the frontend's
+    "not recorded" label), not treated as a real value difference.
+    """
     keys = set(a.keys()) | set(b.keys())
     changes = {}
     for k in sorted(keys):
-        va, vb = a.get(k, "<missing>"), b.get(k, "<missing>")
+        va, vb = a.get(k, _ABSENT), b.get(k, _ABSENT)
         if va != vb:
-            changes[k] = {"a": va, "b": vb}
+            changes[k] = {
+                "a": None if va is _ABSENT else va,
+                "b": None if vb is _ABSENT else vb,
+                "a_present": va is not _ABSENT,
+                "b_present": vb is not _ABSENT,
+            }
     return changes
 
 

@@ -1,5 +1,12 @@
 import React from "react";
 
+function Cell({ value, present, color }) {
+  if (!present) {
+    return <span style={{ color: "var(--text-dim)", fontStyle: "italic" }}>not recorded</span>;
+  }
+  return <span style={{ color }}>{JSON.stringify(value)}</span>;
+}
+
 function DiffTable({ title, diff }) {
   const keys = Object.keys(diff);
   if (keys.length === 0) {
@@ -25,8 +32,12 @@ function DiffTable({ title, diff }) {
           {keys.map((k) => (
             <tr key={k}>
               <td>{k}</td>
-              <td style={{ color: "var(--warn)" }}>{JSON.stringify(diff[k].a)}</td>
-              <td style={{ color: "var(--good)" }}>{JSON.stringify(diff[k].b)}</td>
+              <td>
+                <Cell value={diff[k].a} present={diff[k].a_present} color="var(--warn)" />
+              </td>
+              <td>
+                <Cell value={diff[k].b} present={diff[k].b_present} color="var(--good)" />
+              </td>
             </tr>
           ))}
         </tbody>

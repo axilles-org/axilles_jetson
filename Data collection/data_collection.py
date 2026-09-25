@@ -16,6 +16,7 @@ Run:
 from __future__ import annotations
 
 import csv
+import os
 import signal
 import threading
 import time
@@ -78,6 +79,11 @@ AUTO_STOP_SECONDS = 10.0
 
 # Optional diagnostics; disable to minimize runtime overhead.
 DIAGNOSTIC_METRICS = False
+
+# How often the CSV is pushed to disk (seconds). A crash or power cut loses at
+# most about this much data. The fsync runs in a background thread so it never
+# delays the logging loop.
+FLUSH_INTERVAL_S = 1.0
 # ==============================================================
 
 
@@ -394,6 +400,15 @@ def _periodic_worker(stop_event: threading.Event, period_s: float, task) -> None
             next_t = now + period_s
 
 
+def _fsync_worker(stop_event: threading.Event, f) -> None:
+    # os.fsync can block for several ms on the Jetson's storage, so keep it off the logging loop.
+    while not stop_event.wait(timeout=FLUSH_INTERVAL_S):
+        try:
+            os.fsync(f.fileno())
+        except (OSError, ValueError):
+            return
+
+
 def main() -> None:
     mode = "quat"
 
@@ -514,6 +529,11 @@ def main() -> None:
 
         rows_written = 0
 
+        # Periodically push rows to disk so a crash or power cut loses at most ~FLUSH_INTERVAL_S
+        last_flush_t = t0
+        fsync_thread = threading.Thread(target=_fsync_worker, args=(stop_event, f), daemon=True)
+        fsync_thread.start()
+
         try:
             while not stop_requested:
                 now = time.perf_counter()
@@ -537,6 +557,9 @@ def main() -> None:
                 row[timestamp_idx] = now - t0
                 writer.writerow(row)
                 rows_written += 1
+                if now - last_flush_t >= FLUSH_INTERVAL_S:
+                    f.flush()
+                    last_flush_t = now
                 imu_foot_parses += 1
                 imu_shank_parses += 1
                 enc_parses += 1
@@ -550,6 +573,9 @@ def main() -> None:
             stop_event.set()
             for worker in workers:
                 worker.join(timeout=1.0)
+            fsync_thread.join(timeout=1.0)
+            f.flush()
+            os.fsync(f.fileno())
 
         elapsed_s = max(0.0, time.perf_counter() - t0)
 

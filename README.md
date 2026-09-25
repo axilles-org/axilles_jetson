@@ -34,6 +34,69 @@ machine-learning code for the Axilles exoskeleton project.
   extraction utilities.
 - `requirements.txt` - Python dependencies for the repository.
 
+## Data backup to Hugging Face
+
+Recorded sensor data is saved on the Jetson first and backed up to the
+Hugging Face dataset
+[Amilyl/MRSD_Axilles_exo](https://huggingface.co/datasets/Amilyl/MRSD_Axilles_exo)
+by a separate uploader, `Data collection/hf_backup.py`. The local files are the
+main copy: if WiFi drops, nothing is lost and the uploader catches up once the
+network is back.
+
+### One-time setup (on the Jetson)
+
+```bash
+pip install huggingface_hub
+hf auth login        # paste a WRITE token from huggingface.co/settings/tokens
+```
+
+### During a test session
+
+Run the uploader in its own terminal and leave it running, with or without WiFi:
+
+```bash
+# Terminal 1: backup
+python3 "Data collection/hf_backup.py"
+
+# Terminal 2: record as usual
+python3 "Data collection/data_collection.py"
+python3 exo_frame.py calibrate
+```
+
+What gets backed up (same paths on Hugging Face):
+
+| Local folder | Written by |
+|---|---|
+| `Data collection/data/` | `data_collection.py` (`data_collection_<date>_<time>.csv`) |
+| `calibration/` | `exo_frame.py calibrate` (raw recordings, plots, `calibration_*.json`) |
+
+- A file is uploaded once it has not changed for 30 s, so a recording is never
+  uploaded halfway through. New files appear on Hugging Face within about
+  1–2 minutes after a recording ends.
+- `data_collection.py` pushes its CSV to disk every second, so a crash or
+  power cut loses at most about one second of data.
+- Code files (`.py`) and `calibration/_test_output/` are not uploaded.
+
+### Uploader commands
+
+| Command | What it does |
+|---|---|
+| `python3 "Data collection/hf_backup.py"` | keep uploading new data every 60 s |
+| `python3 "Data collection/hf_backup.py" --once` | upload once and exit (e.g. after testing without WiFi) |
+| `python3 "Data collection/hf_backup.py" --dry-run` | list what has not been uploaded yet, upload nothing |
+| `... --dir <folder>` | back up a different folder (repeatable) |
+| `... --repo-id <user>/<dataset>` | upload to a different dataset (or set `HF_REPO_ID`) |
+
+### Notes
+
+- The dataset is **public**: everything uploaded is visible to anyone. Use
+  subject codes, never real names, in file names.
+- `Data collection/.hf_uploaded.json` records what has been uploaded (ignored by
+  git). If it is deleted, everything is uploaded again (harmless, but slower).
+- If the uploader prints `not authorized`, run `hf auth login` again with a
+  write token.
+- The uploader never deletes or changes local files.
+
 ## Files moved so far
 
 The following files were moved from the repository root or the former

@@ -1,1 +1,2 @@
 python-can>=4.0
+huggingface_hub

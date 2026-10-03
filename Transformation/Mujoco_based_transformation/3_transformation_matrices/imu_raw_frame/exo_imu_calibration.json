@@ -1,0 +1,117 @@
+{
+  "R_exo_frame_from_exo_sensor": {
+    "Sept 11 (2\u00d760 s)": {
+      "foot": [
+        [
+          -0.46659,
+          -0.88334,
+          -0.04484
+        ],
+        [
+          -0.0346,
+          0.06889,
+          -0.99702
+        ],
+        [
+          0.8838,
+          -0.46365,
+          -0.0627
+        ]
+      ],
+      "shank": [
+        [
+          0.0168,
+          -0.99948,
+          -0.02745
+        ],
+        [
+          -0.0848,
+          0.02593,
+          -0.99606
+        ],
+        [
+          0.99626,
+          0.01906,
+          -0.08432
+        ]
+      ]
+    },
+    "Apr 4, 2 km/h (5\u00d710 s)": {
+      "foot": [
+        [
+          -0.34378,
+          -0.92594,
+          -0.15634
+        ],
+        [
+          0.04596,
+          0.1497,
+          -0.98766
+        ],
+        [
+          0.93792,
+          -0.34673,
+          -0.00891
+        ]
+      ],
+      "shank": [
+        [
+          0.05993,
+          -0.98669,
+          -0.15115
+        ],
+        [
+          -0.05519,
+          0.14792,
+          -0.98746
+        ],
+        [
+          0.99668,
+          0.06752,
+          -0.04559
+        ]
+      ]
+    }
+  },
+  "report": {
+    "Sept 11 (2\u00d760 s)": {
+      "foot": {
+        "up_source": "standing gravity",
+        "flex_axis_var": 0.951
+      },
+      "shank": {
+        "up_source": "standing gravity",
+        "flex_axis_var": 0.945
+      },
+      "hipswing_corr_foot_shank_y": 0.992
+    },
+    "Apr 4, 2 km/h (5\u00d710 s)": {
+      "foot": {
+        "up_source": "walking mean specific force + Sept walking->standing correction",
+        "flex_axis_var": 0.973
+      },
+      "shank": {
+        "up_source": "walking mean specific force + Sept walking->standing correction",
+        "flex_axis_var": 0.958
+      },
+      "hipswing_corr_foot_shank_y": 0.992
+    },
+    "check": {
+      "foot_walk_mean_vs_standing_up_deg": 9.27,
+      "shank_walk_mean_vs_standing_up_deg": 10.12
+    }
+  },
+  "stride_duration_range_s": [
+    1.036,
+    1.722
+  ],
+  "exo_strides": {
+    "Sept 11 (2\u00d760 s)": 89,
+    "Apr 4, 2 km/h (5\u00d710 s)": 28
+  },
+  "exo_stride_duration_median_s": {
+    "Sept 11 (2\u00d760 s)": 1.31,
+    "Apr 4, 2 km/h (5\u00d710 s)": 1.468
+  },
+  "heel_strike_phase_after_midswing": 0.14
+}

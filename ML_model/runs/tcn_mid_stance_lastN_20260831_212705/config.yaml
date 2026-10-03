@@ -1,0 +1,178 @@
+paths:
+  # local Parquet dataset root (a Hugging Face snapshot lands here)
+  dataset_dir: "/Users/narayanan/PycharmProjects/exo-data/hf_dataset"
+  # processed .npz cache, keyed by ingest config + dataset revision (kept outside the repo)
+  processed_dir: "/Users/narayanan/PycharmProjects/exo-data/processed"
+  runs_dir: "runs"
+  hub:
+    repo_id: "aicognition/mrsd-exo-ankle"   # public HF dataset, CC BY 4.0
+    revision: "v1.0"
+
+data:
+  feature_set: mid          # full | mid | minimal
+  window_length: 300        # 3.0 s of history at 100 Hz
+  stride: 10
+  min_segment_length: 300
+  num_workers: 4
+  prefetch_factor: 4
+  cache_window_index: true
+
+  split:
+    train: [AB06, AB07, AB08, AB11, AB12, AB13, AB14, AB15, AB16, AB17, AB18, AB19, AB20]
+    val:   [AB09]
+    test:  [AB10, AB21, AB23, AB24, AB25, AB27, AB28, AB30]
+
+  ingest:
+    terrain: treadmill
+    target_rate_hz: 100
+    target_column: ankle_angle_r_moment
+    antialias: true
+    gon_to_radians: true
+    drop_imu_segments: [trunk]
+    stance_source: gcRight          # gcRight (HeelStrike/ToeOff) | force_threshold
+    force_threshold_n: 50.0
+    output_format: npy
+
+  # The 'stance' feature is a clean 0/1 ground-contact flag produced at ingest.
+  # It replaces the force-plate vertical GRF (fp_Treadmill_R_vy) so the training
+  # input matches what the exo can actually provide (an FSR-derived contact flag).
+  feature_sets:
+    full:
+      - imu_foot_Accel_X
+      - imu_foot_Accel_Y
+      - imu_foot_Accel_Z
+      - imu_foot_Gyro_X
+      - imu_foot_Gyro_Y
+      - imu_foot_Gyro_Z
+      - imu_shank_Accel_X
+      - imu_shank_Accel_Y
+      - imu_shank_Accel_Z
+      - imu_shank_Gyro_X
+      - imu_shank_Gyro_Y
+      - imu_shank_Gyro_Z
+      - imu_thigh_Accel_X
+      - imu_thigh_Accel_Y
+      - imu_thigh_Accel_Z
+      - imu_thigh_Gyro_X
+      - imu_thigh_Gyro_Y
+      - imu_thigh_Gyro_Z
+      - fp_Treadmill_R_vy
+      - stance
+      - gon_ankle_sagittal
+
+    mid:
+      - imu_foot_Accel_X
+      - imu_foot_Accel_Y
+      - imu_foot_Accel_Z
+      - imu_foot_Gyro_X
+      - imu_foot_Gyro_Y
+      - imu_foot_Gyro_Z
+      - imu_shank_Accel_X
+      - imu_shank_Accel_Y
+      - imu_shank_Accel_Z
+      - imu_shank_Gyro_X
+      - imu_shank_Gyro_Y
+      - imu_shank_Gyro_Z
+      - stance
+      - gon_ankle_sagittal
+
+    minimal:
+      - imu_foot_Accel_X
+      - imu_foot_Accel_Y
+      - imu_foot_Accel_Z
+      - imu_foot_Gyro_X
+      - imu_foot_Gyro_Y
+      - imu_foot_Gyro_Z
+      - stance
+      - gon_ankle_sagittal
+
+model:
+  num_channels: [80, 80, 80, 80, 80]
+  kernel_size: 5
+  activation: ReLU
+  norm_type: WeightNorm
+  dropout_type: Spatial
+  dropout: 0.15
+  l1_reg: 0.0
+  l2_reg: 0.0
+  use_subject_embedding: true
+  emb_dim: 4
+
+train:
+  batch_size: 32
+  epochs: 30
+  lr: 5.0e-5
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+  loss_last_n: 50           # loss on the last 50 window steps — matches deployment
+  scheduler: cosine
+  early_stop_patience: 8
+  seed: 0
+  device: auto
+  wandb_project: Exoskeleton_MRSD
+  wandb_run_name: tcn_mid_stance_lastN
+
+  augment:
+    enabled: true
+    noise_std: 0.01
+    imu_gain_jitter: 0.05
+    time_warp: 0.0
+    channel_dropout: 0.0
+
+    # Domain randomisation for the deployment gap. All default to 0 (off) so the
+    # baseline is unchanged; enable for a deployment-hardened model. Suggested
+    # "DR profile": latency_samples 5, imu_rotation_deg 8, encoder_offset_rad 0.05,
+    # stance_jitter_samples 3, assist_perturb 0.3.
+    latency_samples: 0          # predict up to N samples ahead (deploy chain lag)
+    imu_rotation_deg: 0.0       # random small rotation per IMU triad (adapter error)
+    encoder_offset_rad: 0.0     # random ankle-angle bias (encoder mounting)
+    stance_jitter_samples: 0    # shift stance 0/1 edges +/- k (FSR vs gait-phase timing)
+    assist_perturb: 0.0         # simulate "assistance felt": kinematics under assist
+
+  perf:
+    amp: auto              # auto | bf16 | fp16 | off
+    compile: false         # torch.compile — enable on CUDA
+    compile_mode: max-autotune
+    tf32: true
+    cudnn_benchmark: true
+    fused_optimizer: true
+    grad_accum_steps: 1
+
+deploy:
+  assistance_scale: 0.2
+  torque_limit_nm: 30.0
+  rate_limit_nm_per_s: 200.0
+  ramp_in_s: 0.05
+  ramp_out_s: 0.05
+  control_rate_hz: 100
+  plantarflexion_sign: -1.0   # GaTech ankle moment is negative in plantarflexion
+  exo_command_sign: 1.0       # maps assist magnitude to the exo actuator convention
+  backend: jit               # jit | onnx | trt (trt on Jetson)
+  device: cpu
+
+  # Exo -> GaTech sensor-frame mapping.
+  # Fitted by scripts/fit_adapter.py from
+  #   data_collection_20260404_215743_tightshoes_200Hz_2kmph.csv (6 gait cycles).
+  # NOTE: that trial is 2 km/h (0.56 m/s), slower than any GaTech treadmill trial
+  # (0.86-1.29 m/s); refit from a ~4 km/h exo walk during hardware bring-up.
+  # Residuals (norm MSE): foot gyro 1.16 / accel 1.77, shank gyro 0.85 / accel 2.28.
+  sensor_adapter:
+    foot_rotation:
+      - [-0.836255, -0.539143,  0.100011]
+      - [-0.002741, -0.178276, -0.983977]
+      - [ 0.548334, -0.823130,  0.147606]
+    shank_rotation:
+      - [-0.990856,  0.128955,  0.039681]
+      - [-0.046757, -0.052317, -0.997535]
+      - [-0.126561, -0.990269,  0.057868]
+    foot_accel_scale:  0.11052
+    foot_gyro_scale:   1.02725
+    shank_accel_scale: 0.119507
+    shank_gyro_scale:  0.811746
+    foot_lever_arm_m:  [ 0.00335, -0.00154,  0.00270]
+    shank_lever_arm_m: [-0.01086, -0.00269, -0.01167]
+    ankle_encoder_neutral_deg: 85.001
+    ankle_encoder_sign: 1.0
+    heel_fsr_threshold: 22446.0
+    toe_fsr_threshold:  8737.2
+    fsr_debounce_s: 0.10

@@ -1,0 +1,28 @@
+{
+  "feature_names": [
+    "imu_foot_Accel_X",
+    "imu_foot_Accel_Y",
+    "imu_foot_Accel_Z",
+    "imu_foot_Gyro_X",
+    "imu_foot_Gyro_Y",
+    "imu_foot_Gyro_Z",
+    "imu_shank_Accel_X",
+    "imu_shank_Accel_Y",
+    "imu_shank_Accel_Z",
+    "imu_shank_Gyro_X",
+    "imu_shank_Gyro_Y",
+    "imu_shank_Gyro_Z",
+    "stance",
+    "gon_ankle_sagittal"
+  ],
+  "window_length": 300,
+  "num_input_channels": 14,
+  "output_units": "Nm/kg",
+  "subject_mass_kg": 72.0,
+  "subject_idx": 2,
+  "applies_input_scaler": true,
+  "applies_output_scaler": true,
+  "control_rate_hz": 100,
+  "trace_max_error": 0.0,
+  "onnx_max_error": 0.0
+}

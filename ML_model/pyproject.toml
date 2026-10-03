@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mrsd-exo"
+version = "0.1.0"
+description = "ML ankle-torque prediction and assistive control for an ankle exoskeleton"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "scikit-learn>=1.3",
+    "pyyaml>=6.0",
+    "joblib>=1.3",
+    "matplotlib>=3.7",
+    "pyarrow>=14.0",
+    "huggingface-hub>=0.24",
+]
+
+[project.optional-dependencies]
+train = ["wandb>=0.16"]
+dev = ["pytest>=7.4", "ruff>=0.5"]
+onnx = ["onnx>=1.15", "onnxruntime>=1.17", "onnxscript>=0.1"]
+hub = ["hf-transfer>=0.1"]
+deploy = ["python-can>=4.3"]
+# TensorRT / torch-tensorrt are installed from NVIDIA wheels on the Jetson, not here.
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore:`torch.nn.utils.weight_norm` is deprecated:FutureWarning",
+]

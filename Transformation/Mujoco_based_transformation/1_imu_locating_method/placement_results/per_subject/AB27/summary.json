@@ -1,0 +1,424 @@
+{
+  "foot": {
+    "segment": "calcn_r",
+    "auto_segment_votes": {
+      "calcn_r": 24
+    },
+    "acc_sign": 1,
+    "n_trials_total": 24,
+    "rejected_trials": [
+      "LevelGround_ccw_fast_01_01",
+      "LevelGround_ccw_slow_01_01"
+    ],
+    "rejection_reasons": {
+      "LevelGround_ccw_fast_01_01": "poor gyro fit (0.59)",
+      "LevelGround_ccw_slow_01_01": "accelerometer not explained (rel 0.88): saturated/damped/corrupt"
+    },
+    "saturated_frame_pct_median": 0.0,
+    "n_trials": 22,
+    "position_m_mujoco_median": [
+      0.144,
+      0.0096,
+      0.0234
+    ],
+    "position_m_opensim_median": [
+      0.144,
+      0.0234,
+      -0.0096
+    ],
+    "position_spread_m_iqr": [
+      0.0028,
+      0.0066,
+      0.0051
+    ],
+    "position_spread_m_std": [
+      0.0041,
+      0.0093,
+      0.0032
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        0.7546,
+        0.1031,
+        0.648
+      ],
+      [
+        0.1339,
+        0.9426,
+        -0.3058
+      ],
+      [
+        -0.6424,
+        0.3175,
+        0.6975
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        0.7546,
+        0.1031,
+        0.648
+      ],
+      [
+        -0.6424,
+        0.3175,
+        0.6975
+      ],
+      [
+        -0.1339,
+        -0.9426,
+        0.3058
+      ]
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.92124,
+      0.16916,
+      0.35018,
+      0.00836
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        0.755,
+        0.134,
+        -0.642
+      ],
+      "y": [
+        0.103,
+        0.943,
+        0.318
+      ],
+      "z": [
+        0.648,
+        -0.306,
+        0.698
+      ]
+    },
+    "rotation_spread_deg_rms": 2.26,
+    "time_offset_ms_median": -7.75,
+    "rms_acc_median": 0.774,
+    "rel_gyro_residual_median": 0.204
+  },
+  "shank": {
+    "segment": "tibia_r",
+    "auto_segment_votes": {
+      "tibia_r": 24
+    },
+    "acc_sign": 1,
+    "n_trials_total": 24,
+    "rejected_trials": [
+      "LevelGround_ccw_fast_01_01",
+      "LevelGround_ccw_slow_01_01"
+    ],
+    "rejection_reasons": {
+      "LevelGround_ccw_fast_01_01": "poor gyro fit (0.41)",
+      "LevelGround_ccw_slow_01_01": "accelerometer not explained (rel 1.01): saturated/damped/corrupt"
+    },
+    "saturated_frame_pct_median": 0.0,
+    "n_trials": 22,
+    "position_m_mujoco_median": [
+      0.0269,
+      -0.0082,
+      -0.2958
+    ],
+    "position_m_opensim_median": [
+      0.0269,
+      -0.2958,
+      0.0082
+    ],
+    "position_spread_m_iqr": [
+      0.0026,
+      0.0117,
+      0.0114
+    ],
+    "position_spread_m_std": [
+      0.0024,
+      0.0091,
+      0.0072
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        -0.04,
+        0.2229,
+        0.974
+      ],
+      [
+        0.133,
+        0.9673,
+        -0.2159
+      ],
+      [
+        -0.9903,
+        0.1209,
+        -0.0683
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        -0.04,
+        0.2229,
+        0.974
+      ],
+      [
+        -0.9903,
+        0.1209,
+        -0.0683
+      ],
+      [
+        -0.133,
+        -0.9673,
+        0.2159
+      ]
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.68173,
+      0.12351,
+      0.72035,
+      -0.03298
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        -0.04,
+        0.133,
+        -0.99
+      ],
+      "y": [
+        0.223,
+        0.967,
+        0.121
+      ],
+      "z": [
+        0.974,
+        -0.216,
+        -0.068
+      ]
+    },
+    "rotation_spread_deg_rms": 1.77,
+    "time_offset_ms_median": -13.94,
+    "rms_acc_median": 0.745,
+    "rel_gyro_residual_median": 0.196
+  },
+  "thigh": {
+    "segment": "femur_r",
+    "auto_segment_votes": {
+      "femur_r": 24
+    },
+    "acc_sign": 1,
+    "n_trials_total": 24,
+    "rejected_trials": [
+      "Treadmill_01_01",
+      "Treadmill_02_01",
+      "Treadmill_03_01",
+      "Treadmill_04_01",
+      "Treadmill_05_01",
+      "Treadmill_06_01",
+      "LevelGround_ccw_fast_01_01",
+      "LevelGround_ccw_slow_01_01",
+      "LevelGround_cw_normal_01_02"
+    ],
+    "rejection_reasons": {
+      "Treadmill_01_01": "accelerometer not explained (rel 0.77): saturated/damped/corrupt",
+      "Treadmill_02_01": "accelerometer not explained (rel 0.79): saturated/damped/corrupt",
+      "Treadmill_03_01": "accelerometer not explained (rel 0.80): saturated/damped/corrupt",
+      "Treadmill_04_01": "accelerometer not explained (rel 0.79): saturated/damped/corrupt",
+      "Treadmill_05_01": "accelerometer not explained (rel 0.80): saturated/damped/corrupt",
+      "Treadmill_06_01": "accelerometer not explained (rel 0.77): saturated/damped/corrupt",
+      "LevelGround_ccw_fast_01_01": "poor gyro fit (0.93)",
+      "LevelGround_ccw_slow_01_01": "accelerometer not explained (rel 0.97): saturated/damped/corrupt",
+      "LevelGround_cw_normal_01_02": "accelerometer not explained (rel 0.79): saturated/damped/corrupt"
+    },
+    "saturated_frame_pct_median": 0.0,
+    "n_trials": 15,
+    "position_m_mujoco_median": [
+      0.0514,
+      0.0555,
+      -0.3383
+    ],
+    "position_m_opensim_median": [
+      0.0514,
+      -0.3383,
+      -0.0555
+    ],
+    "position_spread_m_iqr": [
+      0.0071,
+      0.014,
+      0.0285
+    ],
+    "position_spread_m_std": [
+      0.0107,
+      0.0158,
+      0.0343
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        -0.1615,
+        0.0484,
+        0.9857
+      ],
+      [
+        0.0529,
+        0.9978,
+        -0.0404
+      ],
+      [
+        -0.9855,
+        0.0456,
+        -0.1637
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        -0.1615,
+        0.0484,
+        0.9857
+      ],
+      [
+        -0.9855,
+        0.0456,
+        -0.1637
+      ],
+      [
+        -0.0529,
+        -0.9978,
+        0.0404
+      ]
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.64666,
+      0.03323,
+      0.76205,
+      0.00171
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        -0.161,
+        0.053,
+        -0.985
+      ],
+      "y": [
+        0.048,
+        0.998,
+        0.046
+      ],
+      "z": [
+        0.986,
+        -0.04,
+        -0.164
+      ]
+    },
+    "rotation_spread_deg_rms": 3.88,
+    "time_offset_ms_median": -16.17,
+    "rms_acc_median": 0.939,
+    "rel_gyro_residual_median": 0.381
+  },
+  "trunk": {
+    "segment": "torso",
+    "auto_segment_votes": {
+      "pelvis": 24
+    },
+    "acc_sign": 1,
+    "n_trials_total": 24,
+    "rejected_trials": [
+      "Treadmill_02_01",
+      "Treadmill_03_01",
+      "Treadmill_04_01",
+      "Treadmill_05_01",
+      "Treadmill_06_01",
+      "LevelGround_ccw_fast_01_01",
+      "LevelGround_ccw_slow_01_01",
+      "LevelGround_cw_normal_01_02"
+    ],
+    "rejection_reasons": {
+      "Treadmill_02_01": "poor gyro fit (1.35)",
+      "Treadmill_03_01": "poor gyro fit (1.34)",
+      "Treadmill_04_01": "poor gyro fit (1.32)",
+      "Treadmill_05_01": "poor gyro fit (1.33)",
+      "Treadmill_06_01": "poor gyro fit (1.37)",
+      "LevelGround_ccw_fast_01_01": "accelerometer not explained (rel 0.79): saturated/damped/corrupt",
+      "LevelGround_ccw_slow_01_01": "accelerometer not explained (rel 1.00): saturated/damped/corrupt",
+      "LevelGround_cw_normal_01_02": "poor gyro fit (1.22)"
+    },
+    "saturated_frame_pct_median": 0.0,
+    "n_trials": 16,
+    "position_m_mujoco_median": [
+      0.1134,
+      -0.0093,
+      0.0347
+    ],
+    "position_m_opensim_median": [
+      0.1134,
+      0.0347,
+      0.0093
+    ],
+    "position_spread_m_iqr": [
+      0.0186,
+      0.0101,
+      0.0213
+    ],
+    "position_spread_m_std": [
+      0.0179,
+      0.0135,
+      0.0194
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        0.1095,
+        0.1099,
+        0.9879
+      ],
+      [
+        -0.0242,
+        0.9939,
+        -0.1079
+      ],
+      [
+        -0.9937,
+        -0.0121,
+        0.1115
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        0.1095,
+        0.1099,
+        0.9879
+      ],
+      [
+        -0.9937,
+        -0.0121,
+        0.1115
+      ],
+      [
+        0.0242,
+        -0.9939,
+        0.1079
+      ]
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.74412,
+      0.03216,
+      0.66575,
+      -0.04506
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        0.109,
+        -0.024,
+        -0.994
+      ],
+      "y": [
+        0.11,
+        0.994,
+        -0.012
+      ],
+      "z": [
+        0.988,
+        -0.108,
+        0.111
+      ]
+    },
+    "rotation_spread_deg_rms": 8.32,
+    "time_offset_ms_median": -24.24,
+    "rms_acc_median": 0.54,
+    "rel_gyro_residual_median": 0.721
+  }
+}

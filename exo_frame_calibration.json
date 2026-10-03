@@ -1,0 +1,74 @@
+{
+  "rotations": {
+    "foot": [
+      [
+        -0.8598018328747831,
+        0.05753570618352937,
+        0.5073760446642368
+      ],
+      [
+        -0.5090585295708951,
+        -0.17442309789218322,
+        -0.8428736538727565
+      ],
+      [
+        0.04000277060755828,
+        -0.9829884157179352,
+        0.1792583412510076
+      ]
+    ],
+    "shank": [
+      [
+        -0.9365142267334773,
+        0.06657066708275636,
+        -0.3442520143876504
+      ],
+      [
+        -0.345899037615928,
+        -0.014675302442937067,
+        0.9381569651580614
+      ],
+      [
+        0.05740173257117726,
+        0.9976737852536597,
+        0.036770359196802785
+      ]
+    ]
+  },
+  "encoder_sign": 1,
+  "encoder_ratio": 1.0,
+  "heel_threshold": 10000.0,
+  "toe_threshold": 20000.0,
+  "features": [
+    "foot_ax",
+    "foot_ay",
+    "foot_az",
+    "foot_gx",
+    "foot_gy",
+    "foot_gz",
+    "shank_ax",
+    "shank_ay",
+    "shank_az",
+    "shank_gx",
+    "shank_gy",
+    "shank_gz",
+    "ankle_angle_deg",
+    "heel_contact",
+    "toe_contact"
+  ],
+  "target": "ankle_moment_nm_per_kg",
+  "meta": {
+    "hf_root": "mrsd-exo-ankle",
+    "reference_subject": "AB06",
+    "exo_recordings": [
+      "data_collection_20260404_215026_200Hz_2kmph",
+      "data_collection_20260404_215743_tightshoes_200Hz_2kmph"
+    ],
+    "fsr_mode": "fixed",
+    "notes": [
+      "foot: 4/6 pairs, spread 2.75 deg, best residual 0.0612",
+      "shank: 6/6 pairs, spread 2.15 deg, best residual 0.0543"
+    ],
+    "encoder_sign_corr": 0.5884416350061826
+  }
+}

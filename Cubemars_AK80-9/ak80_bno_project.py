@@ -44,9 +44,8 @@ warnings.filterwarnings("ignore", category=RuntimeWarning,
 
 # ── Make sibling directories importable ──────────────────────────────────────
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_BNO_DIR    = os.path.join(os.path.dirname(_SCRIPT_DIR), "BNO085") \
-              if not os.path.isdir(os.path.join(_SCRIPT_DIR, "BNO085")) \
-              else os.path.join(_SCRIPT_DIR, "BNO085")
+_BNO_DIR    = os.path.join(os.path.dirname(_SCRIPT_DIR),
+                           "Sensor_Tests", "IMUs", "BNO085")
 sys.path.insert(0, _BNO_DIR)
 sys.path.insert(0, _SCRIPT_DIR)
 

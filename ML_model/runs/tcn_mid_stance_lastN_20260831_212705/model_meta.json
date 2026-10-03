@@ -1,0 +1,63 @@
+{
+  "model": {
+    "num_channels": [
+      80,
+      80,
+      80,
+      80,
+      80
+    ],
+    "kernel_size": 5,
+    "activation": "ReLU",
+    "norm_type": "WeightNorm",
+    "dropout_type": "Spatial",
+    "dropout": 0.15,
+    "l1_reg": 0.0,
+    "l2_reg": 0.0,
+    "use_subject_embedding": true,
+    "emb_dim": 4
+  },
+  "feature_names": [
+    "imu_foot_Accel_X",
+    "imu_foot_Accel_Y",
+    "imu_foot_Accel_Z",
+    "imu_foot_Gyro_X",
+    "imu_foot_Gyro_Y",
+    "imu_foot_Gyro_Z",
+    "imu_shank_Accel_X",
+    "imu_shank_Accel_Y",
+    "imu_shank_Accel_Z",
+    "imu_shank_Gyro_X",
+    "imu_shank_Gyro_Y",
+    "imu_shank_Gyro_Z",
+    "stance",
+    "gon_ankle_sagittal"
+  ],
+  "num_features": 14,
+  "window_length": 300,
+  "num_training_subjects": 13,
+  "subject_index": {
+    "AB06": 0,
+    "AB07": 1,
+    "AB08": 2,
+    "AB11": 3,
+    "AB12": 4,
+    "AB13": 5,
+    "AB14": 6,
+    "AB15": 7,
+    "AB16": 8,
+    "AB17": 9,
+    "AB18": 10,
+    "AB19": 11,
+    "AB20": 12,
+    "AB09": 6,
+    "AB10": 4,
+    "AB21": 6,
+    "AB23": 0,
+    "AB24": 12,
+    "AB25": 8,
+    "AB27": 11,
+    "AB28": 8,
+    "AB30": 3
+  }
+}

@@ -1,6 +1,74 @@
 import React, { useEffect, useRef, useState } from "react";
 import LiveChart from "../components/LiveChart.jsx";
-import { connectLiveSocket } from "../lib/api.js";
+import { connectLiveSocket, getAssist, getJobStatus, setAssist, stopJob } from "../lib/api.js";
+
+function AssistPanel({ latest }) {
+  const [job, setJob] = useState(null);
+  const [scale, setScale] = useState(0.02);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const poll = () => getJobStatus().then(setJob).catch(() => {});
+    poll();
+    getAssist().then((s) => setScale(s.scale)).catch(() => {});
+    const id = setInterval(poll, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (!job?.live || job.status !== "running") return null;
+
+  const calibrated = latest.calibrated === 1;
+  const ready = calibrated && latest.buffer_ready === 1;
+  const on = latest.assist_on === 1;
+  const state = !calibrated
+    ? "CALIBRATING: walk normally to zero the ankle angle"
+    : !ready
+    ? "Filling the 3 s window"
+    : on
+    ? `ASSIST ON (scale ${latest.assist_scale ?? scale}, ramp ${(latest.session_ramp ?? 0).toFixed(2)})`
+    : "PASSIVE: predicting, 0 N·m sent";
+
+  async function send(assist) {
+    setError(null);
+    try {
+      await setAssist(assist, Number(scale));
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginBottom: 16, borderColor: on ? "var(--bad)" : undefined }}>
+      <div className="status-row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <strong style={{ color: on ? "var(--bad)" : undefined }}>{state}</strong>
+        <div className="status-row" style={{ gap: 8 }}>
+          <label style={{ fontSize: 13 }}>
+            scale{" "}
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              max="0.3"
+              value={scale}
+              onChange={(e) => setScale(e.target.value)}
+              style={{ width: 70, padding: 4 }}
+            />
+          </label>
+          <button onClick={() => send(true)} disabled={!ready}>
+            {on ? "Update scale" : "Assist ON"}
+          </button>
+          <button onClick={() => send(false)} disabled={!on}>Assist OFF</button>
+          <button onClick={() => stopJob().catch((e) => setError(e.message))}>Stop run</button>
+        </div>
+      </div>
+      <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 6 }}>
+        sent {(latest.sent_torque_nm ?? 0).toFixed(2)} N·m · predicted{" "}
+        {(latest.predicted_nm_per_kg ?? 0).toFixed(2)} N·m/kg
+      </div>
+      {error && <p style={{ color: "var(--bad)" }}>{error}</p>}
+    </div>
+  );
+}
 
 const WINDOW_SIZE = 600; // ~4-6s of history depending on control rate
 
@@ -11,8 +79,8 @@ const CHART_GROUPS = [
   {
     title: "Ankle Angle / Encoder",
     unit: "deg",
-    colors: ["#5b9dff"],
-    fields: ["ankle_angle", "ankle_encoder_deg"],
+    colors: ["#5b9dff", "#3ddc84"],
+    fields: ["ankle_angle", "ankle_encoder_deg", "ankle_angle_deg"],
   },
   {
     title: "Ankle Velocity",
@@ -41,8 +109,8 @@ const CHART_GROUPS = [
   {
     title: "Gait State",
     unit: "",
-    colors: ["#3ddc84", "#ffb238"],
-    fields: ["stance", "ramp", "session_ramp"],
+    colors: ["#3ddc84", "#ffb238", "#5b9dff", "#ff5c5c", "#c792ea"],
+    fields: ["stance", "ramp", "session_ramp", "assist_on", "calibrated"],
   },
 ];
 
@@ -58,10 +126,12 @@ export default function LivePage() {
   const ringRef = useRef(makeRing());
   const startTimeRef = useRef(null);
   const seenFieldsRef = useRef(new Set());
+  const latestRef = useRef({});
 
   useEffect(() => {
     const ws = connectLiveSocket((msg) => {
       setConnected(true);
+      latestRef.current = msg;
       setActiveRunId(msg.run_id);
       if (msg.controller) setControllerLabel(msg.controller);
 
@@ -110,6 +180,7 @@ export default function LivePage() {
 
   return (
     <div>
+      <AssistPanel latest={latestRef.current} />
       <div className="status-row">
         <span className={`status-dot ${connected ? "connected" : ""}`} />
         <span>{connected ? "Connected to live relay" : "Waiting for connection..."}</span>

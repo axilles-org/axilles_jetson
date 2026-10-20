@@ -20,11 +20,14 @@ export default function LaunchPage() {
   const [models, setModels] = useState([]);
   const [samples, setSamples] = useState([]);
   const [selectedModelId, setSelectedModelId] = useState("tbe");
-  const [mode, setMode] = useState("mock"); // mock | dry-run (armed is never offered here)
+  const [mode, setMode] = useState("live"); // live | mock | dry-run
   const [mass, setMass] = useState(72);
-  const [duration, setDuration] = useState(30);
+  const [height, setHeight] = useState(1.75);
+  const [gender, setGender] = useState("M");
+  const [torqueCap, setTorqueCap] = useState(2.0);
+  const [duration, setDuration] = useState(600);
   const [backend, setBackend] = useState("onnx");
-  const [assistScale, setAssistScale] = useState(0.1);
+  const [assistScale, setAssistScale] = useState(0.02);
   const [replayFile, setReplayFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,7 +35,10 @@ export default function LaunchPage() {
   const pollRef = useRef(null);
 
   useEffect(() => {
-    listModels().then(setModels);
+    listModels().then((ms) => {
+      setModels(ms);
+      if (ms.some((m) => m.id === "deploy")) setSelectedModelId("deploy");
+    });
     listSamples().then(setSamples);
     getJobStatus().then(setJob);
   }, []);
@@ -82,11 +88,14 @@ export default function LaunchPage() {
       if (!proceed) return;
     }
     try {
-      const controller = !isMl ? "tbe" : mode === "mock" ? "ml-mock" : "ml-dry-run";
+      const controller = !isMl ? "tbe" : `ml-${mode}`;
       const body = {
         controller,
         run_dir: isMl ? selectedModel.run_dir : null,
         mass: isMl ? Number(mass) : null,
+        height: isMl ? Number(height) : null,
+        gender: isMl ? gender : null,
+        torque_cap: isMl ? Number(torqueCap) : null,
         replay_path: replayFile?.path ?? null,
         duration: Number(duration),
         backend: isMl ? backend : null,
@@ -147,7 +156,16 @@ export default function LaunchPage() {
           {isMl && (
             <>
               <h3 style={{ marginTop: 16 }}>Mode</h3>
-              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                <label>
+                  <input
+                    type="radio"
+                    checked={mode === "live"}
+                    onChange={() => setMode("live")}
+                    disabled={isRunning}
+                  />{" "}
+                  live (motor engaged at 0 N·m, assist switched on from the Live page)
+                </label>
                 <label>
                   <input
                     type="radio"
@@ -167,10 +185,13 @@ export default function LaunchPage() {
                   dry-run (full path, torque never sent)
                 </label>
               </div>
-              <p style={{ fontSize: 12, color: "var(--text-dim)" }}>
-                Armed (real torque) runs are CLI-only by design — not available from
-                this page.
-              </p>
+              {mode === "live" && (
+                <p style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                  Starts passive. Walk for the first 10 s to zero the ankle angle, then
+                  switch assistance on from the Live page. With a replay CSV it runs as
+                  dry-run (no CAN).
+                </p>
+              )}
             </>
           )}
         </div>
@@ -189,6 +210,44 @@ export default function LaunchPage() {
                   style={{ width: "100%", padding: 6, marginTop: 4 }}
                 />
               </label>
+              <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
+                Height (m)
+                <input
+                  type="number"
+                  step="0.01"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  disabled={isRunning}
+                  style={{ width: "100%", padding: 6, marginTop: 4 }}
+                />
+              </label>
+              <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
+                Sex
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  disabled={isRunning}
+                  style={{ width: "100%", padding: 6, marginTop: 4 }}
+                >
+                  <option value="M">M</option>
+                  <option value="F">F</option>
+                </select>
+              </label>
+              {mode === "live" && (
+                <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
+                  Torque cap (N·m, ≤ 5)
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="5"
+                    value={torqueCap}
+                    onChange={(e) => setTorqueCap(e.target.value)}
+                    disabled={isRunning}
+                    style={{ width: "100%", padding: 6, marginTop: 4 }}
+                  />
+                </label>
+              )}
               <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
                 Backend
                 <select

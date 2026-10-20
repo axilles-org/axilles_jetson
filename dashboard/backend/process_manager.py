@@ -1,10 +1,11 @@
 """
-Launches controller processes (mock/dry-run only — see module docstring on
-`ALLOWED_MODES`) from the dashboard and tracks their lifecycle.
+Launches controller processes from the dashboard and tracks their lifecycle.
 
-Safety posture: this manager will never construct an argv containing --arm.
-Sending real torque to real hardware stays a deliberate, CLI-only action;
-the browser can only launch modes that compute + log but never transmit.
+Safety posture: --arm is only ever launched together with --start-passive
+("ml-live"). That run engages the motor at zero torque; assistance turns on
+only while the dashboard keeps sending an "assist on" heartbeat (see
+`assist_state` and ML_model/src/exo/deploy/assist_switch.py), so a crashed
+backend or a Stop click drops torque to zero.
 Only one job may run at a time — a second launch request while one is
 active is rejected, not queued or force-killed, so a trial in progress is
 never silently interrupted by an unrelated browser click.
@@ -25,11 +26,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ML_MODEL_DIR = REPO_ROOT / "ML_model"
 TBE_DIR = REPO_ROOT / "TBE_controller"
 
-# Modes the dashboard is allowed to launch. "mock" never touches the motor at
-# all (jetson_mock_deploy.py). "dry-run" exercises the full command path
-# (ramp, clamping, MIT packing) through MotorInterface but with dry_run=True,
-# so nothing is ever written to a CAN bus. Neither can command the actuator.
-ALLOWED_MODES = ("mock", "dry-run")
+# "mock" never touches the motor (jetson_mock_deploy.py). "dry-run" exercises
+# the full command path through MotorInterface with dry_run=True. "live" is
+# armed but passive until assistance is switched on from the Live page; with a
+# replay CSV it is forced to dry-run.
+ALLOWED_MODES = ("mock", "dry-run", "live")
 
 MAX_LOG_LINES = 2000
 
@@ -45,6 +46,7 @@ class JobState:
     return_code: int | None = None
     log_lines: list[str] = field(default_factory=list)
     run_id: str | None = None  # filled in once the child prints "Run ID: ..."
+    live: bool = False  # accepts assist on/off from the dashboard
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -55,6 +57,7 @@ class JobState:
             "ended_at": self.ended_at,
             "return_code": self.return_code,
             "run_id": self.run_id,
+            "live": self.live,
             "log_tail": self.log_lines[-200:],
         }
 
@@ -65,6 +68,8 @@ class ProcessManager:
         self._proc: subprocess.Popen | None = None
         self._state: JobState | None = None
         self._reader_thread: threading.Thread | None = None
+        # Desired assistance for a live job; server.py sends it as a heartbeat.
+        self.assist_state = {"assist": False, "scale": 0.02}
 
     @property
     def is_running(self) -> bool:
@@ -76,13 +81,13 @@ class ProcessManager:
             return self._state.to_dict() if self._state else None
 
     def start(self, argv: list[str], cwd: Path, job_id: str) -> dict[str, Any]:
-        for flag in argv:
-            if flag == "--arm" or flag.startswith("--arm="):
-                raise PermissionError(
-                    "Refusing to launch with --arm: the dashboard can only start "
-                    "mock/dry-run controller processes. Armed (torque-sending) "
-                    "runs must be started from the CLI."
-                )
+        armed = any(f == "--arm" or f.startswith("--arm=") for f in argv)
+        live = "--start-passive" in argv
+        if armed and not live:
+            raise PermissionError(
+                "Refusing to launch with --arm without --start-passive: an armed "
+                "run from the dashboard must start passive."
+            )
 
         with self._lock:
             if self._proc is not None and self._proc.poll() is None:
@@ -100,7 +105,8 @@ class ProcessManager:
                 bufsize=1,
                 start_new_session=True,  # own process group, so we can signal cleanly
             )
-            state = JobState(job_id=job_id, argv=argv, cwd=str(cwd), status="running")
+            state = JobState(job_id=job_id, argv=argv, cwd=str(cwd), status="running", live=live)
+            self.assist_state = {**self.assist_state, "assist": False}
             self._proc = proc
             self._state = state
 
@@ -134,6 +140,7 @@ class ProcessManager:
             proc = self._proc
             state = self._state
 
+        self.assist_state = {**self.assist_state, "assist": False}
         # SIGINT first (the scripts already handle KeyboardInterrupt to zero
         # torque / close resources cleanly); escalate to SIGTERM/SIGKILL only
         # if it doesn't exit promptly.
@@ -166,6 +173,9 @@ def build_argv(
     duration: float,
     backend: str | None,
     assist_scale: float | None,
+    height: float | None = None,
+    gender: str | None = None,
+    torque_cap: float | None = None,
 ) -> tuple[list[str], Path]:
     """
     Build a safe argv for one of the two controller entrypoints. `controller`
@@ -179,6 +189,26 @@ def build_argv(
         # (Python fully buffers stdout by default when it isn't a TTY, which
         # a subprocess pipe never is).
         return ["python3", "-u", str(TBE_DIR / "main.py")], TBE_DIR
+
+    if controller == "ml-live":
+        if not run_dir or not mass or not height or gender not in ("M", "F"):
+            raise ValueError("live mode needs run_dir, mass, height and gender")
+        argv = [
+            "python3", "-u", "scripts/jetson_deploy.py",
+            "--run", run_dir,
+            "--mass", str(mass), "--height", str(height), "--gender", gender,
+            "--duration", str(duration),
+            "--arm", "--start-passive", "--ankle-zero", "auto",
+            "--torque-cap", str(torque_cap or 2.0),
+            "--no-teleplot",
+        ]
+        if assist_scale is not None:
+            argv += ["--assist-scale", str(assist_scale)]
+        if backend:
+            argv += ["--backend", backend]
+        if replay_path:
+            argv += ["--replay", replay_path, "--dry-run"]
+        return argv, ML_MODEL_DIR
 
     if controller in ("ml-mock", "ml-dry-run"):
         if not run_dir:

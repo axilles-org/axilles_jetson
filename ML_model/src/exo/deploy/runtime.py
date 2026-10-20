@@ -16,6 +16,7 @@ TensorRT (``best.engine`` on a Jetson), selected by ``DeployConfig.backend``.
 from __future__ import annotations
 
 import collections
+import dataclasses
 import json
 from pathlib import Path
 
@@ -118,6 +119,12 @@ class ExoController:
         self.buffer.reset()
         self.assistance.reset()
         self.adapter.reset()
+
+    def set_ankle_neutral(self, encoder_deg: float) -> None:
+        """Re-zero the ankle angle and drop the window built with the old zero."""
+        self.adapter.cfg = dataclasses.replace(self.adapter.cfg,
+                                               ankle_encoder_neutral_deg=float(encoder_deg))
+        self.reset()
 
     def step(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
         """Process one sensor frame; returns the command and diagnostics."""

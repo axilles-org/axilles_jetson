@@ -93,15 +93,13 @@ class ReplaySensors:
         import numpy as np
         import pandas as pd
 
-        df = pd.read_csv(csv_path).sort_values("timestamp_s")
+        df = pd.read_csv(csv_path).rename(columns={"time_s": "timestamp_s"}).sort_values("timestamp_s")
         df = df.interpolate().ffill().bfill()
         t = df["timestamp_s"].to_numpy()
         t = t - t[0]
         grid = np.arange(0.0, t[-1], 1.0 / rate_hz)
-        self._frames = [
-            {k: float(np.interp(grid, t, df[k].to_numpy())[i]) for k in FRAME_KEYS}
-            for i in range(len(grid))
-        ]
+        columns = {k: np.interp(grid, t, df[k].to_numpy()) for k in FRAME_KEYS}
+        self._frames = [{k: float(columns[k][i]) for k in FRAME_KEYS} for i in range(len(grid))]
         self._i = 0
 
     def read(self) -> dict[str, float]:

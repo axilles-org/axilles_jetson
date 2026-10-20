@@ -29,6 +29,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import process_manager
+from .experiments import router as experiments_router
 
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
@@ -50,6 +51,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(experiments_router)
 
 
 # ---------------------------------------------------------------------- #
@@ -99,9 +101,26 @@ async def udp_relay_task() -> None:
             await asyncio.sleep(0.01)
 
 
+ASSIST_CONTROL_PORT = 47271  # ML_model/src/exo/deploy/assist_switch.py
+ASSIST_HEARTBEAT_S = 0.2
+
+
+async def assist_heartbeat_task() -> None:
+    """Re-send the desired assist state to a live job; the controller turns
+    assistance off by itself if these stop arriving."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    while True:
+        job = process_manager.manager.status()
+        if job and job["live"] and job["status"] == "running":
+            payload = json.dumps(process_manager.manager.assist_state).encode()
+            sock.sendto(payload, (LIVE_RELAY_HOST, ASSIST_CONTROL_PORT))
+        await asyncio.sleep(ASSIST_HEARTBEAT_S)
+
+
 @app.on_event("startup")
 async def on_startup() -> None:
     asyncio.create_task(udp_relay_task())
+    asyncio.create_task(assist_heartbeat_task())
 
 
 @app.websocket("/ws/live")
@@ -501,13 +520,15 @@ def launch_status() -> dict[str, Any] | None:
 def launch(body: dict[str, Any]) -> dict[str, Any]:
     """
     body: {
-      controller: "tbe" | "ml-mock" | "ml-dry-run",
+      controller: "tbe" | "ml-mock" | "ml-dry-run" | "ml-live",
       run_dir: str | null,      # required for ml-*, relative to ML_model/
       mass: float | null,
       replay_path: str | null,  # from /api/uploads/replay
       duration: float,
       backend: "jit" | "onnx" | "trt" | null,
       assist_scale: float | null,
+      height: float | null, gender: "M" | "F" | null,   # ml-live
+      torque_cap: float | null,                         # ml-live
     }
     """
     try:
@@ -519,13 +540,39 @@ def launch(body: dict[str, Any]) -> dict[str, Any]:
             duration=body.get("duration", 60.0),
             backend=body.get("backend"),
             assist_scale=body.get("assist_scale"),
+            height=body.get("height"),
+            gender=body.get("gender"),
+            torque_cap=body.get("torque_cap"),
         )
         job_id = uuid.uuid4().hex[:12]
-        return process_manager.manager.start(argv, cwd, job_id)
+        job = process_manager.manager.start(argv, cwd, job_id)
+        if body.get("assist_scale") is not None:
+            process_manager.manager.assist_state = {
+                "assist": False, "scale": float(body["assist_scale"])}
+        return job
     except PermissionError as e:
         raise HTTPException(403, str(e))
     except (ValueError, RuntimeError) as e:
         raise HTTPException(400, str(e))
+
+
+@app.get("/api/launch/assist")
+def get_assist() -> dict[str, Any]:
+    return process_manager.manager.assist_state
+
+
+@app.post("/api/launch/assist")
+def set_assist(body: dict[str, Any]) -> dict[str, Any]:
+    """body: {assist: bool, scale: float}. The controller caps scale at --max-scale."""
+    job = process_manager.manager.status()
+    if not job or job["status"] != "running" or not job["live"]:
+        raise HTTPException(400, "no live job is running")
+    state = dict(process_manager.manager.assist_state)
+    state["assist"] = bool(body.get("assist", False))
+    if body.get("scale") is not None:
+        state["scale"] = float(body["scale"])
+    process_manager.manager.assist_state = state
+    return state
 
 
 @app.post("/api/launch/stop")

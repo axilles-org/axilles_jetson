@@ -12,3 +12,6 @@ calibration/_test_output/
 
 # Upload record kept by "Data collection/hf_backup.py"
 Data collection/.hf_uploaded.json
+ML_model/logs/
+ML_model/runs/ablation/
+ML_model/runs/transform_verification/

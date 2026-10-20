@@ -7,22 +7,38 @@ review it first. See docs/DEPLOYMENT.md.
 
     python scripts/jetson_deploy.py --run runs/<dir> --mass 72 \
         --axilles ~/axilles_jetson --arm --assist-scale 0.1 --torque-cap 2.0
+
+--start-passive (with --arm): the motor is engaged at zero torque and assistance
+stays off until the dashboard switches it on (exo.deploy.assist_switch). With
+--ankle-zero auto the first --calib-s seconds of walking zero the encoder against
+the GaTech walking median; assistance cannot turn on before that.
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import signal
 import sys
 import time
 from pathlib import Path
 
+import numpy as np
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+# repo root (two levels up from ML_model/scripts) so dashboard/ is importable,
+# same pattern used by TBE_controller/main.py.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from exo.config import Config, replace
+from exo.deploy.assist_switch import AssistSwitch
+from exo.deploy.dashboard_info import build_model_info
+from exo.deploy.export import export
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
 from exo.deploy.motor import MIT_T_MAX, MotorInterface
 from exo.deploy.runtime import ExoController
+
+from dashboard.backend.run_logger import RunLogger
 
 _STOP = False
 
@@ -36,6 +52,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
     ap.add_argument("--mass", type=float, required=True)
+    ap.add_argument("--height", type=float, default=None,
+                    help="wearer height (m); with --gender, re-exports the model for this wearer")
+    ap.add_argument("--gender", choices=["M", "F"], default=None)
     ap.add_argument("--axilles", default="~/axilles_jetson")
     ap.add_argument("--replay", default=None, help="CSV to replay instead of live sensors")
     ap.add_argument("--backend", choices=["jit", "onnx", "trt"], default=None)
@@ -57,6 +76,13 @@ def main() -> None:
                     help="maps assist magnitude to the actuator direction")
     ap.add_argument("--watchdog-ms", type=float, default=25.0,
                     help="zero torque if a loop takes longer than this")
+    ap.add_argument("--start-passive", action="store_true",
+                    help="assistance off until switched on from the dashboard")
+    ap.add_argument("--max-scale", type=float, default=0.3,
+                    help="ceiling on the assistance scale the dashboard may set")
+    ap.add_argument("--ankle-zero", choices=["config", "auto"], default="config",
+                    help="auto: zero the encoder from the first --calib-s s of walking")
+    ap.add_argument("--calib-s", type=float, default=10.0)
 
     ap.add_argument("--no-teleplot", action="store_true")
     ap.add_argument("--print-every", type=int, default=50)
@@ -75,12 +101,42 @@ def main() -> None:
     if overrides:
         cfg = replace(cfg, **overrides)
 
+    if args.height is not None and args.gender is not None:
+        checkpoint = "deploy.pt" if (run_dir / "deploy.pt").exists() else "best.pt"
+        export(run_dir, args.mass, subject_demo=(args.height, args.mass, args.gender),
+               onnx=cfg.deploy.backend == "onnx", checkpoint=checkpoint)
+        print(f"exported {checkpoint} for {args.mass} kg, {args.height} m, {args.gender}")
+
     rate = args.rate or float(cfg.deploy.control_rate_hz)
     dt = 1.0 / rate
     torque_cap = min(args.torque_cap, MIT_T_MAX)
 
     controller = ExoController(run_dir, cfg.deploy, subject_mass_kg=args.mass)
     controller.reset()
+
+    # Trial tracking: same RunLogger used by TBE_controller/main.py, so ML
+    # and fixed-profile trials show up side by side in the dashboard. Model
+    # architecture + (if present) the W&B training run are read straight out
+    # of the checkpoint directory, so nothing needs to be re-entered by hand.
+    run_logger = RunLogger(
+        meta={
+            "controller": "ML_control (TCN)",
+            "run_dir": str(run_dir),
+            "subject_mass_kg": args.mass,
+            "assistance_scale": cfg.deploy.assistance_scale,
+            "torque_cap_nm": torque_cap,
+            "arm_ramp_s": args.arm_ramp,
+            "control_rate_hz": rate,
+            "armed": bool(args.arm),
+            "dry_run": bool(args.dry_run),
+            "replay_source": args.replay,
+            "start_passive": bool(args.start_passive),
+            "ankle_zero": args.ankle_zero,
+        },
+        model_info=build_model_info(run_dir, cfg),
+    )
+    run_logger.start()
+    print(f"Run ID: {run_logger.run_id}")
 
     # sensors
     if args.replay:
@@ -98,12 +154,23 @@ def main() -> None:
     if live_torque or args.dry_run:
         motor.enter()
 
+    switch = (AssistSwitch(cfg.deploy.assistance_scale, args.max_scale)
+              if args.start_passive else None)
+    sign = cfg.deploy.sensor_adapter.ankle_encoder_sign
+    reference_deg = None
+    if args.ankle_zero == "auto":
+        reference_deg = json.loads((run_dir / "ankle_reference.json").read_text())[
+            "gatech_walking_median_deg"]
+    calib_samples: list[float] = []
+    calibrated = reference_deg is None
+
     tp = Teleplot(enabled=not args.no_teleplot)
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fields = ["t_s", *FRAME_KEYS, "predicted_nm_per_kg", "predicted_nm",
               "assist_cmd_nm", "sent_torque_nm", "session_ramp", "stance",
-              "ramp", "buffer_ready", "loop_ms"]
+              "ramp", "buffer_ready", "ankle_angle_deg", "calibrated",
+              "assist_on", "assist_scale", "loop_ms"]
     csv_file = out_path.open("w", newline="")
     writer = csv.DictWriter(csv_file, fieldnames=fields)
     writer.writeheader()
@@ -114,22 +181,40 @@ def main() -> None:
     print(f"powered ML deploy | {rate:.0f} Hz | backend={cfg.deploy.backend} | "
           f"mass={args.mass} kg | scale={cfg.deploy.assistance_scale} | "
           f"cap={torque_cap} N.m | {mode}")
-    if exercise_command:
+    if switch:
+        print("PASSIVE: zero torque until assistance is switched on from the dashboard.")
+    elif exercise_command:
         print(f"assistance ramps 0 -> full over {args.arm_ramp:.1f} s. Ctrl-C = stop.\n")
+    if not calibrated:
+        print(f"CALIBRATING: walk normally for {args.calib_s:.0f} s to zero the ankle angle.")
 
     t0 = time.perf_counter()
     i = 0
     sent = 0.0
+    session_ramp = 0.0
     try:
         while not _STOP and (t_now := time.perf_counter() - t0) < args.duration:
             loop_start = time.perf_counter()
 
             raw = sensors.read()
+            if not calibrated:
+                calib_samples.append(raw["ankle_encoder_deg"])
+                if t_now >= args.calib_s:
+                    neutral = float(np.median(calib_samples)) - reference_deg * sign
+                    controller.set_ankle_neutral(neutral)
+                    calibrated = True
+                    print(f"ankle zero set: encoder {neutral:.1f} deg = GaTech 0")
             out = controller.step(raw, dt)
             pred_kg = out["predicted_nm_per_kg"]
             assist_cmd = out["command_nm"]                 # N.m from AssistanceController
 
-            session_ramp = min(1.0, t_now / args.arm_ramp) if exercise_command else 0.0
+            assist_on = exercise_command
+            if switch:
+                assist_on = switch.poll() and calibrated and bool(out["buffer_ready"])
+                controller.assistance.scale = switch.scale
+                session_ramp = min(1.0, session_ramp + dt / args.arm_ramp) if assist_on else 0.0
+            else:
+                session_ramp = min(1.0, t_now / args.arm_ramp) if exercise_command else 0.0
             target = assist_cmd * session_ramp
 
             loop_ms = (time.perf_counter() - loop_start) * 1000.0
@@ -147,8 +232,15 @@ def main() -> None:
                    "session_ramp": round(session_ramp, 3),
                    "stance": int(out["stance"]), "ramp": round(out["ramp"], 3),
                    "buffer_ready": int(out["buffer_ready"]),
+                   "ankle_angle_deg": round((raw["ankle_encoder_deg"]
+                                             - controller.adapter.cfg.ankle_encoder_neutral_deg)
+                                            * sign, 2),
+                   "calibrated": int(calibrated),
+                   "assist_on": int(assist_on),
+                   "assist_scale": round(controller.assistance.scale, 3),
                    "loop_ms": round(loop_ms, 2)}
             writer.writerow(row)
+            run_logger.log_sample(t=loop_start, **row)
 
             t_ms = int(time.time() * 1000)
             tp.send("ml_pred_nm_per_kg,ML", pred_kg, t_ms)
@@ -172,7 +264,10 @@ def main() -> None:
 
     except Exception as exc:                               # noqa: BLE001
         print(f"\n!! exception: {exc!r} -> zeroing torque")
+        run_logger.stop(status="crashed")
         raise
+    else:
+        run_logger.stop(status="completed")
     finally:
         try:
             motor.stop()
@@ -180,6 +275,8 @@ def main() -> None:
             motor.shutdown()
         csv_file.close()
         sensors.shutdown()
+        if switch:
+            switch.close()
         tp.close()
         print(f"\n{i} frames over {time.perf_counter() - t0:.1f} s. "
               f"last torque {motor.last_torque_nm:+.2f} N.m. log: {out_path}")

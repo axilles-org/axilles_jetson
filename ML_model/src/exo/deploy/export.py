@@ -98,7 +98,7 @@ def build_deploy_module(
                            num_training_subjects=num_subjects)
         vec = scalers.demographics.vector(*subject_demo)
         # nearest training row by cosine over the demographic vector
-        train_vecs = _training_vectors(cfg, scalers)
+        train_vecs = _training_vectors(cfg, scalers, run_dir)
         subject_idx = idx.mapping[max(train_vecs, key=lambda s: _cos(vec, train_vecs[s]))]
 
     model = TCN.from_config(cfg.model, in_channels=len(feature_names),
@@ -187,9 +187,12 @@ def _verify_onnx(onnx_path: Path, deploy: DeployModule, info: dict) -> float:
     return float(np.abs(eager - got).max())
 
 
-def _training_vectors(cfg: Config, scalers: ScalerBundle) -> dict[str, np.ndarray]:
+def _training_vectors(cfg: Config, scalers: ScalerBundle, run_dir: Path) -> dict[str, np.ndarray]:
+    """Demographic vector per training subject. A deploy package carries its own
+    ``demographics.parquet`` so it can be exported without the dataset."""
     import pandas as pd
-    df = pd.read_parquet(cfg.paths.demographics()).drop_duplicates("subject")
+    local = run_dir / "demographics.parquet"
+    df = pd.read_parquet(local if local.exists() else cfg.paths.demographics()).drop_duplicates("subject")
     df = df[df["subject"].isin(cfg.data.split.train)]
     return {r["subject"]: scalers.demographics.vector(r["height_m"], r["weight_kg"], r["gender"])
             for _, r in df.iterrows()}

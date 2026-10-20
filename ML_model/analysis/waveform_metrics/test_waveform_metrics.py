@@ -87,3 +87,35 @@ def test_compute_all_with_strides_fills_agreement_fields(sine_pair):
     result = compute_all(exo, gatech, exo_strides=strides, gatech_strides=strides)
     assert result.cmc is not None
     assert result.icc is not None
+
+
+def test_cmc_independent_of_stride_count():
+    base = np.sin(np.linspace(0, 2 * np.pi, 101))
+
+    def stack(n, seed):
+        return np.stack([base + np.random.default_rng(seed + i).normal(0, 0.5, 101) for i in range(n)])
+
+    few = agreement.cmc(stack(5, 0), stack(5, 100))
+    many = agreement.cmc(stack(500, 0), stack(500, 1000))
+    assert few == pytest.approx(many, abs=0.03)
+    assert 0.7 < many < 0.9
+
+
+def test_cmc_nan_without_shared_shape():
+    rng = np.random.default_rng(0)
+    assert np.isnan(agreement.cmc(rng.normal(size=(5, 101)), rng.normal(size=(5, 101))))
+
+
+def test_peak_follows_reference_direction():
+    pct = np.linspace(0, 1, 101)
+    torque = -1.5 * np.exp(-((pct - 0.46) / 0.08) ** 2) + 0.1 * np.exp(-((pct - 0.03) / 0.03) ** 2)
+    early = np.roll(torque, -5) * 0.8
+    assert features.peak_timing_error_pct(early, torque) == pytest.approx(5 / 101 * 100)
+    assert features.peak_value_error(early, torque) == pytest.approx(0.3, abs=0.01)
+
+
+def test_unpaired_strides_give_cmc_only(sine_pair):
+    exo, gatech = sine_pair
+    result = compute_all(exo, gatech, exo_strides=np.stack([exo] * 3), gatech_strides=np.stack([gatech] * 7))
+    assert result.cmc is not None
+    assert result.icc is None and result.bland_altman_bias is None

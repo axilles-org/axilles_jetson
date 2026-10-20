@@ -1,0 +1,26 @@
+# Raw Camargo dataset (download separately, see README)
+/data/camargo/
+/AB[0-9]*/
+
+# Transformed Georgia Tech dataset (~4 GB): regenerate with scripts/export_transformed_dataset.py
+/5_data/georgia_tech_transformed/*
+!/5_data/georgia_tech_transformed/index.csv
+
+# Working outputs of the scripts
+/results/
+/data/synthetic/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

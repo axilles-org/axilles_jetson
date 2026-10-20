@@ -1,0 +1,757 @@
+{
+  "imu_thigh": {
+    "segment": "femur_r",
+    "time_offset_s": 0.13721,
+    "position_m_mujoco": [
+      0.01992,
+      -0.07539,
+      -0.17067
+    ],
+    "position_m_opensim": [
+      0.01992,
+      -0.17067,
+      0.07539
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.50053,
+      0.5,
+      -0.49934,
+      -0.50013
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        0.00105,
+        0.00133,
+        -1.0
+      ],
+      [
+        -1.0,
+        -0.00026,
+        -0.00105
+      ],
+      [
+        -0.00027,
+        1.0,
+        0.00132
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        0.00105,
+        -1.0,
+        -0.00133
+      ],
+      [
+        -0.00027,
+        0.00132,
+        -1.0
+      ],
+      [
+        1.0,
+        0.00105,
+        -0.00026
+      ]
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        0.00105,
+        -1.0,
+        -0.00027
+      ],
+      "y": [
+        0.00133,
+        -0.00026,
+        1.0
+      ],
+      "z": [
+        -1.0,
+        -0.00105,
+        0.00132
+      ]
+    },
+    "gyro_bias_rad_s": [
+      0.00898,
+      -0.01768,
+      -0.0077
+    ],
+    "acc_bias_m_s2": [
+      -0.36013,
+      -0.01743,
+      -0.19987
+    ],
+    "rms_residual_gyro_rad_s": 0.04713,
+    "rms_residual_acc_m_s2": 0.13502,
+    "position_std_m_mujoco": [
+      0.00059,
+      0.00101,
+      0.00059
+    ],
+    "rotation_std_deg": [
+      0.09325,
+      0.06395,
+      0.07044
+    ],
+    "position_chunk_std_m_mujoco": [
+      0.00023,
+      0.00057,
+      0.00077
+    ],
+    "rotation_chunk_std_deg": 0.082,
+    "acc_sign": 1,
+    "segment_ranking": [
+      {
+        "segment": "femur_r",
+        "rel_gyro_residual": 0.0445,
+        "offset_s": 0.1362,
+        "norm_corr": 0.9961
+      },
+      {
+        "segment": "femur_l",
+        "rel_gyro_residual": 0.4952,
+        "offset_s": -0.3,
+        "norm_corr": 0.1224
+      },
+      {
+        "segment": "pelvis",
+        "rel_gyro_residual": 0.7959,
+        "offset_s": -0.0848,
+        "norm_corr": 0.4882
+      },
+      {
+        "segment": "torso",
+        "rel_gyro_residual": 0.9624,
+        "offset_s": 0.08,
+        "norm_corr": 0.1821
+      },
+      {
+        "segment": "tibia_l",
+        "rel_gyro_residual": 0.9887,
+        "offset_s": -0.2412,
+        "norm_corr": 0.5467
+      },
+      {
+        "segment": "tibia_r",
+        "rel_gyro_residual": 1.0416,
+        "offset_s": 0.3,
+        "norm_corr": 0.5621
+      },
+      {
+        "segment": "foot_l",
+        "rel_gyro_residual": 1.4198,
+        "offset_s": -0.2323,
+        "norm_corr": 0.599
+      },
+      {
+        "segment": "foot_r",
+        "rel_gyro_residual": 1.4881,
+        "offset_s": 0.3,
+        "norm_corr": 0.5964
+      }
+    ],
+    "warnings": []
+  },
+  "imu_shank": {
+    "segment": "tibia_r",
+    "time_offset_s": 0.13675,
+    "position_m_mujoco": [
+      0.05022,
+      -0.01049,
+      -0.14038
+    ],
+    "position_m_opensim": [
+      0.05022,
+      -0.14038,
+      0.01049
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.70148,
+      0.09224,
+      -0.7007,
+      0.0919
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        0.00116,
+        -0.2582,
+        -0.96609
+      ],
+      [
+        -0.00033,
+        0.96609,
+        -0.2582
+      ],
+      [
+        1.0,
+        0.00062,
+        0.00103
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        0.00116,
+        -0.96609,
+        0.2582
+      ],
+      [
+        1.0,
+        0.00103,
+        -0.00062
+      ],
+      [
+        0.00033,
+        0.2582,
+        0.96609
+      ]
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        0.00116,
+        -0.00033,
+        1.0
+      ],
+      "y": [
+        -0.2582,
+        0.96609,
+        0.00062
+      ],
+      "z": [
+        -0.96609,
+        -0.2582,
+        0.00103
+      ]
+    },
+    "gyro_bias_rad_s": [
+      0.02216,
+      0.04392,
+      0.02986
+    ],
+    "acc_bias_m_s2": [
+      -0.09871,
+      -0.11237,
+      -0.15986
+    ],
+    "rms_residual_gyro_rad_s": 0.0514,
+    "rms_residual_acc_m_s2": 0.49129,
+    "position_std_m_mujoco": [
+      0.00081,
+      0.00359,
+      0.00081
+    ],
+    "rotation_std_deg": [
+      0.04824,
+      0.13031,
+      0.05239
+    ],
+    "position_chunk_std_m_mujoco": [
+      0.00148,
+      0.00102,
+      0.00038
+    ],
+    "rotation_chunk_std_deg": 0.149,
+    "acc_sign": 1,
+    "segment_ranking": [
+      {
+        "segment": "tibia_r",
+        "rel_gyro_residual": 0.0297,
+        "offset_s": 0.1368,
+        "norm_corr": 1.0001
+      },
+      {
+        "segment": "foot_r",
+        "rel_gyro_residual": 0.4817,
+        "offset_s": 0.1104,
+        "norm_corr": 0.8811
+      },
+      {
+        "segment": "femur_r",
+        "rel_gyro_residual": 0.641,
+        "offset_s": -0.0403,
+        "norm_corr": 0.5544
+      },
+      {
+        "segment": "femur_l",
+        "rel_gyro_residual": 0.7022,
+        "offset_s": 0.1358,
+        "norm_corr": 0.3589
+      },
+      {
+        "segment": "pelvis",
+        "rel_gyro_residual": 0.8641,
+        "offset_s": -0.2418,
+        "norm_corr": 0.3316
+      },
+      {
+        "segment": "torso",
+        "rel_gyro_residual": 0.9024,
+        "offset_s": 0.2832,
+        "norm_corr": 0.4031
+      },
+      {
+        "segment": "tibia_l",
+        "rel_gyro_residual": 0.9298,
+        "offset_s": -0.1062,
+        "norm_corr": 0.1278
+      },
+      {
+        "segment": "foot_l",
+        "rel_gyro_residual": 0.9552,
+        "offset_s": 0.3,
+        "norm_corr": 0.2885
+      }
+    ],
+    "warnings": []
+  },
+  "imu_foot": {
+    "segment": "foot_r",
+    "time_offset_s": 0.13693,
+    "position_m_mujoco": [
+      0.06992,
+      0.00267,
+      -0.01128
+    ],
+    "position_m_opensim": [
+      0.06992,
+      -0.01128,
+      -0.00267
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.00358,
+      0.99524,
+      0.08693,
+      -0.04396
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        0.98102,
+        0.17335,
+        -0.08687
+      ],
+      [
+        0.17272,
+        -0.98486,
+        -0.01477
+      ],
+      [
+        -0.08812,
+        -0.00051,
+        -0.99611
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        0.98102,
+        -0.08687,
+        -0.17335
+      ],
+      [
+        -0.08812,
+        -0.99611,
+        0.00051
+      ],
+      [
+        -0.17272,
+        0.01477,
+        -0.98486
+      ]
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        0.98102,
+        0.17272,
+        -0.08812
+      ],
+      "y": [
+        0.17335,
+        -0.98486,
+        -0.00051
+      ],
+      "z": [
+        -0.08687,
+        -0.01477,
+        -0.99611
+      ]
+    },
+    "gyro_bias_rad_s": [
+      0.00412,
+      0.02316,
+      0.03537
+    ],
+    "acc_bias_m_s2": [
+      -0.02736,
+      0.20224,
+      0.28239
+    ],
+    "rms_residual_gyro_rad_s": 0.05965,
+    "rms_residual_acc_m_s2": 0.96862,
+    "position_std_m_mujoco": [
+      0.00121,
+      0.00677,
+      0.00123
+    ],
+    "rotation_std_deg": [
+      0.0474,
+      0.16046,
+      0.04589
+    ],
+    "position_chunk_std_m_mujoco": [
+      0.00055,
+      0.00333,
+      0.00052
+    ],
+    "rotation_chunk_std_deg": 0.152,
+    "acc_sign": 1,
+    "segment_ranking": [
+      {
+        "segment": "foot_r",
+        "rel_gyro_residual": 0.027,
+        "offset_s": 0.1369,
+        "norm_corr": 0.9994
+      },
+      {
+        "segment": "tibia_r",
+        "rel_gyro_residual": 0.379,
+        "offset_s": 0.1634,
+        "norm_corr": 0.8809
+      },
+      {
+        "segment": "tibia_l",
+        "rel_gyro_residual": 0.7066,
+        "offset_s": -0.0768,
+        "norm_corr": 0.4759
+      },
+      {
+        "segment": "femur_r",
+        "rel_gyro_residual": 0.7163,
+        "offset_s": -0.0489,
+        "norm_corr": 0.6062
+      },
+      {
+        "segment": "femur_l",
+        "rel_gyro_residual": 0.8264,
+        "offset_s": 0.1694,
+        "norm_corr": 0.2063
+      },
+      {
+        "segment": "pelvis",
+        "rel_gyro_residual": 0.9055,
+        "offset_s": -0.2264,
+        "norm_corr": 0.1676
+      },
+      {
+        "segment": "torso",
+        "rel_gyro_residual": 0.9161,
+        "offset_s": 0.3,
+        "norm_corr": 0.346
+      },
+      {
+        "segment": "foot_l",
+        "rel_gyro_residual": 1.0199,
+        "offset_s": -0.3,
+        "norm_corr": 0.146
+      }
+    ],
+    "warnings": []
+  },
+  "imu_pelvis": {
+    "segment": "pelvis",
+    "time_offset_s": 0.13701,
+    "position_m_mujoco": [
+      -0.17106,
+      3e-05,
+      -0.0007
+    ],
+    "position_m_opensim": [
+      -0.17106,
+      -0.0007,
+      -3e-05
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.70667,
+      0.00054,
+      0.70754,
+      0.00045
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        -0.00123,
+        0.00012,
+        1.0
+      ],
+      [
+        0.0014,
+        1.0,
+        -0.00012
+      ],
+      [
+        -1.0,
+        0.0014,
+        -0.00123
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        -0.00123,
+        1.0,
+        -0.00012
+      ],
+      [
+        -1.0,
+        -0.00123,
+        -0.0014
+      ],
+      [
+        -0.0014,
+        0.00012,
+        1.0
+      ]
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        -0.00123,
+        0.0014,
+        -1.0
+      ],
+      "y": [
+        0.00012,
+        1.0,
+        0.0014
+      ],
+      "z": [
+        1.0,
+        -0.00012,
+        -0.00123
+      ]
+    },
+    "gyro_bias_rad_s": [
+      0.00933,
+      -0.02092,
+      0.02166
+    ],
+    "acc_bias_m_s2": [
+      -0.1242,
+      0.04785,
+      -0.16083
+    ],
+    "rms_residual_gyro_rad_s": 0.0334,
+    "rms_residual_acc_m_s2": 0.10804,
+    "position_std_m_mujoco": [
+      0.00146,
+      0.00249,
+      0.00152
+    ],
+    "rotation_std_deg": [
+      0.18456,
+      0.12147,
+      0.12514
+    ],
+    "position_chunk_std_m_mujoco": [
+      0.00187,
+      0.00226,
+      0.00131
+    ],
+    "rotation_chunk_std_deg": 0.239,
+    "acc_sign": 1,
+    "segment_ranking": [
+      {
+        "segment": "pelvis",
+        "rel_gyro_residual": 0.1092,
+        "offset_s": 0.138,
+        "norm_corr": 0.9682
+      },
+      {
+        "segment": "torso",
+        "rel_gyro_residual": 0.723,
+        "offset_s": 0.107,
+        "norm_corr": 0.3644
+      },
+      {
+        "segment": "femur_l",
+        "rel_gyro_residual": 2.7606,
+        "offset_s": -0.1862,
+        "norm_corr": 0.4929
+      },
+      {
+        "segment": "femur_r",
+        "rel_gyro_residual": 2.7805,
+        "offset_s": -0.1788,
+        "norm_corr": 0.5507
+      },
+      {
+        "segment": "tibia_l",
+        "rel_gyro_residual": 4.6652,
+        "offset_s": -0.0398,
+        "norm_corr": 0.3496
+      },
+      {
+        "segment": "tibia_r",
+        "rel_gyro_residual": 4.8721,
+        "offset_s": -0.0319,
+        "norm_corr": 0.3599
+      },
+      {
+        "segment": "foot_l",
+        "rel_gyro_residual": 6.5186,
+        "offset_s": 0.1603,
+        "norm_corr": 0.1452
+      },
+      {
+        "segment": "foot_r",
+        "rel_gyro_residual": 6.7409,
+        "offset_s": 0.1485,
+        "norm_corr": 0.2141
+      }
+    ],
+    "warnings": []
+  },
+  "imu_trunk": {
+    "segment": "torso",
+    "time_offset_s": 0.1371,
+    "position_m_mujoco": [
+      -0.11948,
+      -0.00265,
+      0.32071
+    ],
+    "position_m_opensim": [
+      -0.11948,
+      0.32071,
+      0.00265
+    ],
+    "quat_wxyz_sensor_to_segment_mujoco": [
+      0.50026,
+      -0.49909,
+      -0.50008,
+      0.50056
+    ],
+    "R_sensor_to_segment_mujoco": [
+      [
+        -0.00128,
+        -0.00166,
+        -1.0
+      ],
+      [
+        1.0,
+        0.00068,
+        -0.00128
+      ],
+      [
+        0.00068,
+        -1.0,
+        0.00166
+      ]
+    ],
+    "R_sensor_to_segment_opensim": [
+      [
+        -0.00128,
+        -1.0,
+        0.00166
+      ],
+      [
+        0.00068,
+        0.00166,
+        1.0
+      ],
+      [
+        -1.0,
+        0.00128,
+        0.00068
+      ]
+    ],
+    "sensor_axes_in_segment_mujoco": {
+      "x": [
+        -0.00128,
+        1.0,
+        0.00068
+      ],
+      "y": [
+        -0.00166,
+        0.00068,
+        -1.0
+      ],
+      "z": [
+        -1.0,
+        -0.00128,
+        0.00166
+      ]
+    },
+    "gyro_bias_rad_s": [
+      -0.01003,
+      0.00373,
+      -0.02858
+    ],
+    "acc_bias_m_s2": [
+      -0.13464,
+      -0.1002,
+      -0.23584
+    ],
+    "rms_residual_gyro_rad_s": 0.04921,
+    "rms_residual_acc_m_s2": 0.15074,
+    "position_std_m_mujoco": [
+      0.00181,
+      0.0081,
+      0.0015
+    ],
+    "rotation_std_deg": [
+      0.20771,
+      0.25604,
+      0.16575
+    ],
+    "position_chunk_std_m_mujoco": [
+      0.00143,
+      0.00844,
+      0.00176
+    ],
+    "rotation_chunk_std_deg": 0.343,
+    "acc_sign": 1,
+    "segment_ranking": [
+      {
+        "segment": "torso",
+        "rel_gyro_residual": 0.1929,
+        "offset_s": 0.1371,
+        "norm_corr": 0.9436
+      },
+      {
+        "segment": "pelvis",
+        "rel_gyro_residual": 0.8612,
+        "offset_s": 0.1686,
+        "norm_corr": 0.424
+      },
+      {
+        "segment": "femur_l",
+        "rel_gyro_residual": 4.0211,
+        "offset_s": 0.1927,
+        "norm_corr": 0.138
+      },
+      {
+        "segment": "femur_r",
+        "rel_gyro_residual": 4.0253,
+        "offset_s": -0.0982,
+        "norm_corr": 0.1926
+      },
+      {
+        "segment": "tibia_l",
+        "rel_gyro_residual": 5.9142,
+        "offset_s": -0.2854,
+        "norm_corr": 0.3488
+      },
+      {
+        "segment": "tibia_r",
+        "rel_gyro_residual": 6.1018,
+        "offset_s": -0.0077,
+        "norm_corr": 0.438
+      },
+      {
+        "segment": "foot_l",
+        "rel_gyro_residual": 7.7046,
+        "offset_s": 0.2276,
+        "norm_corr": 0.3365
+      },
+      {
+        "segment": "foot_r",
+        "rel_gyro_residual": 7.8889,
+        "offset_s": -0.0463,
+        "norm_corr": 0.4144
+      }
+    ],
+    "warnings": []
+  }
+}

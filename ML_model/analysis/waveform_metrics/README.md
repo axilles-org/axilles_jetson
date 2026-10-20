@@ -26,7 +26,13 @@ metrics = compute_all(
 ```
 
 Without `exo_strides`/`gatech_strides`, `cmc`, `bland_altman_bias`,
-`bland_altman_loa`, and `icc` are left as `None`.
+`bland_altman_loa`, and `icc` are left as `None`. CMC works for any two stride
+stacks; Bland-Altman and ICC compare per-stride peaks pairwise, so they are only
+computed when both stacks have the same number of strides.
+
+**Peak definition:** the extremum in the reference (`gatech`) waveform's dominant
+direction, i.e. the sign of its largest-magnitude sample. Both waveforms are measured
+in that direction, so a negative push-off moment is compared with a negative peak.
 
 Set `include_dtw=False` to skip the O(n·m) DTW distance on long signals.
 
@@ -41,7 +47,7 @@ Set `include_dtw=False` to skip the O(n·m) DTW distance on long signals.
 | `peak_value_error`, `peak_value_pct_error` | `features.py` | Difference in peak magnitude |
 | `peak_timing_error_pct` | `features.py` | Difference in peak location, as % of gait cycle |
 | `rom_error` | `features.py` | Difference in range of motion (max - min) |
-| `cmc` | `agreement.py` | Shape agreement across repeated strides (Kadaba et al., 1989) |
+| `cmc` | `agreement.py` | Shape agreement across repeated strides: √(1 − within-timepoint variance / total variance) (Kadaba et al., 1989); NaN when there is no common shape |
 | `bland_altman_bias`, `bland_altman_loa` | `agreement.py` | Systematic bias and 95% limits of agreement between paired stride peaks |
 | `icc` | `agreement.py` | Reliability of exo vs. gatech as two "raters" of the same strides |
 

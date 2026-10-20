@@ -1,0 +1,26 @@
+{
+  "foot": {
+    "stance_gravity_angle_deg_median": 12.01,
+    "stance_gravity_angle_deg_range": [
+      3.88,
+      28.03
+    ],
+    "rotation_axis_angle_deg_median": 10.41,
+    "rotation_axis_angle_deg_range": [
+      0.89,
+      28.61
+    ]
+  },
+  "shank": {
+    "stance_gravity_angle_deg_median": 4.7,
+    "stance_gravity_angle_deg_range": [
+      2.3,
+      12.2
+    ],
+    "rotation_axis_angle_deg_median": 9.84,
+    "rotation_axis_angle_deg_range": [
+      2.16,
+      17.89
+    ]
+  }
+}

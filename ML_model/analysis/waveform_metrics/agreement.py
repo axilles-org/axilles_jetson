@@ -6,35 +6,20 @@ import numpy as np
 def cmc(exo_strides: np.ndarray, gatech_strides: np.ndarray) -> float:
     """Coefficient of Multiple Correlation between two (n_curves, n_samples) stacks.
 
-    Kadaba et al. (1989) formulation: treats each curve (exo or gatech stride) as
-    a repeated measure of the same underlying gait-cycle shape, and asks how much
-    of the total variability is within-timepoint (noise) vs. across-the-cycle
-    (signal). Values near 1 mean the curves trace the same shape; values near 0
-    mean within-timepoint spread rivals the shape's own variation.
+    Kadaba et al. (1989), as in Ferrari et al. (2010): within-timepoint variance
+    (spread of the curves around their mean curve) over total variance. 1 = all
+    curves identical; NaN when the spread exceeds the total variance (no common shape).
     """
-    curves = np.concatenate([exo_strides, gatech_strides], axis=0)  # (n_curves, n_samples)
+    curves = np.concatenate([exo_strides, gatech_strides], axis=0)
     n_curves, n_samples = curves.shape
-
-    grand_mean = curves.mean()
-    timepoint_mean = curves.mean(axis=0)  # mean curve across all strides, per sample
-    curve_mean = curves.mean(axis=1)      # each curve's own mean level
-
-    ss_timepoint = n_curves * np.sum((timepoint_mean - grand_mean) ** 2)
-    ss_curve = n_samples * np.sum((curve_mean - grand_mean) ** 2)
-    ss_total = np.sum((curves - grand_mean) ** 2)
-    ss_error = ss_total - ss_timepoint - ss_curve
-
-    df_error = (n_curves - 1) * (n_samples - 1)
-    df_timepoint = n_samples - 1
-    if df_error <= 0 or df_timepoint <= 0:
+    if n_curves < 2:
         return float("nan")
 
-    ms_error = ss_error / df_error
-    ms_timepoint = ss_timepoint / df_timepoint
-    denom = ms_error + ms_timepoint
-    if denom < 1e-9:
+    within = np.sum((curves - curves.mean(axis=0)) ** 2) / (n_samples * (n_curves - 1))
+    total = np.sum((curves - curves.mean()) ** 2) / (n_samples * n_curves - 1)
+    if total < 1e-12 or within > total:
         return float("nan")
-    return float(np.sqrt(max(0.0, 1.0 - ms_error / denom)))
+    return float(np.sqrt(1.0 - within / total))
 
 
 def bland_altman(exo_values: np.ndarray, gatech_values: np.ndarray) -> tuple[float, tuple[float, float]]:

@@ -1,0 +1,5 @@
+imu,segment,origin,reliable,x_cm,y_cm,z_cm,iqr_x_cm,iqr_y_cm,iqr_z_cm,quat_wxyz_sensor_to_segment,orientation_spread_deg,clock_offset_ms,acc_sign,n_trials,n_trials_total,place_on_body
+foot,calcn_r,heel,True,11.74,-0.07,3.22,0.25,0.91,0.32,0.91446 0.17768 0.35100 -0.09482,2.61,-11.16,1,23,24,"Top of the foot, 63% of the way from heel to toe joint (midfoot/laces), centred"
+shank,tibia_r,knee centre,True,2.44,0.87,-26.1,0.63,1.0,0.95,0.69896 0.13692 0.69756 -0.07820,2.19,-16.61,1,21,24,"Front of the shin, 58% of the way down, centred"
+thigh,femur_r,hip centre,True,6.99,1.86,-21.2,1.06,2.98,3.31,0.48624 0.59182 -0.44725 0.46183,6.54,-18.39,-1,20,24,"Front of the thigh, 52% of the way down"
+trunk,torso,lumbar joint,False,5.73,-0.91,4.32,1.9,1.2,2.11,0.74077 0.00852 0.67169 -0.00464,11.7,-36.0,1,12,24,"Not reliable (lumbar locked in IK, no torso markers)"

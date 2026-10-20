@@ -1,0 +1,132 @@
+<mujoco model="AB11">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.005" gravity="0 0 -9.81"><flag contact="disable"/></option>
+  <visual><global offwidth="1280" offheight="720"/></visual>
+  <default><joint limited="false" damping="0"/><geom contype="0" conaffinity="0"/></default>
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.2 0.3 0.4" rgb2="0.3 0.4 0.5" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="2 2" texuniform="true"/>
+    <material name="skin" rgba="0.8 0.65 0.55 0.7"/>
+  </asset>
+  <worldbody>
+    <light pos="0 0 4" dir="0 0 -1"/>
+    <geom name="floor" type="plane" size="0 0 0.05" material="grid"/>
+    <body name="pelvis" pos="0 0 0" quat="1 0 0 0">
+      <joint name="pelvis_tx" type="slide" axis="1 0 0"/>
+      <joint name="pelvis_ty" type="slide" axis="0 0 1"/>
+      <joint name="pelvis_tz" type="slide" axis="0 -1 0"/>
+      <joint name="pelvis_tilt" type="hinge" axis="0 -1 0"/>
+      <joint name="pelvis_list" type="hinge" axis="1 0 0"/>
+      <joint name="pelvis_rotation" type="hinge" axis="0 0 1"/>
+      <inertial pos="-0.061201244 0 0" mass="12.6039" diaginertia="0.12603888 0.12603888 0.12603888"/>
+      <geom type="capsule" fromto="0 0 0 -0.12240249 0 0" size="0.035" material="skin" mass="0"/>
+      <site name="m_R_ASIS" pos="0.048936453 -0.10960037 0.023121593" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+      <site name="m_L_ASIS" pos="0.044424087 0.10541173 0.020390817" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+      <site name="m_L_PSIS" pos="-0.1454088 0.053619719 0.075536089" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+      <site name="m_R_PSIS" pos="-0.14596148 -0.05526812 0.075868356" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+      <body name="femur_r" pos="-0.061201244 -0.072281526 -0.057219268" quat="1 0 0 0">
+        <joint name="hip_flexion_r" type="hinge" axis="0 -1 0"/>
+        <joint name="hip_adduction_r" type="hinge" axis="1 0 0"/>
+        <joint name="hip_rotation_r" type="hinge" axis="0 0 1"/>
+        <inertial pos="0 0 -0.16983119" mass="9.95447" diaginertia="0.099544712 0.099544712 0.099544712"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.33966237" size="0.035" material="skin" mass="0"/>
+        <site name="m_R_Thigh_Upper" pos="0.052751042 -0.11138745 -0.094199915" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="m_R_Thigh_Front" pos="0.078444144 -0.095782994 -0.14768847" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="m_R_Thigh_Rear" pos="0.02541492 -0.11365941 -0.15002444" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="m_R_Knee_Lat" pos="8.3187958e-05 -0.062828074 -0.41461082" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="imu_thigh" type="box" size="0.02 0.015 0.006" pos="0.061528606 0.076250625 -0.24433938" quat="0.4454855 0.62912082 -0.46639883 0.43384536" rgba="0.1 0.5 1 1" group="1"/>
+        <body name="tibia_r" pos="0 0 0" quat="1 0 0 0">
+          <joint name="knee_r_translation1" type="slide" axis="1 0 0"/>
+          <joint name="knee_r_translation2" type="slide" axis="0 0 1"/>
+          <joint name="knee_angle_r" type="hinge" axis="0 -1 0"/>
+          <inertial pos="0 0 -0.18992679" mass="3.96781" diaginertia="0.039678115 0.039678115 0.039678115"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.37985358" size="0.035" material="skin" mass="0"/>
+          <site name="m_R_Shank_Upper" pos="-0.042580495 -0.093266895 -0.14469274" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="m_R_Shank_Front" pos="0.00060809651 -0.080438524 -0.203919" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="m_R_Shank_Rear" pos="-0.05382057 -0.086382779 -0.20648568" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="m_R_Ankle_Lat" pos="-0.0084761744 -0.0474634 -0.41917348" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="imu_shank" type="box" size="0.02 0.015 0.006" pos="0.035138861 -0.0029203524 -0.2751565" quat="0.70858569 0.050016444 0.70220432 0.048101681" rgba="0.1 0.8 0.2 1" group="1"/>
+          <body name="talus_r" pos="0 0 -0.43743181" quat="1 0 0 0">
+            <joint name="ankle_angle_r" type="hinge" axis="-0.10501355 -0.97912632 -0.17402245"/>
+            <inertial pos="0 0 0" mass="0.107021" diaginertia="0.0010702121 0.0010702121 0.0010702121"/>
+            <geom type="sphere" size="0.025" material="skin" mass="0"/>
+            <body name="calcn_r" pos="-0.049612906 -0.0080568836 -0.042675034" quat="1 0 0 0">
+              <joint name="subtalar_angle_r" type="hinge" axis="0.78717961 0.12094949 0.60474746"/>
+              <inertial pos="0.10167379 0 0.030502136" mass="1.33777" diaginertia="0.013377652 0.013377652 0.013377652"/>
+              <geom type="capsule" fromto="0 0 0 0.20334757 0 0.061004272" size="0.02" material="skin" mass="0"/>
+              <site name="m_R_Heel" pos="-0.020713559 -0.0040161753 0.02232455" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="m_R_Toe_Lat" pos="0.14859023 -0.061846743 -0.0048650342" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="m_R_Toe_Med" pos="0.18008326 0.052711611 0.0037480969" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="m_R_Toe_Tip" pos="0.19346821 0.026422144 0.019797309" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="imu_foot" type="box" size="0.02 0.015 0.006" pos="0.14265625 -0.0022869369 0.015756522" quat="0.94293599 0.10454229 0.29728979 -0.107524" rgba="1 0.3 0.1 1" group="1"/>
+              <body name="toes_r" pos="0.18179273 -0.0010980769 -0.0020334757" quat="1 0 0 0">
+                <joint name="mtp_angle_r" type="hinge" axis="-0.5809544 -0.81393611 0"/>
+                <inertial pos="0.03517913 0.017792913 0.0061004272" mass="0.231808" diaginertia="0.0023180795 0.0023180795 0.0023180795"/>
+                <geom type="capsule" fromto="0 0 0 0.070358261 0.035585826 0.012200854" size="0.02" material="skin" mass="0"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="femur_l" pos="-0.061201244 0.072281526 -0.057219268" quat="1 0 0 0">
+        <joint name="hip_flexion_l" type="hinge" axis="0 -1 0"/>
+        <joint name="hip_adduction_l" type="hinge" axis="-1 0 0"/>
+        <joint name="hip_rotation_l" type="hinge" axis="0 0 -1"/>
+        <inertial pos="0 0 -0.16983119" mass="9.95447" diaginertia="0.099544712 0.099544712 0.099544712"/>
+        <geom type="capsule" fromto="0 0 0 0 0 -0.33966237" size="0.035" material="skin" mass="0"/>
+        <site name="m_L_Thigh_Upper" pos="-0.0082576639 0.124067 -0.0803325" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="m_L_Thigh_Front" pos="0.037115125 0.1231811 -0.13617482" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="m_L_Thigh_Rear" pos="-0.024949283 0.11865743 -0.13524856" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <site name="m_L_Knee_Lat" pos="0.0019590685 0.073530826 -0.41013477" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+        <body name="tibia_l" pos="0 0 0" quat="1 0 0 0">
+          <joint name="knee_l_translation1" type="slide" axis="1 0 0"/>
+          <joint name="knee_l_translation2" type="slide" axis="0 0 1"/>
+          <joint name="knee_angle_l" type="hinge" axis="0 -1 0"/>
+          <inertial pos="0 0 -0.18992679" mass="3.96781" diaginertia="0.039678115 0.039678115 0.039678115"/>
+          <geom type="capsule" fromto="0 0 0 0 0 -0.37985358" size="0.035" material="skin" mass="0"/>
+          <site name="m_L_Shank_Upper" pos="-0.055419677 0.091723986 -0.16369712" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="m_L_Shank_Front" pos="-0.010650331 0.088052472 -0.21472464" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="m_L_Shank_Rear" pos="-0.066233053 0.073667658 -0.21848681" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <site name="m_L_Ankle_Lat" pos="-0.010599875 0.047663019 -0.42715416" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+          <body name="talus_l" pos="0 0 -0.43743181" quat="1 0 0 0">
+            <joint name="ankle_angle_l" type="hinge" axis="0.10501355 -0.97912632 0.17402245"/>
+            <inertial pos="0 0 0" mass="0.107021" diaginertia="0.0010702121 0.0010702121 0.0010702121"/>
+            <geom type="sphere" size="0.025" material="skin" mass="0"/>
+            <body name="calcn_l" pos="-0.049612906 0.0080568836 -0.042675034" quat="1 0 0 0">
+              <joint name="subtalar_angle_l" type="hinge" axis="-0.78717961 0.12094949 -0.60474746"/>
+              <inertial pos="0.10167379 0 0.030502136" mass="1.33777" diaginertia="0.013377652 0.013377652 0.013377652"/>
+              <geom type="capsule" fromto="0 0 0 0.20334757 0 0.061004272" size="0.02" material="skin" mass="0"/>
+              <site name="m_L_Heel" pos="-0.014171201 0.0015840368 0.022304634" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="m_L_Toe_Lat" pos="0.15634028 0.062743871 -0.011517099" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="m_L_Toe_Med" pos="0.17763675 -0.053491491 0.0046613457" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <site name="m_L_Toe_Tip" pos="0.18849883 -0.029088747 0.020246697" size="0.008" rgba="0.2 0.4 1 1" group="2"/>
+              <body name="toes_l" pos="0.18179273 0.0010980769 -0.0020334757" quat="1 0 0 0">
+                <joint name="mtp_angle_l" type="hinge" axis="0.5809544 -0.81393611 0"/>
+                <inertial pos="0.03517913 -0.017792913 0.0061004272" mass="0.231808" diaginertia="0.0023180795 0.0023180795 0.0023180795"/>
+                <geom type="capsule" fromto="0 0 0 0.070358261 -0.035585826 0.012200854" size="0.02" material="skin" mass="0"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="torso" pos="-0.087170655 0 0.070550232" quat="1 0 0 0">
+        <joint name="lumbar_extension" type="hinge" axis="0 -1 0"/>
+        <joint name="lumbar_bending" type="hinge" axis="1 0 0"/>
+        <joint name="lumbar_rotation" type="hinge" axis="0 0 1"/>
+        <inertial pos="-0.030789215 0 0.32841829" mass="36.6404" diaginertia="0.36640425 0.36640425 0.36640425"/>
+        <geom type="capsule" fromto="0 0 0 -0.061578429 0 0.65683658" size="0.035" material="skin" mass="0"/>
+        <site name="imu_trunk" type="box" size="0.02 0.015 0.006" pos="0.10026843 0.028767968 0.029290735" quat="0.61844016 -0.086632825 0.77505144 0.096549364" rgba="0.9 0.8 0.1 1" group="1"/>
+      </body>
+    </body>
+  </worldbody>
+  <sensor>
+<accelerometer name="imu_foot_acc" site="imu_foot"/>
+<gyro name="imu_foot_gyr" site="imu_foot"/>
+<accelerometer name="imu_shank_acc" site="imu_shank"/>
+<gyro name="imu_shank_gyr" site="imu_shank"/>
+<accelerometer name="imu_thigh_acc" site="imu_thigh"/>
+<gyro name="imu_thigh_gyr" site="imu_thigh"/>
+<accelerometer name="imu_trunk_acc" site="imu_trunk"/>
+<gyro name="imu_trunk_gyr" site="imu_trunk"/>
+</sensor>
+</mujoco>

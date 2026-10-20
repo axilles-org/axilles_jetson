@@ -18,22 +18,22 @@ def compute_all(
 
     ``exo`` and ``gatech`` are 1-D arrays of equal length, already resampled to a
     common time base (e.g. 0-100% gait cycle). ``exo_strides``/``gatech_strides``
-    are optional (n_strides, n_samples) stacks of per-stride peak values, used for
-    the multi-trial agreement metrics (CMC, Bland-Altman, ICC); these are skipped
-    when not provided.
+    are optional (n_strides, n_samples) stacks of per-stride curves. With them, CMC
+    is computed; Bland-Altman and ICC (on per-stride peaks) additionally need the
+    strides to be paired, i.e. equal counts. Skipped metrics are None.
     """
     if exo.shape != gatech.shape:
         raise ValueError(f"shape mismatch: exo {exo.shape} vs gatech {gatech.shape}")
 
-    multi_trial = exo_strides is not None and gatech_strides is not None
-    if multi_trial:
-        exo_peaks = exo_strides.max(axis=1)
-        gatech_peaks = gatech_strides.max(axis=1)
-        ba_bias, ba_loa = agreement.bland_altman(exo_peaks, gatech_peaks)
+    ba_bias = ba_loa = cmc_value = icc_value = None
+    if exo_strides is not None and gatech_strides is not None:
         cmc_value = agreement.cmc(exo_strides, gatech_strides)
-        icc_value = agreement.icc(exo_peaks, gatech_peaks)
-    else:
-        ba_bias = ba_loa = cmc_value = icc_value = None
+        if len(exo_strides) == len(gatech_strides):
+            sign = features.peak_sign(gatech)
+            exo_peaks = features.peak_values(exo_strides, sign, axis=1)
+            gatech_peaks = features.peak_values(gatech_strides, sign, axis=1)
+            ba_bias, ba_loa = agreement.bland_altman(exo_peaks, gatech_peaks)
+            icc_value = agreement.icc(exo_peaks, gatech_peaks)
 
     return WaveformMetrics(
         rmse=shape.rmse(exo, gatech),

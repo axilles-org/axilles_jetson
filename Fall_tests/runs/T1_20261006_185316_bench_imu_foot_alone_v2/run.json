@@ -1,0 +1,41 @@
+{
+  "test": "1",
+  "run_id": "T1_20261006_185316_bench_imu_foot_alone_v2",
+  "date": "2026-10-06T18:58:19",
+  "condition": "bench_imu_foot_alone_v2",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "4b2d14c",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "sensor alone, bench; GC off, pinned to CPU 5",
+  "t_start_ns": 627586846462414,
+  "t_end_ns": 627886846989674,
+  "duration_s": 300.00052726,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0
+  },
+  "n_samples": 134655,
+  "n_loops": 30001,
+  "gc_disabled": true,
+  "cpu_pinned": 5
+}

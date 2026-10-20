@@ -1,0 +1,46 @@
+{
+  "test": "0",
+  "run_id": "T0_20261006_180706_dryrun_freeze",
+  "date": "2026-10-06T18:07:20",
+  "condition": "dryrun_freeze",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "4b2d14c",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "",
+  "t_start_ns": 624818677768289,
+  "t_end_ns": 624828679071394,
+  "duration_s": 10.001303105,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": "imu_shank_gyro",
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 0,
+    "shank": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0,
+    "shank": 0
+  },
+  "n_samples": 16807,
+  "n_loops": 1001
+}

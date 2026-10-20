@@ -1,0 +1,34 @@
+{
+  "test": "1",
+  "run_id": "T1_20261006_181740_bench_encoder_alone",
+  "date": "2026-10-06T18:22:41",
+  "condition": "bench_encoder_alone",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "4b2d14c",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "sensor alone, bench",
+  "t_start_ns": 625449507926707,
+  "t_end_ns": 625749507934050,
+  "duration_s": 300.000007343,
+  "stopped_early": false,
+  "channels": [
+    "encoder"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {},
+  "imu_lost_packets": {},
+  "n_samples": 119996,
+  "n_loops": 29999
+}

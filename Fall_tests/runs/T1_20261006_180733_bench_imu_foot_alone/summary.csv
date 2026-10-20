@@ -1,0 +1,12 @@
+test,run_id,channel,metric,value,unit,limit,result
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_accel,mean_rate,249.3,Hz,>=100,PASS
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_accel,largest_gap,49.23,ms,<=30,FAIL
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_accel,missing_samples,0.01,%,<3.0,PASS
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_accel,failed_reads,0,%,<1.0,PASS
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_accel,longest_failed_run,0,reads,,
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_gyro,mean_rate,199.6,Hz,>=100,PASS
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_gyro,largest_gap,53.47,ms,<=30,FAIL
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_gyro,missing_samples,0.01333,%,<3.0,PASS
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_gyro,failed_reads,0,%,<1.0,PASS
+T1,T1_20261006_180733_bench_imu_foot_alone,imu_foot_gyro,longest_failed_run,0,reads,,
+T1,T1_20261006_180733_bench_imu_foot_alone,all,driver_restarts,0,,0,PASS

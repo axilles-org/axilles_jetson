@@ -1,0 +1,46 @@
+{
+  "test": "2",
+  "run_id": "T2_20261006_183739_bench_hand_1hz",
+  "date": "2026-10-06T18:38:13",
+  "condition": "bench_hand_1hz",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "4b2d14c",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "ankle swung by hand ~1 Hz, FSRs pressed intermittently, no wearer",
+  "t_start_ns": 626651803941612,
+  "t_end_ns": 626681804191711,
+  "duration_s": 30.000250099,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 0,
+    "shank": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0,
+    "shank": 0
+  },
+  "n_samples": 50299,
+  "n_loops": 3001
+}

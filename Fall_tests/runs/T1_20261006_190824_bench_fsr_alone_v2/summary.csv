@@ -1,0 +1,12 @@
+test,run_id,channel,metric,value,unit,limit,result
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_toe,mean_rate,200,Hz,>=100,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_toe,largest_gap,5.553,ms,<=30,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_toe,missing_samples,0,%,<3.0,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_toe,failed_reads,0,%,<1.0,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_toe,longest_failed_run,0,reads,,
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_heel,mean_rate,200,Hz,>=100,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_heel,largest_gap,5.815,ms,<=30,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_heel,missing_samples,0,%,<3.0,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_heel,failed_reads,0,%,<1.0,PASS
+T1,T1_20261006_190824_bench_fsr_alone_v2,fsr_heel,longest_failed_run,0,reads,,
+T1,T1_20261006_190824_bench_fsr_alone_v2,all,driver_restarts,0,,0,PASS

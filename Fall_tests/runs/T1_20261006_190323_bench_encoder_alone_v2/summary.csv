@@ -1,0 +1,7 @@
+test,run_id,channel,metric,value,unit,limit,result
+T1,T1_20261006_190323_bench_encoder_alone_v2,encoder,mean_rate,400,Hz,>=200,PASS
+T1,T1_20261006_190323_bench_encoder_alone_v2,encoder,largest_gap,4.126,ms,<=15,PASS
+T1,T1_20261006_190323_bench_encoder_alone_v2,encoder,missing_samples,0,%,<3.0,PASS
+T1,T1_20261006_190323_bench_encoder_alone_v2,encoder,failed_reads,0,%,<1.0,PASS
+T1,T1_20261006_190323_bench_encoder_alone_v2,encoder,longest_failed_run,0,reads,,
+T1,T1_20261006_190323_bench_encoder_alone_v2,all,driver_restarts,0,,0,PASS

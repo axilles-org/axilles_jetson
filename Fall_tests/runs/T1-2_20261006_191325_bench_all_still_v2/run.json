@@ -1,0 +1,48 @@
+{
+  "test": "1,2",
+  "run_id": "T1-2_20261006_191325_bench_all_still_v2",
+  "date": "2026-10-06T19:18:32",
+  "condition": "bench_all_still_v2",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "4b2d14c",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "full sensor set, stationary; GC off, pinned to CPU 5",
+  "t_start_ns": 628798297701664,
+  "t_end_ns": 629098298506290,
+  "duration_s": 300.000804626,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 0,
+    "shank": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0,
+    "shank": 0
+  },
+  "n_samples": 486467,
+  "n_loops": 29999,
+  "gc_disabled": true,
+  "cpu_pinned": 5
+}

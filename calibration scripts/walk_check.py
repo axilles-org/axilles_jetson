@@ -40,9 +40,12 @@ from pathlib import Path
 
 import numpy as np
 
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
 import exo_frame as E
 
-OUT_DIR = Path("calibration")
+OUT_DIR = ROOT / "calibration"
 
 INSTRUCTIONS = """
     Walk at a comfortable, steady pace on level ground.

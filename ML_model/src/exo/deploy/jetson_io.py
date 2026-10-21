@@ -48,7 +48,7 @@ class JetsonSensors:
 
     def __init__(self, axilles_root: str):
         root = Path(axilles_root).expanduser()
-        sys.path.insert(0, str(root / "BNO085"))
+        sys.path.insert(0, str(root / "Sensor_Tests" / "IMUs" / "BNO085"))
         sys.path.insert(0, str(root / "TBE_controller"))
 
         from bno085_live_dual_fast import FastDualIMUReader

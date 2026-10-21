@@ -88,7 +88,7 @@ import sys
 import time
 import warnings
 from struct import unpack_from
-
+import math
 import smbus2
 
 warnings.filterwarnings("ignore", category=RuntimeWarning,
@@ -103,8 +103,6 @@ from adafruit_bno08x import (
     BNO_REPORT_GYROSCOPE,
     BNO_REPORT_GAME_ROTATION_VECTOR,
 )
-from bno085_live import quat_to_euler
-
 # ── Hardware constants ─────────────────────────────────────────────────────────
 I2C_BUS         = 1
 
@@ -152,7 +150,22 @@ _ADS_CONV_S     = 1.0 / 860.0 + 0.00015
 _AS5600_REG_ANGLE = 0x0E   # ANGLE[11:8] MSB + 0x0F LSB (filtered output)
 
 _SHTP_CHANNEL_CONTROL = 2
+# Help function
 
+def quat_to_euler(qi, qj, qk, qr):
+    """Convert quaternion (i, j, k, real) → (roll, pitch, yaw) in degrees."""
+    sinr = 2.0 * (qr * qi + qj * qk)
+    cosr = 1.0 - 2.0 * (qi * qi + qj * qj)
+    roll  = math.degrees(math.atan2(sinr, cosr))
+
+    sinp  = max(-1.0, min(1.0, 2.0 * (qr * qj - qk * qi)))
+    pitch = math.degrees(math.asin(sinp))
+
+    siny = 2.0 * (qr * qk + qi * qj)
+    cosy = 1.0 - 2.0 * (qj * qj + qk * qk)
+    yaw  = math.degrees(math.atan2(siny, cosy))
+
+    return roll, pitch, yaw
 
 # ── BNO085 fast reader ─────────────────────────────────────────────────────────
 class _FastIMU:

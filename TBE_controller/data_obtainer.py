@@ -15,12 +15,15 @@ MIT_P_MIN  = -12.56
 MIT_P_MAX  =  12.56
 MIT_V_MIN  = -65.0
 MIT_V_MAX  =  65.0
-MIT_T_MIN  = -5.0
-MIT_T_MAX  =  5.0
+MIT_T_MIN  = -22.0
+MIT_T_MAX  =  22.0
 MIT_KP_MIN =   0.0
 MIT_KP_MAX = 500.0
 MIT_KD_MIN =   0.0
 MIT_KD_MAX =   5.0
+
+SAFE_T_MAX = 5.0
+SAFE_T_MIN = -5.0
 
 # CAN mode IDs
 MODE_MIT      = 8
@@ -159,7 +162,7 @@ class SensorData():
             return
 
         # Clamp torque to motor limits
-        self.torque_input = _clamp( - ASSISTANCE_LEVEL * self.torque_input, MIT_T_MIN, MIT_T_MAX)
+        self.torque_input = _clamp( - ASSISTANCE_LEVEL * self.torque_input, SAFE_T_MIN, SAFE_T_MAX)
         self.logger.logger.info(f"Sending torque command: {self.torque_input:.2f} Nm")
         # MIT mode with kp=0, kd=0, pos=0, vel=0 → pure feedforward torque
         kp = 0.0

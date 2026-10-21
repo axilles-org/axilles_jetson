@@ -39,6 +39,7 @@ IMPORT INTO OTHER SCRIPTS:
 ──────────────────────────────────────────────────────────────────────────────
 """
 
+import math
 import sys
 import time
 import warnings
@@ -55,7 +56,22 @@ from adafruit_bno08x import (
     BNO_REPORT_GYROSCOPE,
     BNO_REPORT_GAME_ROTATION_VECTOR,
 )
-from bno085_live import quat_to_euler
+# Help function
+
+def quat_to_euler(qi, qj, qk, qr):
+    """Convert quaternion (i, j, k, real) → (roll, pitch, yaw) in degrees."""
+    sinr = 2.0 * (qr * qi + qj * qk)
+    cosr = 1.0 - 2.0 * (qi * qi + qj * qj)
+    roll  = math.degrees(math.atan2(sinr, cosr))
+
+    sinp  = max(-1.0, min(1.0, 2.0 * (qr * qj - qk * qi)))
+    pitch = math.degrees(math.asin(sinp))
+
+    siny = 2.0 * (qr * qk + qi * qj)
+    cosy = 1.0 - 2.0 * (qj * qj + qk * qk)
+    yaw  = math.degrees(math.atan2(siny, cosy))
+
+    return roll, pitch, yaw
 
 # ── Hardware constants ─────────────────────────────────────────────────────────
 I2C_BUS         = 1

@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
-BNO_PATH = WORKSPACE_ROOT / "BNO085"
+BNO_PATH = WORKSPACE_ROOT / "Sensor_Tests" / "IMUs" / "BNO085"
 if str(BNO_PATH) not in sys.path:
     sys.path.insert(0, str(BNO_PATH))
 

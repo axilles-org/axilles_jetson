@@ -11,7 +11,7 @@ Plotted streams:
   - Encoder angle (deg)
 
 Run:
-  python3 BNO085/live_all_sensors_plot.py
+  python3 Sensor_Tests/live_all_sensors_plot.py
 """
 
 from __future__ import annotations

@@ -41,13 +41,18 @@ class Teleplot:
 class JetsonSensors:
     """One exo raw-frame dict per read, from the team's hardware modules.
 
-    Foot IMU = BNO085 IMU-A (0x4A), shank IMU = IMU-B (0x4B); FSR + encoder from
+    Foot IMU = BNO085 IMU-A (0x4A), shank IMU = IMU-B (0x4B), both on
+    ``i2c_bus`` (bus 1 on the exo, same as TBE_controller); FSR + encoder from
     ``SensorData``. BNO085 accel is m/s^2 and gyro rad/s — passed through; the
     SensorAdapter's per-IMU accel_scale converts m/s^2 -> g.
     """
 
-    def __init__(self, axilles_root: str):
+    def __init__(self, axilles_root: str, i2c_bus: int = 1):
         root = Path(axilles_root).expanduser()
+        if not (root / "TBE_controller" / "data_obtainer.py").is_file():
+            raise FileNotFoundError(
+                f"--axilles {root} is not an axilles_jetson checkout "
+                "(expected TBE_controller/ and Sensor_Tests/IMUs/BNO085/)")
         sys.path.insert(0, str(root / "Sensor_Tests" / "IMUs" / "BNO085"))
         sys.path.insert(0, str(root / "TBE_controller"))
 
@@ -56,7 +61,7 @@ class JetsonSensors:
         from utilities import Logger
 
         self._log = Logger()
-        self._imus = FastDualIMUReader()
+        self._imus = FastDualIMUReader(bus=i2c_bus)
         self._fsr_enc = SensorData(self._log)
         self._last = {k: 0.0 for k in FRAME_KEYS}
 

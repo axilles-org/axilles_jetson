@@ -17,7 +17,7 @@ For the powered version see scripts/jetson_deploy.py.
 Run on the Jetson:
     python scripts/jetson_mock_deploy.py \
         --run runs/tcn_mid_stance_lastN_20260831_212705 \
-        --mass 72 --axilles ~/axilles_jetson \
+        --mass 72 \
         --duration 120 --out logs/mock_run.csv
 
 Then review:
@@ -48,8 +48,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, help="trained run dir (best.ts / best.onnx)")
     ap.add_argument("--mass", type=float, required=True, help="wearer body mass (kg)")
-    ap.add_argument("--axilles", default="~/axilles_jetson",
-                    help="path to the axilles_jetson repo (hardware I/O)")
+    ap.add_argument("--axilles", default=str(Path(__file__).resolve().parents[2]),
+                    help="path to the axilles_jetson repo (hardware I/O; default: this checkout)")
     ap.add_argument("--replay", default=None,
                     help="replay a data_collection CSV instead of live sensors")
     ap.add_argument("--backend", choices=["jit", "onnx", "trt"], default=None)

@@ -6,7 +6,7 @@ runs the motor interface without a CAN bus. Run scripts/jetson_mock_deploy.py an
 review it first. See docs/DEPLOYMENT.md.
 
     python scripts/jetson_deploy.py --run runs/<dir> --mass 72 \
-        --axilles ~/axilles_jetson --arm --assist-scale 0.1 --torque-cap 2.0
+        --arm --assist-scale 0.1 --torque-cap 2.0
 
 --start-passive (with --arm): the motor is engaged at zero torque and assistance
 stays off until the dashboard switches it on (exo.deploy.assist_switch). With
@@ -55,7 +55,8 @@ def main() -> None:
     ap.add_argument("--height", type=float, default=None,
                     help="wearer height (m); with --gender, re-exports the model for this wearer")
     ap.add_argument("--gender", choices=["M", "F"], default=None)
-    ap.add_argument("--axilles", default="~/axilles_jetson")
+    ap.add_argument("--axilles", default=str(Path(__file__).resolve().parents[2]),
+                    help="path to the axilles_jetson repo (default: this checkout)")
     ap.add_argument("--replay", default=None, help="CSV to replay instead of live sensors")
     ap.add_argument("--backend", choices=["jit", "onnx", "trt"], default=None)
     ap.add_argument("--rate", type=float, default=None)
@@ -72,8 +73,12 @@ def main() -> None:
                     help="hard N.m ceiling on the command (<= 5)")
     ap.add_argument("--arm-ramp", type=float, default=5.0,
                     help="seconds to fade assistance 0 -> full after arming")
-    ap.add_argument("--command-sign", type=float, default=1.0,
-                    help="maps assist magnitude to the actuator direction")
+    ap.add_argument("--command-sign", type=float, default=-1.0,
+                    help="maps assist magnitude to the actuator direction "
+                         "(-1: plantarflexion assist is negative motor torque, as in TBE)")
+    ap.add_argument("--slew", type=float, default=10.0,
+                    help="max N.m/s change of the sent torque, incl. assist on/off "
+                         "and watchdog (Stop / crash still zero immediately)")
     ap.add_argument("--watchdog-ms", type=float, default=25.0,
                     help="zero torque if a loop takes longer than this")
     ap.add_argument("--start-passive", action="store_true",
@@ -126,6 +131,8 @@ def main() -> None:
             "assistance_scale": cfg.deploy.assistance_scale,
             "torque_cap_nm": torque_cap,
             "arm_ramp_s": args.arm_ramp,
+            "command_sign": args.command_sign,
+            "slew_nm_per_s": args.slew,
             "control_rate_hz": rate,
             "armed": bool(args.arm),
             "dry_run": bool(args.dry_run),
@@ -148,7 +155,7 @@ def main() -> None:
     # motor. dry_run drives the interface (clamp/sign/pack, session ramp) without
     # a CAN bus; --arm without --dry-run actually transmits.
     motor = MotorInterface(torque_limit_nm=torque_cap, command_sign=args.command_sign,
-                           dry_run=args.dry_run)
+                           dry_run=args.dry_run, slew_nm_per_s=args.slew)
     live_torque = args.arm and not args.dry_run
     exercise_command = args.arm or args.dry_run       # compute + ramp the command
     if live_torque or args.dry_run:
@@ -180,7 +187,8 @@ def main() -> None:
             "compute + log only, NO torque")
     print(f"powered ML deploy | {rate:.0f} Hz | backend={cfg.deploy.backend} | "
           f"mass={args.mass} kg | scale={cfg.deploy.assistance_scale} | "
-          f"cap={torque_cap} N.m | {mode}")
+          f"cap={torque_cap} N.m | sign={args.command_sign:+.0f} | "
+          f"slew={args.slew} N.m/s | {mode}")
     if switch:
         print("PASSIVE: zero torque until assistance is switched on from the dashboard.")
     elif exercise_command:
@@ -192,9 +200,14 @@ def main() -> None:
     i = 0
     sent = 0.0
     session_ramp = 0.0
+    prev_start = None
     try:
         while not _STOP and (t_now := time.perf_counter() - t0) < args.duration:
             loop_start = time.perf_counter()
+            # measured tick (the loop can run slower than --rate); capped so a
+            # stall doesn't license one large slew step
+            tick_dt = min(loop_start - prev_start, 0.05) if prev_start else dt
+            prev_start = loop_start
 
             raw = sensors.read()
             if not calibrated:
@@ -221,7 +234,7 @@ def main() -> None:
             if loop_ms > args.watchdog_ms:
                 target = 0.0                               # overrun -> no torque
 
-            sent = motor.send_torque(target) if exercise_command else 0.0
+            sent = motor.send_torque(target, dt=tick_dt) if exercise_command else 0.0
 
             row = {"t_s": round(t_now, 4),
                    **{k: round(raw[k], 5) for k in FRAME_KEYS},

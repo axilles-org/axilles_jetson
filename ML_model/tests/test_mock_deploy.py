@@ -151,3 +151,19 @@ def test_powered_watchdog_zeros_torque_on_overrun():
     assert sent[19] != 0.0
     assert sent[20] == 0.0
     assert sent[21] != 0.0
+
+
+def test_powered_slew_limits_assist_off_but_stop_is_immediate():
+    from exo.deploy.motor import MotorInterface
+
+    motor = MotorInterface(torque_limit_nm=5.0, command_sign=-1.0, dry_run=True,
+                           slew_nm_per_s=10.0)
+    dt = 0.01
+    sent = [motor.send_torque(2.0, dt=dt) for _ in range(40)]
+    assert sent[0] == pytest.approx(-0.1)            # ramps in, negative = plantarflexion
+    assert sent[-1] == pytest.approx(-2.0)
+    off = [motor.send_torque(0.0, dt=dt) for _ in range(5)]
+    assert off[0] == pytest.approx(-1.9)             # assist OFF ramps out, no step
+    assert max(abs(b - a) for a, b in zip(sent + off, (sent + off)[1:])) <= 0.1 + 1e-9
+    motor.stop()
+    assert motor.last_torque_nm == 0.0               # e-stop is not slew-limited

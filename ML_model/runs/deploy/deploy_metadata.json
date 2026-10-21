@@ -18,11 +18,11 @@
   "window_length": 300,
   "num_input_channels": 14,
   "output_units": "Nm/kg",
-  "subject_mass_kg": 72,
+  "subject_mass_kg": 72.0,
   "subject_idx": 2,
   "applies_input_scaler": true,
   "applies_output_scaler": true,
   "control_rate_hz": 100,
   "trace_max_error": 0.0,
-  "onnx_max_error": 0.0
+  "onnx_max_error": 2.9802322387695312e-08
 }

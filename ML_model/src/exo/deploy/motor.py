@@ -7,10 +7,13 @@ repo (TBE_controller/data_obtainer.py, Cubemars_AK80-9/ak_80_test.py).
 """
 from __future__ import annotations
 
+import json
 import struct
+import subprocess
 import time
 
 CAN_INTERFACE = "can0"
+CAN_BITRATE = 1_000_000  # AK80-9 default
 MOTOR_ID = 0x68
 
 # MIT-mode field ranges (match axilles_jetson's conservative AK80-9 setup)
@@ -25,6 +28,27 @@ MODE_MIT = 8
 _ENTER_MIT = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC]
 _EXIT_MIT = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD]
 _ZERO_MIT = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE]
+
+
+def check_can_link(channel: str = CAN_INTERFACE, bitrate: int = CAN_BITRATE) -> None:
+    """Raise with the fix command if ``channel`` is down or at the wrong bitrate
+    (python-can only fails later, at the first send, with "Network is down")."""
+    fix = (f"sudo ip link set {channel} down && "
+           f"sudo ip link set {channel} up type can bitrate {bitrate} restart-ms 100")
+    try:
+        out = subprocess.run(["ip", "-json", "-details", "link", "show", channel],
+                             capture_output=True, text=True, check=True).stdout
+        link = json.loads(out)[0]
+    except (OSError, subprocess.CalledProcessError, ValueError, IndexError) as exc:
+        raise RuntimeError(f"CAN interface {channel} not found ({exc})") from exc
+
+    info = link.get("linkinfo", {}).get("info_data", {})
+    actual = info.get("bittiming", {}).get("bitrate")
+    if "UP" not in link.get("flags", []):
+        raise RuntimeError(f"CAN interface {channel} is down. Run: {fix}")
+    if actual != bitrate:
+        raise RuntimeError(f"CAN interface {channel} bitrate is {actual}, "
+                           f"motor expects {bitrate}. Run: {fix}")
 
 
 def _clamp(x: float, lo: float, hi: float) -> float:
@@ -59,14 +83,17 @@ class MotorInterface:
 
     ``torque_limit_nm`` is clamped to at most ``MIT_T_MAX`` (5). ``command_sign``
     maps a positive assist magnitude to the plantarflexion-assist direction —
-    verify on the bench.
+    -1 on the exo (TBE_controller/data_obtainer.py negates its profile too).
+    ``slew_nm_per_s`` bounds how fast the sent torque may change when
+    ``send_torque`` is given ``dt``; ``stop()`` always zeros immediately.
     """
 
     def __init__(self, torque_limit_nm: float = 5.0, command_sign: float = 1.0,
                  channel: str = CAN_INTERFACE, motor_id: int = MOTOR_ID,
-                 dry_run: bool = False):
+                 dry_run: bool = False, slew_nm_per_s: float | None = None):
         self.torque_limit_nm = min(float(torque_limit_nm), MIT_T_MAX)
         self.command_sign = float(command_sign)
+        self.slew_nm_per_s = slew_nm_per_s
         self.motor_id = motor_id
         self.dry_run = dry_run
         self.last_torque_nm = 0.0
@@ -76,6 +103,7 @@ class MotorInterface:
             return
         import can  # lazy: Jetson only
 
+        check_can_link(channel)
         self._can = can
         self._bus = can.interface.Bus(channel=channel, interface="socketcan")
 
@@ -97,11 +125,14 @@ class MotorInterface:
         self.send_torque(0.0)
 
     # -- command --------------------------------------------------
-    def send_torque(self, torque_nm: float) -> float:
+    def send_torque(self, torque_nm: float, dt: float | None = None) -> float:
         """Command a feed-forward torque (N·m). Returns the value actually sent
-        after sign and clamp."""
+        after sign, clamp and (with ``dt``) slew limit."""
         t = _clamp(self.command_sign * torque_nm,
                    -self.torque_limit_nm, self.torque_limit_nm)
+        if self.slew_nm_per_s and dt:
+            step = self.slew_nm_per_s * dt
+            t = _clamp(t, self.last_torque_nm - step, self.last_torque_nm + step)
         self.last_torque_nm = t
         if self.dry_run or self._bus is None:
             return t

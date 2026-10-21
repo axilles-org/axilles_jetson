@@ -43,9 +43,13 @@ from pathlib import Path
 
 import numpy as np
 
+# Allow this script to be run directly from any working directory.
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
 import exo_frame as E
 
-OUT_DIR = Path("calibration")
+OUT_DIR = ROOT / "calibration"
 DEFAULT_SECONDS = 20.0
 NEUTRAL_SECONDS = 2.0
 

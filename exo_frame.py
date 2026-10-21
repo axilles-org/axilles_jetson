@@ -700,7 +700,8 @@ class ExoFrame:
 # Everything below runs on the robot. The hardware imports are kept inside the
 # functions that need them, so `import exo_frame` stays numpy-only on a laptop.
 
-CALIB_DIR = Path("calibration")
+REPO_ROOT = Path(__file__).resolve().parent
+CALIB_DIR = REPO_ROOT / "calibration"
 
 # Quiet-standing acceptance. A subject who cannot hold below this is not standing
 # still enough for the reading to serve as a zero.
@@ -873,7 +874,7 @@ def load_sensor_hub(imu_report_hz: float = 200.0, verbose: bool = True):
     """
     import importlib.util
 
-    path = Path("Data collection") / "data_collection.py"
+    path = REPO_ROOT / "Data collection" / "data_collection.py"
     if not path.exists():
         raise FileNotFoundError(
             f"Cannot find {path}. Run calibration from the repository root on the "

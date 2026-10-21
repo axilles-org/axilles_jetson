@@ -28,6 +28,9 @@ from typing import Callable
 
 import numpy as np
 
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
 from exo_frame import (
     ExoFrame, FEATURES, G_TO_MS2, N_FEATURES, SEGMENTS,
     _angle_between, _fit_lag_and_rotation, average_rotations, is_rotation,
@@ -35,8 +38,8 @@ from exo_frame import (
     read_hf_trial, rotation_angle, stride_bounds,
 )
 
-HF_ROOT = Path("mrsd-exo-ankle")
-EXO_DIR = Path("Data collection/data")
+HF_ROOT = ROOT / "mrsd-exo-ankle"
+EXO_DIR = ROOT / "Data collection/data"
 SUBJECT, TRIAL = "AB06", "treadmill_01_01"
 EXCLUDE = ("20260404_214949",)
 

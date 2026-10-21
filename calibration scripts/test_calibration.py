@@ -32,12 +32,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+# Allow this script to be run directly from any working directory.
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
 import exo_frame as E
 
-HF_ROOT = Path("mrsd-exo-ankle")
-EXO_CSV = Path("Data collection/data/"
-               "data_collection_20260404_215743_tightshoes_200Hz_2kmph.csv")
-OUT_DIR = Path("calibration/_test_output")
+HF_ROOT = ROOT / "mrsd-exo-ankle"
+EXO_CSV = ROOT / "Data collection/data/data_collection_20260404_215743_tightshoes_200Hz_2kmph.csv"
+OUT_DIR = ROOT / "calibration/_test_output"
 SUBJECT, TRIAL = "AB06", "treadmill_01_01"
 
 # Ground truth injected into the synthetic phases.

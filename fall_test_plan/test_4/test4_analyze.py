@@ -504,6 +504,10 @@ def write_report(results, overall, crit, out_dir, plots):
         m = load["meta"]
         L += [f"**Verdict (load run): {'PASS' if overall else 'FAIL'}**", "",
               f"- Run: `{load['path']}`" + (" — **SIMULATED HARDWARE**" if m.get("sim") else ""),
+              *([f"- **SIMULATED SENSORS**: no sensors attached; sensor reads are placeholder "
+                 f"waits ({m.get('sim_sensor_read_ms')} ms). CAN bus, motor, TCN, safety checks "
+                 "and logging are real. Re-run with the sensors connected for the final result."]
+                if m.get("sim_sensors") and not m.get("sim") else []),
               f"- Controller: TCN `{m.get('tcn', {}).get('run_dir', '?')}`, backend "
               f"`{m.get('tcn', {}).get('backend', '?')}`; torque mode "
               f"`{m.get('motor', {}).get('torque_mode', '?')}`; scheduler "
@@ -668,7 +672,9 @@ def main():
         for h in load["hints"]:
             print(f"  -> {h}")
         print(f"\nTest 4 {'PASS' if overall else 'FAIL'}"
-              + ("  (SIMULATED HARDWARE — not a test result)" if load["meta"].get("sim") else ""))
+              + ("  (SIMULATED HARDWARE — not a test result)" if load["meta"].get("sim") else
+                 "  (SIMULATED SENSORS — sensor read times are placeholders)"
+                 if load["meta"].get("sim_sensors") else ""))
     print(f"report: {out_dir / 'report.md'}")
     return 0 if overall else 1
 

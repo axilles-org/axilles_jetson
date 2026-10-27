@@ -512,6 +512,18 @@ class Monitor:
 
 # ── phases ──────────────────────────────────────────────────────────────────
 
+def _count_frames(bus, seconds):
+    """Frames received from other nodes in `seconds`, by arbitration id."""
+    counts = {}
+    t_end = time.perf_counter() + seconds
+    while (left := t_end - time.perf_counter()) > 0:
+        msg = bus.recv(timeout=left)
+        if msg is not None and msg.is_rx:
+            key = f"0x{msg.arbitration_id:X}"
+            counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
 def phase_check(args):
     """Preflight. Exit code 0 only if everything needed for a hardware run works."""
     results = []
@@ -545,17 +557,31 @@ def phase_check(args):
         problem = check_can_link(args.can_channel)
         report("CAN link", problem is None, problem or f"{args.can_channel} up at {CAN_BITRATE} bit/s")
 
-        for bus_num, addrs in ((1, [0x48, 0x36]), (args.imu_bus, [0x4A, 0x4B])):
-            try:
-                missing = probe_i2c(bus_num, addrs)
-            except OSError as exc:
-                report(f"I2C bus {bus_num}", False, str(exc))
-                continue
-            for a in addrs:
-                report(f"I2C bus {bus_num} 0x{a:02X}", a not in missing,
-                       I2C_DEVICES[a] + (" not responding" if a in missing else ""))
+        if args.sim_sensors:
+            report("I2C sensors", True, "skipped (--sim-sensors)")
+        else:
+            for bus_num, addrs in ((1, [0x48, 0x36]), (args.imu_bus, [0x4A, 0x4B])):
+                try:
+                    missing = probe_i2c(bus_num, addrs)
+                except OSError as exc:
+                    report(f"I2C bus {bus_num}", False, str(exc))
+                    continue
+                for a in addrs:
+                    report(f"I2C bus {bus_num} 0x{a:02X}", a not in missing,
+                           I2C_DEVICES[a] + (" not responding" if a in missing else ""))
 
         if problem is None:
+            import can
+            # listen only: is anything (the motor's status broadcast) on the bus?
+            bus = can.Bus(interface="socketcan", channel=args.can_channel)
+            heard = _count_frames(bus, 0.5)
+            bus.shutdown()
+            report("CAN traffic (listen only)", True,
+                   f"{sum(heard.values())} frames in 0.5 s, ids {heard or 'none'}")
+
+        if problem is None and not args.motor_check:
+            report("motor", True, "not commanded (add --motor-check to send 0 N·m frames)")
+        elif problem is None:
             motor, _, _ = build_motor(ml, args)
             bus = motor._bus
             replies = {}
@@ -564,24 +590,26 @@ def phase_check(args):
                 t_end = time.perf_counter() + 0.3                # drain the enter reply
                 while bus.recv(timeout=0.05) is not None and time.perf_counter() < t_end:
                     pass
+                t0 = time.perf_counter()
                 for _ in range(20):                            # 0 N·m frames at 100 Hz
                     motor.send_torque(0.0)
-                    t_end = time.perf_counter() + 0.01
-                    while (left := t_end - time.perf_counter()) > 0:
-                        msg = bus.recv(timeout=left)
-                        if msg is not None:
-                            key = f"0x{msg.arbitration_id:X}"
-                            replies[key] = replies.get(key, 0) + 1
+                    for k, v in _count_frames(bus, 0.01).items():
+                        replies[k] = replies.get(k, 0) + v
+                span = time.perf_counter() - t0
             except Exception as exc:                           # noqa: BLE001
                 report("motor", False, f"{exc!r}")
             else:
+                # the AK80-9 sends its status on its own timer (~50 Hz here), not
+                # one reply per command, so only "is it alive" is checked
                 n = sum(replies.values())
-                report("motor reply", n >= 15,
-                       f"{n} replies to 20 zero-torque frames, ids {replies or 'none'}"
-                       + ("" if n >= 15 else " — motor powered? CAN H/L, 120 ohm "
-                          "termination, motor id 0x68?"))
+                report("motor status", n > 0,
+                       f"{n} frames ({n / span:.0f} Hz) while sending 20 zero-torque frames, "
+                       f"ids {replies or 'none'}"
+                       + ("" if n else " — motor powered? CAN H/L, 120 ohm termination, "
+                          "motor id 0x68?"))
             finally:
                 motor.shutdown()
+        if problem is None:
             link = can_link(args.can_channel)
             report("CAN bus state", True, link.get("linkinfo", {}).get("info_data", {})
                    .get("state", "?"))
@@ -601,6 +629,7 @@ def phase_run(args):
     preroll = args.preroll if args.preroll is not None else (1.0 if idle else 5.0)
 
     meta = {"phase": args.phase, "label": args.label, "sim": args.sim,
+            "sim_sensors": args.sim_sensors,
             "args": vars(args), "argv": sys.argv, "pid": os.getpid(),
             "started": datetime.now().isoformat(timespec="seconds"),
             "system": system_info(), "status": "starting"}
@@ -645,9 +674,12 @@ def phase_run(args):
 
             controller.backend.predict = timed_predict
 
-            if args.sim:
+            if args.sim_sensors:
                 from sim_hw import SimSensors
-                sensors = SimSensors(FRAME_KEYS)
+                sensors = SimSensors(FRAME_KEYS, imu_read_s=args.sim_imu_ms / 2000.0,
+                                     fsr_enc_read_s=args.sim_fsr_enc_ms / 1000.0)
+                meta["sim_sensor_read_ms"] = {"imu_both": args.sim_imu_ms,
+                                              "fsr_enc": args.sim_fsr_enc_ms}
             else:
                 if not args.skip_i2c_probe:
                     missing = probe_i2c(1, [0x48, 0x36]) + probe_i2c(args.imu_bus, [0x4A, 0x4B])
@@ -919,6 +951,14 @@ def main():
     ap.add_argument("--label", default="")
     ap.add_argument("--sim", action="store_true",
                     help="no hardware: simulated sensors + virtual CAN bus (pipeline check only)")
+    ap.add_argument("--sim-sensors", action="store_true",
+                    help="real CAN bus + motor, simulated sensor reads (no sensors attached)")
+    ap.add_argument("--sim-imu-ms", type=float, default=1.4,
+                    help="with --sim-sensors: time for one read of both IMUs, ms")
+    ap.add_argument("--sim-fsr-enc-ms", type=float, default=3.0,
+                    help="with --sim-sensors: time for both FSR conversions + encoder, ms")
+    ap.add_argument("--motor-check", action="store_true",
+                    help="preflight: also send 0 N·m frames to the motor (enters MIT mode)")
 
     g = ap.add_argument_group("timing")
     g.add_argument("--rate", type=float, default=100.0, help="control rate, Hz")
@@ -968,6 +1008,7 @@ def main():
     g.add_argument("--slew", type=float, default=10.0, help="N·m/s (if MotorInterface supports it)")
     args = ap.parse_args()
 
+    args.sim_sensors = args.sim_sensors or args.sim
     if args.phase == "check":
         return phase_check(args)
     if args.phase == "all":

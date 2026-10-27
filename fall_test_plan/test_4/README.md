@@ -94,7 +94,8 @@ torque. If you want that too, mount the actuator safely and run with
 All commands are run from the repository root.
 
 ```bash
-# 1. preflight: CAN link, the four I2C sensors, motor replies, TCN load time
+# 1. preflight: CAN link, the four I2C sensors, listen for motor traffic, TCN load time
+#    (sends nothing to the motor; add --motor-check to also send 20 zero-torque frames)
 python3 fall_test_plan/test_4/test4_run.py --phase check --ml-root ../exo_ws_ml/ML_model
 
 # 2. the whole test: check -> 10 s idle -> 600 s load -> analysis
@@ -113,6 +114,20 @@ still writes everything recorded so far. The run is then marked `interrupted`.
 If set-up is stuck (for example an IMU reconnect loop), press Ctrl-C a second
 time. Once shutdown has started, further Ctrl-Cs are ignored until the logs are
 written.
+
+### Motor only, no sensors attached (`--sim-sensors`)
+
+Use this when the Jetson and the motor are connected but the exo's sensors are
+not. The CAN bus, motor, TCN, safety checks and logging are all real. Only the
+sensor reads are replaced by fixed waits: 1.4 ms for both IMUs and 3.0 ms for
+the FSRs and encoder. Change them with `--sim-imu-ms` and `--sim-fsr-enc-ms`.
+These waits are placeholders, not measurements. The report is stamped
+**SIMULATED SENSORS**, and the full test has to be repeated with the sensors
+connected.
+
+```bash
+python3 fall_test_plan/test_4/test4_run.py --phase all --sim-sensors --ml-root ../exo_ws_ml/ML_model
+```
 
 ### Without hardware (pipeline check only)
 
@@ -148,6 +163,8 @@ python3 fall_test_plan/test_4/test4_analyze.py <run dir> [<run dir> ...] --out <
 | `--flush-run`, `--flush-duration`, `--flush-every` | off, 120, 1.0 | The marked disk-flush run |
 | `--no-teleplot` | off | Teleplot is on by default because the deploy runner streams it |
 | `--imu-bus`, `--can-channel` | 1, can0 | |
+| `--sim-sensors`, `--sim-imu-ms`, `--sim-fsr-enc-ms` | off, 1.4, 3.0 | Real CAN and motor, simulated sensor reads |
+| `--motor-check` | off | Preflight also sends 20 zero-torque frames (puts the motor in MIT mode) |
 | `--sim` | off | No hardware |
 
 ---

@@ -49,3 +49,29 @@ def test_train_and_deploy_paths_match():
     np.testing.assert_array_equal(
         pipeline.transform(train_df), pipeline.transform(deploy_df)
     )
+
+
+def test_transform_row_matches_dataframe_path():
+    """The runtime's no-pandas path gives bit-identical float32 values."""
+    pipeline = FeaturePipeline(FEATURES)
+    rng = np.random.default_rng(0)
+    for i in range(500):
+        scale = 10.0 ** rng.integers(-8, 8)
+        raw = {c: float(rng.normal() * scale) for c in FEATURES}
+        raw["stance"] = [0.0, 1.0, float("nan")][i % 3]
+        raw["unused"] = 123.0
+        expected = pipeline.transform(pd.DataFrame([[raw[c] for c in FEATURES]],
+                                                   columns=FEATURES))[0]
+        row = pipeline.transform_row(raw)
+        assert row.dtype == np.float32 and row.shape == (len(FEATURES),)
+        np.testing.assert_array_equal(row, expected)
+
+
+def test_transform_row_checks_like_transform():
+    pipeline = FeaturePipeline(FEATURES)
+    raw = {c: 0.0 for c in FEATURES}
+    raw["stance"] = 0.5
+    with pytest.raises(ValueError):
+        pipeline.transform_row(raw)
+    with pytest.raises(KeyError):
+        pipeline.transform_row({"imu_foot_Accel_X": 1.0})

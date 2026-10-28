@@ -1,0 +1,242 @@
+{
+  "overall_pass": true,
+  "generated": "2026-10-27T23:13:59",
+  "source": "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_192507/load",
+  "wire": {
+    "ok_sends": 5694,
+    "matched": true,
+    "wire_frames": 5694,
+    "status": "matched (FIFO, equal counts)",
+    "send_start_to_wire_min_ms": 0.21910021314397454,
+    "clock_drift_over_run_ms": -0.0026226043701171875
+  },
+  "endpoint": "on the CAN bus",
+  "timed_loops": 5213,
+  "loops_without_one_command": 0,
+  "commands_scored": 5213,
+  "window_s": 59.998648083012085,
+  "e2e_ms": {
+    "n": 5213,
+    "mean": 6.740058565462902,
+    "p50": 6.589924276340753,
+    "p99": 8.97148010088131,
+    "max": 23.573145153932273,
+    "min": 6.337079452350736
+  },
+  "e2e_send_return_ms": {
+    "n": 5213,
+    "mean": 6.583375588042721,
+    "p50": 6.432296009734273,
+    "p99": 8.817773864138873,
+    "max": 23.419075005222112,
+    "min": 6.181105098221451
+  },
+  "sensor_read_ms": {
+    "n": 5213,
+    "mean": 4.607082770238013,
+    "p50": 4.5381810665130615,
+    "p99": 6.016405057907107,
+    "max": 21.999417424201965,
+    "min": 4.502197027206421
+  },
+  "stages": {
+    "preprocess_ms": {
+      "label": "Preprocessing (adapter, features, assist)",
+      "n": 5213,
+      "mean": 2.990903313549151,
+      "p50": 2.8988728523254395,
+      "p99": 4.2918535995483404,
+      "max": 19.93693995475769,
+      "min": 2.773240804672241
+    },
+    "inference_ms": {
+      "label": "TCN inference",
+      "n": 5213,
+      "mean": 3.379003121531355,
+      "p50": 3.260158061981201,
+      "p99": 4.824484844207764,
+      "max": 15.43251609802246,
+      "min": 3.1171369552612305
+    },
+    "safety_ms": {
+      "label": "Safety checks + frame packing",
+      "n": 5213,
+      "mean": 0.05979143695217269,
+      "p50": 0.05808483762666583,
+      "p99": 0.1059233518689872,
+      "max": 1.1971430578269064,
+      "min": 0.04486942011862993
+    },
+    "can_send_ms": {
+      "label": "CAN send (to bus)",
+      "n": 5213,
+      "mean": 0.31036069343022327,
+      "p50": 0.3072897670790553,
+      "p99": 0.42417075950652383,
+      "max": 5.096156150102615,
+      "min": 0.24461123393848538
+    }
+  },
+  "send_detail": {
+    "send_call_ms": {
+      "label": "  bus.send() call",
+      "n": 5213,
+      "mean": 0.15367771601004274,
+      "p50": 0.1508310087956488,
+      "p99": 0.26737106032669566,
+      "max": 4.945505002979189,
+      "min": 0.09341700933873653
+    },
+    "transmit_ms": {
+      "label": "  send() return -> on the bus",
+      "n": 5213,
+      "mean": 0.15668297742018053,
+      "p50": 0.15613704454153776,
+      "p99": 0.18318218179047113,
+      "max": 0.2955266390927136,
+      "min": -0.9240102372132242
+    }
+  },
+  "slowest_stage": {
+    "by_median": "TCN inference",
+    "by_p99": "TCN inference",
+    "share_of_slowest_1pct": {
+      "Preprocessing (adapter, features, assist)": 0.47418050712863913,
+      "TCN inference": 0.48532546675058486,
+      "Safety checks + frame packing": 0.00564874467241121,
+      "CAN send (to bus)": 0.034845281448364844
+    }
+  },
+  "safety": {
+    "settings": {
+      "torque_cap_nm": 2.0,
+      "command_sign": -1.0,
+      "slew_nm_per_s": 10.0,
+      "watchdog_ms": 25.0,
+      "torque_mode": "zero",
+      "arm_ramp_s": 5.0,
+      "checks_run": [
+        "one_frame",
+        "finite",
+        "watchdog_decided",
+        "watchdog_zeroes",
+        "session_ramp",
+        "within_cap",
+        "pipeline",
+        "wire_within_cap",
+        "wire_matches",
+        "wire_no_gains"
+      ]
+    },
+    "commands": 5213,
+    "valid": 5213,
+    "failures_by_check": {
+      "one_frame": 0,
+      "finite": 0,
+      "watchdog_decided": 0,
+      "watchdog_zeroes": 0,
+      "session_ramp": 0,
+      "within_cap": 0,
+      "pipeline": 0,
+      "wire_within_cap": 0,
+      "wire_matches": 0,
+      "wire_no_gains": 0
+    },
+    "watchdog_trips": 4
+  },
+  "motor_reply": {
+    "status": "ok",
+    "ids": [
+      "0x2968"
+    ],
+    "frames_in_window": 2998,
+    "rate_hz": 49.9669521827588,
+    "period_ms": {
+      "n": 2997,
+      "mean": 20.01027095146803,
+      "p50": 20.001649856567383,
+      "p99": 20.282306671142578,
+      "max": 20.351171493530273,
+      "min": 19.815683364868164,
+      "std": 0.051234623730262704
+    },
+    "max_abs_current_a": 0.08,
+    "error_codes": [
+      0
+    ],
+    "max_temp_c": 38,
+    "next_status_ms": {
+      "n": 5213,
+      "mean": 9.967611546299633,
+      "p50": 10.071277618408203,
+      "p99": 19.817323684692383,
+      "max": 19.93107795715332,
+      "min": 0.14328956604003906
+    },
+    "feedback_age_ms": {
+      "n": 5213,
+      "mean": 10.096801395222341,
+      "p50": 10.015249252319336,
+      "p99": 19.853057861328125,
+      "max": 20.049571990966797,
+      "min": 0.00286102294921875
+    }
+  },
+  "criteria": [
+    {
+      "criterion": "Median sensor-read-to-CAN-send delay",
+      "value": "6.59 ms",
+      "limit": "<= 10 ms",
+      "measured_ms": 6.589924276340753,
+      "limit_ms": 10.0,
+      "result": "PASS"
+    },
+    {
+      "criterion": "99th-percentile delay",
+      "value": "8.97 ms",
+      "limit": "<= 20 ms",
+      "measured_ms": 8.97148010088131,
+      "limit_ms": 20.0,
+      "result": "PASS"
+    },
+    {
+      "criterion": "Maximum delay",
+      "value": "23.57 ms",
+      "limit": "<= 50 ms",
+      "measured_ms": 23.573145153932273,
+      "limit_ms": 50.0,
+      "result": "PASS"
+    },
+    {
+      "criterion": "Every torque command has a valid safety-limit result before transmission",
+      "value": "5213 / 5213 commands",
+      "limit": "all",
+      "result": "PASS"
+    }
+  ],
+  "pass": true,
+  "source_meta": {
+    "status": "completed",
+    "sim": false,
+    "sim_sensors": true,
+    "sim_sensor_read_ms": {
+      "imu_both": 1.4,
+      "fsr_enc": 3.0
+    },
+    "started": "2026-10-27T19:25:35",
+    "tcn": {
+      "run_dir": "/home/axilles/exo_ws/ML_model/runs/deploy",
+      "backend": "onnx",
+      "ml_src": "/home/axilles/exo_ws/ML_model/src",
+      "window_length": 300,
+      "control_rate_hz_config": 100
+    },
+    "motor": {
+      "torque_mode": "zero",
+      "torque_cap_nm": 2.0,
+      "command_sign": -1.0,
+      "slew_active": true,
+      "cmd_arb_id": "0x868"
+    }
+  }
+}

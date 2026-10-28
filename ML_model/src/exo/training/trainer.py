@@ -136,6 +136,16 @@ class Trainer:
             wandb.init(project=self.cfg.train.wandb_project,
                        name=self.cfg.train.wandb_run_name,
                        dir=str(self.run_dir), config=self.cfg.to_dict())
+            # Persist the W&B run identity into the checkpoint directory so any
+            # downstream consumer (e.g. the deploy-time dashboard) can link a
+            # hardware trial run back to this training run's history without
+            # needing the W&B API or this process's memory.
+            (self.run_dir / "wandb_run.json").write_text(json.dumps({
+                "project": self.cfg.train.wandb_project,
+                "run_id": wandb.run.id,
+                "run_name": wandb.run.name,
+                "run_url": wandb.run.url,
+            }, indent=2))
 
         best_val = float("inf")
         best_path = self.run_dir / "best.pt"

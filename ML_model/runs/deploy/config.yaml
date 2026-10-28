@@ -1,0 +1,218 @@
+paths:
+  dataset_dir: /Users/narayanan/PycharmProjects/exo-data/hf_dataset_tx_mujoco
+  processed_dir: /Users/narayanan/PycharmProjects/exo-data/ablation_mujoco/tx_foot_Accel_foot_Gyro_shank_Accel_shank_Gyro/processed
+  runs_dir: /Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/ablation/20261009_110715
+  hub:
+    repo_id: aicognition/mrsd-exo-ankle
+    revision: v1.0
+data:
+  feature_set: tx_all
+  feature_sets:
+    full:
+    - imu_foot_Accel_X
+    - imu_foot_Accel_Y
+    - imu_foot_Accel_Z
+    - imu_foot_Gyro_X
+    - imu_foot_Gyro_Y
+    - imu_foot_Gyro_Z
+    - imu_shank_Accel_X
+    - imu_shank_Accel_Y
+    - imu_shank_Accel_Z
+    - imu_shank_Gyro_X
+    - imu_shank_Gyro_Y
+    - imu_shank_Gyro_Z
+    - imu_thigh_Accel_X
+    - imu_thigh_Accel_Y
+    - imu_thigh_Accel_Z
+    - imu_thigh_Gyro_X
+    - imu_thigh_Gyro_Y
+    - imu_thigh_Gyro_Z
+    - fp_Treadmill_R_vy
+    - stance
+    - gon_ankle_sagittal
+    mid:
+    - imu_foot_Accel_X
+    - imu_foot_Accel_Y
+    - imu_foot_Accel_Z
+    - imu_foot_Gyro_X
+    - imu_foot_Gyro_Y
+    - imu_foot_Gyro_Z
+    - imu_shank_Accel_X
+    - imu_shank_Accel_Y
+    - imu_shank_Accel_Z
+    - imu_shank_Gyro_X
+    - imu_shank_Gyro_Y
+    - imu_shank_Gyro_Z
+    - stance
+    - gon_ankle_sagittal
+    minimal:
+    - imu_foot_Accel_X
+    - imu_foot_Accel_Y
+    - imu_foot_Accel_Z
+    - imu_foot_Gyro_X
+    - imu_foot_Gyro_Y
+    - imu_foot_Gyro_Z
+    - stance
+    - gon_ankle_sagittal
+    tx_all:
+    - imu_foot_Accel_X
+    - imu_foot_Accel_Y
+    - imu_foot_Accel_Z
+    - imu_foot_Gyro_X
+    - imu_foot_Gyro_Y
+    - imu_foot_Gyro_Z
+    - imu_shank_Accel_X
+    - imu_shank_Accel_Y
+    - imu_shank_Accel_Z
+    - imu_shank_Gyro_X
+    - imu_shank_Gyro_Y
+    - imu_shank_Gyro_Z
+    - stance
+    - gon_ankle_sagittal
+  split:
+    train:
+    - AB06
+    - AB07
+    - AB08
+    - AB11
+    - AB12
+    - AB13
+    - AB14
+    - AB15
+    - AB16
+    - AB17
+    - AB18
+    - AB19
+    - AB20
+    val:
+    - AB09
+    - AB21
+    - AB23
+    test:
+    - AB10
+    - AB24
+    - AB25
+    - AB27
+    - AB28
+    - AB30
+  window_length: 300
+  stride: 10
+  min_segment_length: 300
+  ingest:
+    terrain: treadmill
+    target_rate_hz: 100
+    native_rates_hz:
+      imu: 200
+      id: 200
+      fp: 1000
+      gon: 1000
+    target_column: ankle_angle_r_moment
+    antialias: true
+    gon_to_radians: true
+    drop_imu_segments:
+    - trunk
+    stance_source: gcRight
+    force_threshold_n: 50.0
+    output_format: npy
+  num_workers: 4
+  prefetch_factor: 4
+  cache_window_index: true
+model:
+  num_channels:
+  - 80
+  - 80
+  - 80
+  - 80
+  - 80
+  kernel_size: 5
+  activation: ReLU
+  norm_type: WeightNorm
+  dropout_type: Spatial
+  dropout: 0.15
+  l1_reg: 0.0
+  l2_reg: 0.0
+  use_subject_embedding: true
+  emb_dim: 4
+train:
+  batch_size: 32
+  epochs: 5
+  lr: 5.0e-05
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  loss_last_n: 50
+  scheduler: cosine
+  early_stop_patience: 8
+  seed: 0
+  max_steps_per_epoch: 0
+  log_every: 50
+  augment:
+    enabled: true
+    noise_std: 0.01
+    imu_gain_jitter: 0.05
+    time_warp: 0.0
+    channel_dropout: 0.0
+    latency_samples: 0
+    imu_rotation_deg: 0.0
+    encoder_offset_rad: 0.0
+    stance_jitter_samples: 0
+    assist_perturb: 0.0
+  perf:
+    amp: auto
+    compile: false
+    compile_mode: max-autotune
+    tf32: true
+    cudnn_benchmark: true
+    fused_optimizer: true
+    grad_accum_steps: 1
+  wandb_project: Exoskeleton_MRSD
+  wandb_run_name: ablation_tx_all
+  device: auto
+deploy:
+  assistance_scale: 0.2
+  torque_limit_nm: 30.0
+  rate_limit_nm_per_s: 200.0
+  ramp_in_s: 0.05
+  ramp_out_s: 0.05
+  control_rate_hz: 100
+  plantarflexion_sign: -1.0
+  exo_command_sign: 1.0
+  backend: onnx
+  device: cpu
+  sensor_adapter:
+    foot_rotation:
+    - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.0
+      - 1.0
+      - 0.0
+    - - 0.0
+      - 0.0
+      - 1.0
+    shank_rotation:
+    - - 1.0
+      - 0.0
+      - 0.0
+    - - 0.0
+      - 1.0
+      - 0.0
+    - - 0.0
+      - 0.0
+      - 1.0
+    foot_accel_scale: 1.0
+    foot_gyro_scale: 1.0
+    shank_accel_scale: 1.0
+    shank_gyro_scale: 1.0
+    foot_lever_arm_m:
+    - 0.0
+    - 0.0
+    - 0.0
+    shank_lever_arm_m:
+    - 0.0
+    - 0.0
+    - 0.0
+    ankle_encoder_neutral_deg: 85.001
+    ankle_encoder_sign: 1.0
+    heel_fsr_threshold: 22446.0
+    toe_fsr_threshold: 8737.2
+    fsr_debounce_s: 0.1

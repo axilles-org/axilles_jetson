@@ -1,0 +1,444 @@
+{
+  "phase": "idle",
+  "label": "",
+  "sim": false,
+  "sim_sensors": true,
+  "args": {
+    "phase": "idle",
+    "out": "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_180325/idle",
+    "label": "",
+    "sim": false,
+    "sim_sensors": true,
+    "sim_imu_ms": 1.4,
+    "sim_fsr_enc_ms": 3.0,
+    "motor_check": false,
+    "rate": 100.0,
+    "duration": 10.0,
+    "idle_duration": 10.0,
+    "preroll": null,
+    "scheduler": "relative",
+    "flush_every": 0.0,
+    "flush_run": true,
+    "flush_duration": 120.0,
+    "skip_check": false,
+    "ml_root": "/home/axilles/exo_ws/ML_model",
+    "run_dir": null,
+    "backend": null,
+    "mass": 72.0,
+    "gait_csv": "/home/axilles/exo_ws/Data collection/data/data_collection_20260404_215743_tightshoes_200Hz_2kmph.csv",
+    "no_gait_inject": false,
+    "arm_ramp": 5.0,
+    "watchdog_ms": 25.0,
+    "no_teleplot": false,
+    "logger": "deploy",
+    "imu_bus": 1,
+    "skip_i2c_probe": false,
+    "can_channel": "can0",
+    "no_can_monitor": false,
+    "torque_mode": "computed",
+    "torque_cap": 2.0,
+    "command_sign": -1.0,
+    "slew": 10.0
+  },
+  "argv": [
+    "/home/axilles/exo_ws/fall_test_plan/test_4/test4_run.py",
+    "--phase",
+    "all",
+    "--sim-sensors",
+    "--torque-mode",
+    "computed",
+    "--flush-run",
+    "--phase",
+    "idle",
+    "--out",
+    "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_180325/idle",
+    "--duration",
+    "10.0",
+    "--flush-every",
+    "0"
+  ],
+  "pid": 33459,
+  "started": "2026-10-27T18:03:35",
+  "system": {
+    "hostname": "axilles-jetson",
+    "model": "NVIDIA Jetson Orin Nano Engineering Reference Developer Kit Super",
+    "l4t": "# R36 (release), REVISION: 4.7, GCID: 42132812, BOARD: generic, EABI: aarch64, DATE: Thu Sep 18 22:54:44 UTC 2025\n# KERNEL_VARIANT: oot\nTARGET_USERSPACE_LIB_DIR=nvidia\nTARGET_USERSPACE_LIB_DIR_PATH=usr/lib/aarch64-linux-gnu/nvidia",
+    "python": "3.13.12",
+    "python_exe": "/home/axilles/miniconda3/bin/python3",
+    "numpy": "2.4.4",
+    "nvpmodel": "NV Power Mode: 25W\n1",
+    "governors": [
+      "schedutil"
+    ],
+    "cpu_max_khz": [
+      "1344000"
+    ],
+    "online_cpus": 6,
+    "loadavg_at_start": [
+      0.302734375,
+      0.654296875,
+      1.35205078125
+    ],
+    "git_commit": "481443901b7f8985b855ac44cf4e38924d71c932",
+    "git_branch": "axilles-154-Test4-Control-Loop-CAN-Command-rate",
+    "git_dirty_files": [
+      "A  ML_model/analysis/waveform_metrics/README.md",
+      "A  ML_model/analysis/waveform_metrics/__init__.py",
+      "A  ML_model/analysis/waveform_metrics/agreement.py",
+      "A  ML_model/analysis/waveform_metrics/features.py",
+      "A  ML_model/analysis/waveform_metrics/result.py",
+      "A  ML_model/analysis/waveform_metrics/runner.py",
+      "A  ML_model/analysis/waveform_metrics/shape.py",
+      "A  ML_model/analysis/waveform_metrics/test_waveform_metrics.py",
+      "A  ML_model/analysis/waveform_metrics/timing.py",
+      "A  ML_model/runs/deploy/ankle_reference.json",
+      "A  ML_model/runs/deploy/best.onnx",
+      "A  ML_model/runs/deploy/best.ts",
+      "A  ML_model/runs/deploy/config.yaml",
+      "A  ML_model/runs/deploy/demographics.parquet",
+      "A  ML_model/runs/deploy/deploy.pt",
+      "A  ML_model/runs/deploy/deploy_metadata.json",
+      "A  ML_model/runs/deploy/display_name.txt",
+      "A  ML_model/runs/deploy/model_meta.json",
+      "A  ML_model/runs/deploy/scaler_bundle.pkl",
+      "A  ML_model/runs/deploy/test_metrics.json",
+      "A  ML_model/runs/tcn_mid_stance_lastN_20260831_212705/display_name.txt",
+      "A  ML_model/scripts/ablation_report.py",
+      "A  ML_model/scripts/audit_gait_baselines.py",
+      "A  ML_model/scripts/compare_imu_to_exo.py",
+      "A  ML_model/scripts/compare_models.py",
+      "M  ML_model/scripts/jetson_deploy.py",
+      "M  ML_model/scripts/jetson_mock_deploy.py",
+      "A  ML_model/scripts/package_deploy.py",
+      "A  ML_model/scripts/replay_exo_recording.py",
+      "A  ML_model/scripts/transform_ablation.py",
+      "A  ML_model/src/exo/data/__init__.py",
+      "A  ML_model/src/exo/data/ablation.py",
+      "A  ML_model/src/exo/data/augment.py",
+      "A  ML_model/src/exo/data/dataset.py",
+      "A  ML_model/src/exo/data/demographics.py",
+      "A  ML_model/src/exo/data/feature_pipeline.py",
+      "A  ML_model/src/exo/data/gait_cycles.py",
+      "A  ML_model/src/exo/data/hub.py",
+      "A  ML_model/src/exo/data/ingest.py",
+      "A  ML_model/src/exo/data/raw_ingest.py",
+      "A  ML_model/src/exo/data/scalers.py",
+      "A  ML_model/src/exo/data/window_index.py",
+      "A  ML_model/src/exo/deploy/assist_switch.py",
+      "A  ML_model/src/exo/deploy/dashboard_info.py",
+      "M  ML_model/src/exo/deploy/export.py",
+      "M  ML_model/src/exo/deploy/jetson_io.py",
+      "M  ML_model/src/exo/deploy/motor.py",
+      "M  ML_model/src/exo/deploy/runtime.py",
+      "M  ML_model/src/exo/training/trainer.py",
+      "A  ML_model/src/mrsd_exo.egg-info/PKG-INFO",
+      "A  ML_model/src/mrsd_exo.egg-info/SOURCES.txt",
+      "A  ML_model/src/mrsd_exo.egg-info/dependency_links.txt",
+      "A  ML_model/src/mrsd_exo.egg-info/requires.txt",
+      "A  ML_model/src/mrsd_exo.egg-info/top_level.txt",
+      "A  ML_model/tests/test_ablation.py",
+      "A  ML_model/tests/test_gait_baseline_audit.py",
+      "A  ML_model/tests/test_gait_cycles.py",
+      "M  ML_model/tests/test_mock_deploy.py",
+      "A  dashboard/.gitignore",
+      "A  dashboard/README.md",
+      "A  dashboard/__init__.py",
+      "A  dashboard/backend/__init__.py",
+      "A  dashboard/backend/experiments.py",
+      "A  dashboard/backend/process_manager.py",
+      "A  dashboard/backend/requirements.txt",
+      "A  dashboard/backend/run_logger.py",
+      "A  dashboard/backend/sample_data/data_collection_20260404_214949_100Hz_2kmph.csv",
+      "A  dashboard/backend/sample_data/data_collection_20260404_215006_100Hz_2kmph.csv",
+      "A  dashboard/backend/sample_data/data_collection_20260404_215026_200Hz_2kmph.csv",
+      "A  dashboard/backend/sample_data/data_collection_20260404_215722_tightShoe_100Hz_2kmph.csv",
+      "A  dashboard/backend/sample_data/data_collection_20260404_215743_tightshoes_200Hz_2kmph.csv",
+      "A  dashboard/backend/sample_data/exo_walk_20260911_183138_60s.csv",
+      "A  dashboard/backend/server.py",
+      "A  dashboard/backend/simulate_run.py",
+      " M dashboard/data/runs.db",
+      "A  dashboard/frontend/index.html",
+      "A  dashboard/frontend/package-lock.json",
+      "A  dashboard/frontend/package.json",
+      "A  dashboard/frontend/src/components/DropZone.jsx",
+      "A  dashboard/frontend/src/components/LineChart.jsx",
+      "A  dashboard/frontend/src/components/LiveChart.jsx",
+      "A  dashboard/frontend/src/components/RunDiff.jsx",
+      "A  dashboard/frontend/src/lib/api.js",
+      "A  dashboard/frontend/src/main.jsx",
+      "A  dashboard/frontend/src/pages/ExperimentsPage.jsx",
+      "A  dashboard/frontend/src/pages/LaunchPage.jsx",
+      "A  dashboard/frontend/src/pages/LivePage.jsx",
+      "A  dashboard/frontend/src/pages/RunDetailPage.jsx",
+      "A  dashboard/frontend/src/pages/RunsPage.jsx",
+      "A  dashboard/frontend/src/style.css",
+      "A  dashboard/frontend/vite.config.js",
+      " M fall_test_plan/test_4/README.md",
+      " M fall_test_plan/test_4/can_monitor.py",
+      " M fall_test_plan/test_4/test4_run.py",
+      "?? fall_test_plan/test_4/results/"
+    ],
+    "can": "4.6.1",
+    "torch": "2.14.1+cu130",
+    "onnxruntime": "1.31.0"
+  },
+  "status": "completed",
+  "can_link_before": {
+    "ifindex": 2,
+    "ifname": "can0",
+    "flags": [
+      "NOARP",
+      "UP",
+      "LOWER_UP",
+      "ECHO"
+    ],
+    "mtu": 16,
+    "qdisc": "pfifo_fast",
+    "operstate": "UP",
+    "linkmode": "DEFAULT",
+    "group": "default",
+    "txqlen": 10,
+    "link_type": "can",
+    "promiscuity": 0,
+    "min_mtu": 0,
+    "max_mtu": 0,
+    "linkinfo": {
+      "info_kind": "can",
+      "info_data": {
+        "state": "ERROR-ACTIVE",
+        "berr_counter": {
+          "tx": 0,
+          "rx": 0
+        },
+        "restart_ms": 0,
+        "bittiming": {
+          "bitrate": 1000000,
+          "sample_point": 0.74,
+          "tq": 20,
+          "prop_seg": 18,
+          "phase_seg1": 18,
+          "phase_seg2": 13,
+          "sjw": 1
+        },
+        "bittiming_const": {
+          "name": "mttcan",
+          "tseg1": {
+            "min": 2,
+            "max": 255
+          },
+          "tseg2": {
+            "min": 0,
+            "max": 127
+          },
+          "sjw": {
+            "min": 1,
+            "max": 127
+          },
+          "brp": {
+            "min": 1,
+            "max": 511
+          },
+          "brp_inc": 1
+        },
+        "data_bittiming_const": {
+          "name": "mttcan",
+          "tseg1": {
+            "min": 1,
+            "max": 31
+          },
+          "tseg2": {
+            "min": 0,
+            "max": 15
+          },
+          "sjw": {
+            "min": 1,
+            "max": 15
+          },
+          "brp": {
+            "min": 1,
+            "max": 15
+          },
+          "brp_inc": 1
+        },
+        "clock": 50000000
+      },
+      "info_xstats": {
+        "restarts": 0,
+        "bus_error": 0,
+        "arbitration_lost": 0,
+        "error_warning": 2,
+        "error_passive": 2,
+        "bus_off": 0
+      }
+    },
+    "num_tx_queues": 1,
+    "num_rx_queues": 1,
+    "gso_max_size": 65536,
+    "gso_max_segs": 65535,
+    "parentbus": "platform",
+    "parentdev": "c310000.mttcan",
+    "stats64": {
+      "rx": {
+        "bytes": 1473752,
+        "packets": 184220,
+        "errors": 0,
+        "dropped": 0,
+        "over_errors": 0,
+        "multicast": 0
+      },
+      "tx": {
+        "bytes": 505128,
+        "packets": 63141,
+        "errors": 0,
+        "dropped": 0,
+        "carrier_errors": 0,
+        "collisions": 0
+      }
+    }
+  },
+  "clock_pair": [
+    1793138619.6619997,
+    353142.653097368
+  ],
+  "final_loop_start": 353153.669061407,
+  "clock_pair_end": [
+    1793138630.6779869,
+    353153.669090848
+  ],
+  "can_link_after": {
+    "ifindex": 2,
+    "ifname": "can0",
+    "flags": [
+      "NOARP",
+      "UP",
+      "LOWER_UP",
+      "ECHO"
+    ],
+    "mtu": 16,
+    "qdisc": "pfifo_fast",
+    "operstate": "UP",
+    "linkmode": "DEFAULT",
+    "group": "default",
+    "txqlen": 10,
+    "link_type": "can",
+    "promiscuity": 0,
+    "min_mtu": 0,
+    "max_mtu": 0,
+    "linkinfo": {
+      "info_kind": "can",
+      "info_data": {
+        "state": "ERROR-ACTIVE",
+        "berr_counter": {
+          "tx": 0,
+          "rx": 0
+        },
+        "restart_ms": 0,
+        "bittiming": {
+          "bitrate": 1000000,
+          "sample_point": 0.74,
+          "tq": 20,
+          "prop_seg": 18,
+          "phase_seg1": 18,
+          "phase_seg2": 13,
+          "sjw": 1
+        },
+        "bittiming_const": {
+          "name": "mttcan",
+          "tseg1": {
+            "min": 2,
+            "max": 255
+          },
+          "tseg2": {
+            "min": 0,
+            "max": 127
+          },
+          "sjw": {
+            "min": 1,
+            "max": 127
+          },
+          "brp": {
+            "min": 1,
+            "max": 511
+          },
+          "brp_inc": 1
+        },
+        "data_bittiming_const": {
+          "name": "mttcan",
+          "tseg1": {
+            "min": 1,
+            "max": 31
+          },
+          "tseg2": {
+            "min": 0,
+            "max": 15
+          },
+          "sjw": {
+            "min": 1,
+            "max": 15
+          },
+          "brp": {
+            "min": 1,
+            "max": 15
+          },
+          "brp_inc": 1
+        },
+        "clock": 50000000
+      },
+      "info_xstats": {
+        "restarts": 0,
+        "bus_error": 0,
+        "arbitration_lost": 0,
+        "error_warning": 2,
+        "error_passive": 2,
+        "bus_off": 0
+      }
+    },
+    "num_tx_queues": 1,
+    "num_rx_queues": 1,
+    "gso_max_size": 65536,
+    "gso_max_segs": 65535,
+    "parentbus": "platform",
+    "parentdev": "c310000.mttcan",
+    "stats64": {
+      "rx": {
+        "bytes": 1478344,
+        "packets": 184794,
+        "errors": 0,
+        "dropped": 0,
+        "over_errors": 0,
+        "multicast": 0
+      },
+      "tx": {
+        "bytes": 505128,
+        "packets": 63141,
+        "errors": 0,
+        "dropped": 0,
+        "carrier_errors": 0,
+        "collisions": 0
+      }
+    }
+  },
+  "monitor": {
+    "returncode": 0,
+    "output": "[can_monitor] 587 frames, 13 system samples, 0 receive errors  -> /home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_180325/idle/can_monitor.npz",
+    "file": "can_monitor.npz"
+  },
+  "final_flush_s": 0.052945526025723666,
+  "ended": "2026-10-27T18:03:51",
+  "wall_start": 1793138619.6619997,
+  "wall_end": 1793138630.6781895,
+  "rate_hz": 100.0,
+  "requested_duration_s": 10.0,
+  "preroll_s": 1.0,
+  "timed_start_mono": 353143.660161996,
+  "loops_recorded": 1094,
+  "recorder_grow_events": 0,
+  "can_sends_recorded": 0,
+  "can_send_errors": [],
+  "can_send_error_count": 0,
+  "oom_check": {
+    "method": "journalctl -k",
+    "ok": true,
+    "matches": []
+  }
+}

@@ -49,6 +49,27 @@ class FeaturePipeline:
                 )
         return out
 
+    def transform_row(self, values) -> np.ndarray:
+        """One sample -> float32 ``(C,)`` in ``feature_names`` order.
+
+        The deployment fast path: ``values`` is a mapping that includes every
+        feature name (extra keys are ignored), as ``SensorAdapter.transform_frame``
+        returns. Gives exactly ``transform()`` of the same values as a one-row
+        DataFrame, with the same stance check, but without pandas' per-call
+        overhead (~1.8 ms per control step on the Jetson). A missing name raises
+        ``KeyError``.
+        """
+        out = np.array([values[c] for c in self.feature_names], dtype=np.float32)
+
+        if "stance" in self.feature_names:
+            s = out[self.feature_names.index("stance")]
+            if not (np.isnan(s) or s == 0.0 or s == 1.0):
+                raise ValueError(
+                    f"FeaturePipeline: 'stance' channel is not 0/1 (values {np.array([s])}...). "
+                    f"Binarize it before this stage."
+                )
+        return out
+
     @property
     def num_features(self) -> int:
         return len(self.feature_names)

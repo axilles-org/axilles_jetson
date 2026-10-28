@@ -33,7 +33,7 @@ CAN_INTERFACE  = "can0"
 MOTOR_ID       = 0x68        # Your motor CAN ID
 
 INITIAL_TORQUE = 0.0         # Nm on startup
-TORQUE_STEP    = 0.4         # Nm added/subtracted per Up/Down press
+TORQUE_STEP    = 0.8         # Nm added/subtracted per Up/Down press
 
 INITIAL_RAMP_TIME = 1.0      # seconds on startup
 RAMP_TIME_STEP    = 0.1      # seconds added/subtracted per Right/Left press

@@ -15,8 +15,8 @@ TensorRT (``best.engine`` on a Jetson), selected by ``DeployConfig.backend``.
 """
 from __future__ import annotations
 
-import collections
 import dataclasses
+import collections
 import json
 from pathlib import Path
 
@@ -73,28 +73,44 @@ def _device_ok(device: str) -> bool:
 
 
 class ObservationBuffer:
-    """Fixed-length rolling buffer of feature frames."""
+    """Fixed-length rolling buffer of feature frames.
+
+    Frame ``k`` is stored twice, at rows ``k % T`` and ``k % T + T`` of a
+    preallocated ``(2T, C)`` float32 array, so the latest ``T`` frames are always
+    one contiguous slice and ``window()`` is a single copy rather than a re-stack
+    of ``T`` arrays every control step.
+    """
 
     def __init__(self, window_length: int, num_channels: int):
         self.window_length = window_length
         self.num_channels = num_channels
-        self._buf: collections.deque = collections.deque(maxlen=window_length)
+        self._data = np.zeros((2 * window_length, num_channels), dtype=np.float32)
+        self._count = 0                     # frames pushed since the last reset
 
     def push(self, frame: np.ndarray) -> None:
         if frame.shape[0] != self.num_channels:
             raise ValueError(f"expected {self.num_channels} channels, got {frame.shape[0]}")
-        self._buf.append(frame.astype(np.float32))
+        i = self._count % self.window_length
+        self._data[i] = frame               # casts to float32, as astype did
+        self._data[i + self.window_length] = frame
+        self._count += 1
 
     @property
     def ready(self) -> bool:
-        return len(self._buf) == self.window_length
+        return self._count >= self.window_length
 
     def window(self) -> np.ndarray:
-        """``(C, T)`` array in model-input layout."""
-        return np.stack(self._buf, axis=1)
+        """``(C, T)`` array in model-input layout, oldest frame first (a copy;
+        with fewer than ``T`` frames, ``(C, frames so far)``)."""
+        if self._count == 0:
+            raise ValueError("ObservationBuffer is empty")
+        if self._count < self.window_length:
+            return self._data[:self._count].T.copy()
+        start = self._count % self.window_length
+        return self._data[start:start + self.window_length].T.copy()
 
     def reset(self) -> None:
-        self._buf.clear()
+        self._count = 0
 
 
 class ExoController:
@@ -129,8 +145,7 @@ class ExoController:
     def step(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
         """Process one sensor frame; returns the command and diagnostics."""
         adapted = self.adapter.transform_frame(raw_frame, dt)
-        feat = self.pipeline.transform(_single_row_df(adapted, self.feature_names))
-        self.buffer.push(feat[0])
+        self.buffer.push(self.pipeline.transform_row(adapted))
 
         predicted = 0.0
         if self.buffer.ready:
@@ -147,8 +162,3 @@ class ExoController:
             "ramp": cmd.ramp,
             "buffer_ready": float(self.buffer.ready),
         }
-
-
-def _single_row_df(values: dict[str, float], columns: list[str]):
-    import pandas as pd
-    return pd.DataFrame([[values[c] for c in columns]], columns=columns)

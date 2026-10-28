@@ -1,0 +1,311 @@
+{
+  "overall_pass": false,
+  "runs": [
+    {
+      "kind": "load",
+      "path": "fall_test_plan/test_4/results/20261027_174549_load",
+      "loop": {
+        "timed_loops": 2347,
+        "window_s": 30.001450844982173,
+        "mean_rate_hz": 78.2295500349958,
+        "period_ms": {
+          "n": 2347,
+          "mean": 12.782893414990275,
+          "p50": 12.035513995215297,
+          "p99": 21.94085987983271,
+          "max": 41.716238018125296,
+          "median": 12.035513995215297,
+          "std": 2.4005938171939363
+        },
+        "pct_over_10ms": 100.0,
+        "pct_over_20ms": 1.406050276949297,
+        "count_over_50ms": 0,
+        "work_pct_over_10ms": 100.0,
+        "work_pct_over_20ms": 1.406050276949297,
+        "busy_ms": {
+          "n": 2347,
+          "mean": 12.77361075622718,
+          "p50": 12.026808981318027,
+          "p99": 21.923156470293176,
+          "max": 41.70564602827653
+        },
+        "sched_overshoot_ms": {
+          "n": 2347,
+          "mean": 0.009282658763093343,
+          "p50": 0.008351984433829784,
+          "p99": 0.015121271135285495,
+          "max": 0.5776140023954213
+        },
+        "watchdog_trips": 8,
+        "stages": {
+          "imu_ms": {
+            "label": "IMU read (2x BNO085)",
+            "n": 2347,
+            "mean": 1.5585900872729919,
+            "p50": 1.470723032951355,
+            "p99": 4.174741401672361,
+            "max": 24.382936477661133
+          },
+          "fsr_enc_ms": {
+            "label": "FSR + encoder read",
+            "n": 2347,
+            "mean": 3.13030135971869,
+            "p50": 3.059720039367676,
+            "p99": 5.1566698265075654,
+            "max": 26.021568298339844
+          },
+          "predict_ms": {
+            "label": "TCN inference",
+            "n": 2347,
+            "mean": 3.6344625889924824,
+            "p50": 3.328910112380981,
+            "p99": 8.452507286071775,
+            "max": 23.88062286376953
+          },
+          "step_other_ms": {
+            "label": "adapter + features + assist",
+            "n": 2347,
+            "mean": 3.338617255548543,
+            "p50": 3.067368030548096,
+            "p99": 7.740576553344721,
+            "max": 23.05452251434326
+          },
+          "send_ms": {
+            "label": "CAN send",
+            "n": 2347,
+            "mean": 0.24632936301488392,
+            "p50": 0.2257020026445388,
+            "p99": 0.6012523937225337,
+            "max": 17.206802368164062
+          },
+          "log_ms": {
+            "label": "logging",
+            "n": 2347,
+            "mean": 0.6731277261330922,
+            "p50": 0.6019659638404846,
+            "p99": 3.10525713443756,
+            "max": 21.664825439453125
+          },
+          "telemetry_ms": {
+            "label": "Teleplot",
+            "n": 2347,
+            "mean": 0.16246679335400857,
+            "p50": 0.1377960443496704,
+            "p99": 0.37251332998275694,
+            "max": 6.444663047790527
+          }
+        },
+        "worst_periods": [
+          {
+            "t_s": 0.582316092972178,
+            "period_ms": 41.716238018125296,
+            "busy_ms": 41.70564602827653,
+            "imu_ms": 24.382936477661133,
+            "fsr_enc_ms": 3.106632947921753,
+            "predict_ms": 3.449361085891724,
+            "send_ms": 0.2838789820671081,
+            "log_ms": 0.440746009349823,
+            "telemetry_ms": 0.1395880281925201,
+            "step_ms": 13.30856704711914
+          },
+          {
+            "t_s": 4.873082165955566,
+            "period_ms": 40.42907303664833,
+            "busy_ms": 40.41624104138464,
+            "imu_ms": 1.5758450031280518,
+            "fsr_enc_ms": 26.021568298339844,
+            "predict_ms": 5.799398899078369,
+            "send_ms": 0.3358800411224365,
+            "log_ms": 1.0078309774398804,
+            "telemetry_ms": 0.144548013806343,
+            "step_ms": 11.24003791809082
+          },
+          {
+            "t_s": 6.311166614992544,
+            "period_ms": 37.85912395687774,
+            "busy_ms": 37.84171596635133,
+            "imu_ms": 1.4713940620422363,
+            "fsr_enc_ms": 3.069063901901245,
+            "predict_ms": 18.61848258972168,
+            "send_ms": 0.2985020279884338,
+            "log_ms": 11.162595748901367,
+            "telemetry_ms": 0.1465320289134979,
+            "step_ms": 21.65589714050293
+          },
+          {
+            "t_s": 0.5161920209648088,
+            "period_ms": 37.09449799498543,
+            "busy_ms": 37.07846603356302,
+            "imu_ms": 1.4998749494552612,
+            "fsr_enc_ms": 9.02619457244873,
+            "predict_ms": 3.4514079093933105,
+            "send_ms": 0.2273330390453338,
+            "log_ms": 19.22096061706543,
+            "telemetry_ms": 0.2769990265369415,
+            "step_ms": 6.794143199920654
+          },
+          {
+            "t_s": 6.946876572968904,
+            "period_ms": 34.33027502615005,
+            "busy_ms": 34.31593801360577,
+            "imu_ms": 1.4726749658584597,
+            "fsr_enc_ms": 3.2311151027679443,
+            "predict_ms": 3.770616054534912,
+            "send_ms": 0.2703429758548736,
+            "log_ms": 21.664825439453125,
+            "telemetry_ms": 0.2149809747934341,
+            "step_ms": 7.423820972442627
+          }
+        ]
+      },
+      "integrity": {
+        "status": "completed",
+        "completed": true,
+        "rows_match": true,
+        "seq_contiguous": true,
+        "can_send_errors": 0,
+        "recorder_grow_events": 0,
+        "exception": null,
+        "send_rows_match": true,
+        "monitor_ok": true
+      },
+      "can": {
+        "inproc": {
+          "cmd_frames_total": 2810,
+          "cmd_frames_timed": 2347,
+          "loops_without_exactly_one_cmd": 0,
+          "send_errors": 0,
+          "rate_hz": 78.2277041144764,
+          "interval_ms": {
+            "n": 2346,
+            "mean": 12.78319504988445,
+            "p50": 12.037225009407848,
+            "p99": 22.082668612711238,
+            "max": 51.85702000744641
+          }
+        },
+        "monitor_recv_errors": 0,
+        "monitor_last_error": "",
+        "wire": {
+          "cmd_frames_total": 2810,
+          "error_frames": 0,
+          "accounting_ok": true,
+          "wall_clock_drift_ms": -0.0073909759521484375,
+          "window_select": "index (exact)",
+          "send_to_wire_ms": {
+            "n": 2347,
+            "mean": 0.14473948013442192,
+            "p50": 0.15473365783691406,
+            "p99": 0.18930435180664062,
+            "max": 0.3476142883300781
+          },
+          "cmd_frames_timed": 2347,
+          "rate_hz": 78.22768793352292,
+          "interval_ms": {
+            "n": 2346,
+            "mean": 12.783197694015827,
+            "p50": 12.034416198730469,
+            "p99": 22.124469280243027,
+            "max": 51.87273025512695
+          },
+          "rx_frames_timed": 1499,
+          "rx_rate_hz": 49.96425043373196,
+          "rx_ids": {
+            "0x2968": 2078
+          }
+        },
+        "link_delta": {
+          "tx_packets": 2810,
+          "tx_errors": 0,
+          "tx_dropped": 0,
+          "rx_packets": 2063,
+          "rx_errors": 0,
+          "rx_dropped": 0,
+          "rx_over_errors": 0,
+          "bus_error": 0,
+          "error_warning": 0,
+          "error_passive": 0,
+          "bus_off": 0,
+          "restarts": 0,
+          "arbitration_lost": 0
+        },
+        "link_state_after": "ERROR-ACTIVE"
+      },
+      "sys": {
+        "oom_check": {
+          "method": "journalctl -k",
+          "ok": true,
+          "matches": []
+        },
+        "rss_mb": {
+          "start": 540.546875,
+          "end": 703.4296875,
+          "max": 703.4296875
+        },
+        "mem_available_min_mb": 3589.3984375,
+        "cpu_temp_max_c": 49.0,
+        "cpu_freq_mhz": {
+          "min": 729.6,
+          "max": 1344.0
+        },
+        "load1_max": 3.20703125
+      },
+      "crit": [
+        {
+          "criterion": "Mean loop rate",
+          "value": "78.2296 Hz",
+          "limit": ">= 100 Hz",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "99th-percentile period",
+          "value": "21.94 ms",
+          "limit": "<= 20 ms",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "Largest period",
+          "value": "41.72 ms",
+          "limit": "<= 50 ms",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "CAN torque-command rate (on wire)",
+          "value": "78.2277 Hz",
+          "limit": ">= 100 Hz",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "No controller restart",
+          "value": "completed",
+          "limit": "single run, completed",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "No log or frame loss",
+          "value": "none",
+          "limit": "none",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "No out-of-memory event",
+          "value": "none",
+          "limit": "none",
+          "result": "PASS",
+          "note": ""
+        }
+      ],
+      "pass": false,
+      "hints": [
+        "The loop work alone takes 12.03 ms (median) of the 10 ms budget. Largest stages (median): TCN inference 3.33 ms, adapter + features + assist 3.07 ms, FSR + encoder read 3.06 ms, IMU read (2x BNO085) 1.47 ms.",
+        "Largest single-stage spikes: FSR + encoder read 26.0 ms (p99 5.2), IMU read (2x BNO085) 24.4 ms (p99 4.2), TCN inference 23.9 ms (p99 8.5)."
+      ]
+    }
+  ]
+}

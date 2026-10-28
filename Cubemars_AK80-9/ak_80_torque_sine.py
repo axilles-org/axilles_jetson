@@ -25,8 +25,8 @@ CAN_INTERFACE = "can0"
 MOTOR_ID      = 0x68          # Your motor CAN ID
 
 # Sine wave parameters
-AMPLITUDE     = 0.75           # Peak torque in Nm (wave goes from -22 to +22)
-FREQUENCY     = 1.0           # Hz (one full cycle every 2 seconds)
+AMPLITUDE     = 0.5           # Peak torque in Nm (wave goes from -22 to +22)
+FREQUENCY     = 2.0           # Hz (one full cycle every 2 seconds)
 OFFSET        = 0.0           # Nm (shifts the wave up/down, e.g., 5.0 makes it 0 to 10 Nm)
 
 # Loop rate
@@ -69,13 +69,13 @@ def send_torque(bus, torque_nm):
     t_int  = _float_to_uint(torque_nm, MIT_T_MIN,  MIT_T_MAX,  12)
 
     buf = [0] * 8
-    buf[0] =  p_int  >> 8
-    buf[1] =  p_int  & 0xFF
-    buf[2] =  v_int  >> 4
-    buf[3] = ((v_int  & 0xF) << 4) | (kp_int >> 8)
-    buf[4] =  kp_int & 0xFF
-    buf[5] =  kd_int >> 4
-    buf[6] = ((kd_int & 0xF) << 4) | (t_int >> 8)
+    buf[0] =  kp_int >> 4
+    buf[1] = ((kp_int & 0xF) << 4) | (kd_int >> 8)
+    buf[2] =  kd_int & 0xFF
+    buf[3] =  p_int  >> 8
+    buf[4] =  p_int  & 0xFF
+    buf[5] =  v_int  >> 4
+    buf[6] = ((v_int  & 0xF) << 4) | (t_int >> 8)
     buf[7] =  t_int  & 0xFF
 
     arb_id = (MODE_MIT << 8) | MOTOR_ID
@@ -84,7 +84,7 @@ def send_torque(bus, torque_nm):
 
 def read_feedback(bus):
     """Read one feedback frame from motor. Returns dict or None."""
-    msg = bus.recv(timeout=0.001)
+    msg = bus.recv(timeout=0.01)
     if msg is None or len(msg.data) < 8:
         return None
     

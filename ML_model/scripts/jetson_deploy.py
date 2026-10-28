@@ -35,7 +35,7 @@ from exo.deploy.assist_switch import AssistSwitch
 from exo.deploy.dashboard_info import build_model_info
 from exo.deploy.export import export
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
-from exo.deploy.motor import MIT_T_MAX, MotorInterface
+from exo.deploy.motor import SAFE_T_MAX, MotorInterface
 from exo.deploy.runtime import ExoController
 
 from dashboard.backend.run_logger import RunLogger
@@ -114,7 +114,7 @@ def main() -> None:
 
     rate = args.rate or float(cfg.deploy.control_rate_hz)
     dt = 1.0 / rate
-    torque_cap = min(args.torque_cap, MIT_T_MAX)
+    torque_cap = min(args.torque_cap, SAFE_T_MAX)
 
     controller = ExoController(run_dir, cfg.deploy, subject_mass_kg=args.mass)
     controller.reset()

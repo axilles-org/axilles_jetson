@@ -1,0 +1,425 @@
+{
+  "overall_pass": false,
+  "runs": [
+    {
+      "kind": "idle",
+      "path": "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_192507/idle",
+      "loop": {
+        "timed_loops": 993,
+        "window_s": 10.003832016023807,
+        "mean_rate_hz": 99.26196265685444,
+        "period_ms": {
+          "n": 993,
+          "mean": 10.074352483407662,
+          "p50": 10.07737498730421,
+          "p99": 10.091667878441513,
+          "max": 10.722953011281788,
+          "median": 10.07737498730421,
+          "std": 0.023859256799421573
+        },
+        "pct_over_10ms": 100.0,
+        "pct_over_20ms": 0.0,
+        "count_over_50ms": 0,
+        "work_pct_over_10ms": 0.0,
+        "work_pct_over_20ms": 0.0,
+        "busy_ms": {
+          "n": 993,
+          "mean": 0.010061769407197519,
+          "p50": 0.009440991561859846,
+          "p99": 0.025463460478931676,
+          "max": 0.04778103902935982
+        },
+        "sched_overshoot_ms": {
+          "n": 993,
+          "mean": 0.07806576830208348,
+          "p50": 0.08154839882626952,
+          "p99": 0.09742667052894996,
+          "max": 0.7306658127345145
+        },
+        "watchdog_trips": 0,
+        "stages": {
+          "log_ms": {
+            "label": "logging",
+            "n": 993,
+            "mean": 0.004407037181305121,
+            "p50": 0.0040640006773173,
+            "p99": 0.010701823011040692,
+            "max": 0.031906995922327
+          }
+        },
+        "worst_periods": [
+          {
+            "t_s": 3.9997605900280178,
+            "period_ms": 10.722953011281788,
+            "busy_ms": 0.017921964172273874,
+            "log_ms": 0.0083529744297266,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 8.996353424037807,
+            "period_ms": 10.307316959369928,
+            "busy_ms": 0.005376990884542465,
+            "log_ms": 0.002208980731666,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 3.636792342993431,
+            "period_ms": 10.126218025106937,
+            "busy_ms": 0.009473005775362253,
+            "log_ms": 0.004479952622205,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 1.4614048509974964,
+            "period_ms": 10.107979993335903,
+            "busy_ms": 0.015809026081115007,
+            "log_ms": 0.0072640250436961,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 4.463786417036317,
+            "period_ms": 10.106022993568331,
+            "busy_ms": 0.015200988855212927,
+            "log_ms": 0.0070089590735733,
+            "step_ms": 0.0
+          }
+        ]
+      },
+      "integrity": {
+        "status": "completed",
+        "completed": true,
+        "rows_match": true,
+        "seq_contiguous": true,
+        "can_send_errors": 0,
+        "recorder_grow_events": 0,
+        "exception": null,
+        "monitor_ok": true
+      },
+      "can": {},
+      "sys": {
+        "oom_check": {
+          "method": "journalctl -k",
+          "ok": true,
+          "matches": []
+        },
+        "rss_mb": {
+          "start": 510.0703125,
+          "end": 511.69140625,
+          "max": 512.88671875
+        },
+        "mem_available_min_mb": 3324.484375,
+        "cpu_temp_max_c": 45.343,
+        "cpu_freq_mhz": {
+          "min": 729.6,
+          "max": 1344.0
+        },
+        "load1_max": 0.43798828125
+      }
+    },
+    {
+      "kind": "load",
+      "path": "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_192507/load",
+      "loop": {
+        "timed_loops": 5213,
+        "window_s": 60.01084225100931,
+        "mean_rate_hz": 86.86763598810053,
+        "period_ms": {
+          "n": 5213,
+          "mean": 11.511767168810533,
+          "p50": 11.285423999652267,
+          "p99": 16.070567478891462,
+          "max": 38.91908295918256,
+          "median": 11.285423999652267,
+          "std": 1.0253032917426008
+        },
+        "pct_over_10ms": 100.0,
+        "pct_over_20ms": 0.30692499520429695,
+        "count_over_50ms": 0,
+        "work_pct_over_10ms": 100.0,
+        "work_pct_over_20ms": 0.30692499520429695,
+        "busy_ms": {
+          "n": 5213,
+          "mean": 11.502023248569428,
+          "p50": 11.276085977442563,
+          "p99": 16.060068011283875,
+          "max": 38.90932200010866
+        },
+        "sched_overshoot_ms": {
+          "n": 5213,
+          "mean": 0.009743920241105776,
+          "p50": 0.008097034879028797,
+          "p99": 0.012640957720577717,
+          "max": 1.5026129549369216
+        },
+        "watchdog_trips": 4,
+        "stages": {
+          "imu_ms": {
+            "label": "IMU read (2x BNO085)",
+            "n": 5213,
+            "mean": 1.5149960722320486,
+            "p50": 1.476491928100586,
+            "p99": 2.1353336429595973,
+            "max": 14.747084617614746
+          },
+          "fsr_enc_ms": {
+            "label": "FSR + encoder read",
+            "n": 5213,
+            "mean": 3.0920866980059647,
+            "p50": 3.0608410835266118,
+            "p99": 3.7556792259216336,
+            "max": 20.522985458374023
+          },
+          "predict_ms": {
+            "label": "TCN inference",
+            "n": 5213,
+            "mean": 3.379003121531355,
+            "p50": 3.260158061981201,
+            "p99": 4.824484844207764,
+            "max": 15.43251609802246
+          },
+          "step_other_ms": {
+            "label": "adapter + features + assist",
+            "n": 5213,
+            "mean": 2.990903313549151,
+            "p50": 2.8988728523254395,
+            "p99": 4.2918535995483404,
+            "max": 19.93693995475769
+          },
+          "send_ms": {
+            "label": "CAN send",
+            "n": 5213,
+            "mean": 0.20899906151644126,
+            "p50": 0.2049480080604553,
+            "p99": 0.34211489319801325,
+            "max": 5.081933975219727
+          },
+          "log_ms": {
+            "label": "logging",
+            "n": 5213,
+            "mean": 0.03243620571234264,
+            "p50": 0.0299550015479326,
+            "p99": 0.07975621074438091,
+            "max": 6.2584991455078125
+          },
+          "telemetry_ms": {
+            "label": "Teleplot",
+            "n": 5213,
+            "mean": 0.25779739693421766,
+            "p50": 0.226420983672142,
+            "p99": 0.5471059679985046,
+            "max": 8.357163429260254
+          }
+        },
+        "worst_periods": [
+          {
+            "t_s": 46.43064866901841,
+            "period_ms": 38.91908295918256,
+            "busy_ms": 38.90932200010866,
+            "imu_ms": 1.4757570028305054,
+            "fsr_enc_ms": 17.906383514404297,
+            "predict_ms": 15.43251609802246,
+            "send_ms": 0.2401510179042816,
+            "log_ms": 0.0375390499830246,
+            "telemetry_ms": 0.2659779787063598,
+            "step_ms": 18.946836471557617
+          },
+          {
+            "t_s": 35.901753815996926,
+            "period_ms": 29.320447996724397,
+            "busy_ms": 29.310206999070942,
+            "imu_ms": 1.476431965827942,
+            "fsr_enc_ms": 20.522985458374023,
+            "predict_ms": 3.42964506149292,
+            "send_ms": 0.2472879737615585,
+            "log_ms": 0.0393320210278034,
+            "telemetry_ms": 0.2433200180530548,
+            "step_ms": 6.747343063354492
+          },
+          {
+            "t_s": 25.595104672014713,
+            "period_ms": 28.58585596550256,
+            "busy_ms": 28.518232982605696,
+            "imu_ms": 1.4714410305023191,
+            "fsr_enc_ms": 3.064877986907959,
+            "predict_ms": 3.2816669940948486,
+            "send_ms": 0.1910270005464553,
+            "log_ms": 0.032098963856697,
+            "telemetry_ms": 0.5118899941444397,
+            "step_ms": 23.21860694885254
+          },
+          {
+            "t_s": 57.03714851400582,
+            "period_ms": 26.91056695766747,
+            "busy_ms": 26.902245997916907,
+            "imu_ms": 14.747084617614746,
+            "fsr_enc_ms": 3.0657289028167725,
+            "predict_ms": 5.509606838226318,
+            "send_ms": 0.2367910295724868,
+            "log_ms": 0.034402996301651,
+            "telemetry_ms": 0.2109000384807586,
+            "step_ms": 8.574055671691895
+          },
+          {
+            "t_s": 36.43492646497907,
+            "period_ms": 24.064542027190328,
+            "busy_ms": 24.052701017353684,
+            "imu_ms": 1.4751189947128296,
+            "fsr_enc_ms": 13.613128662109377,
+            "predict_ms": 3.617982864379883,
+            "send_ms": 0.3013409972190857,
+            "log_ms": 0.047845009714365,
+            "telemetry_ms": 0.2859479784965515,
+            "step_ms": 8.277955055236816
+          }
+        ]
+      },
+      "integrity": {
+        "status": "completed",
+        "completed": true,
+        "rows_match": true,
+        "seq_contiguous": true,
+        "can_send_errors": 0,
+        "recorder_grow_events": 0,
+        "exception": null,
+        "send_rows_match": true,
+        "monitor_ok": true
+      },
+      "can": {
+        "inproc": {
+          "cmd_frames_total": 5694,
+          "cmd_frames_timed": 5213,
+          "loops_without_exactly_one_cmd": 0,
+          "send_errors": 0,
+          "rate_hz": 86.86716295616588,
+          "interval_ms": {
+            "n": 5212,
+            "mean": 11.511829855714417,
+            "p50": 11.27922348678112,
+            "p99": 16.05677285871935,
+            "max": 38.83174597285688
+          }
+        },
+        "monitor_recv_errors": 0,
+        "monitor_last_error": "",
+        "wire": {
+          "cmd_frames_total": 5694,
+          "error_frames": 0,
+          "accounting_ok": true,
+          "wall_clock_drift_ms": -0.0026226043701171875,
+          "window_select": "index (exact)",
+          "send_to_wire_ms": {
+            "n": 5213,
+            "mean": 0.15668408920548596,
+            "p50": 0.15616416931152344,
+            "p99": 0.18328666687011724,
+            "max": 0.2956390380859375
+          },
+          "cmd_frames_timed": 5213,
+          "rate_hz": 86.86717925771553,
+          "interval_ms": {
+            "n": 5212,
+            "mean": 11.511827695397168,
+            "p50": 11.280655860900879,
+            "p99": 16.060874462127693,
+            "max": 38.85054588317871
+          },
+          "rx_frames_timed": 2999,
+          "rx_rate_hz": 49.97430270755319,
+          "rx_ids": {
+            "0x2968": 3419
+          }
+        },
+        "link_delta": {
+          "tx_packets": 5694,
+          "tx_errors": 0,
+          "tx_dropped": 0,
+          "rx_packets": 3405,
+          "rx_errors": 0,
+          "rx_dropped": 0,
+          "rx_over_errors": 0,
+          "bus_error": 0,
+          "error_warning": 0,
+          "error_passive": 0,
+          "bus_off": 0,
+          "restarts": 0,
+          "arbitration_lost": 0
+        },
+        "link_state_after": "ERROR-ACTIVE"
+      },
+      "sys": {
+        "oom_check": {
+          "method": "journalctl -k",
+          "ok": true,
+          "matches": []
+        },
+        "rss_mb": {
+          "start": 510.79296875,
+          "end": 656.41796875,
+          "max": 656.41796875
+        },
+        "mem_available_min_mb": 3217.078125,
+        "cpu_temp_max_c": 48.812,
+        "cpu_freq_mhz": {
+          "min": 729.6,
+          "max": 1344.0
+        },
+        "load1_max": 3.51123046875
+      },
+      "crit": [
+        {
+          "criterion": "Mean loop rate",
+          "value": "86.8676 Hz",
+          "limit": ">= 100 Hz",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "99th-percentile period",
+          "value": "16.07 ms",
+          "limit": "<= 20 ms",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "Largest period",
+          "value": "38.92 ms",
+          "limit": "<= 50 ms",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "CAN torque-command rate (on wire)",
+          "value": "86.8672 Hz",
+          "limit": ">= 100 Hz",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "No controller restart",
+          "value": "completed",
+          "limit": "single run, completed",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "No log or frame loss",
+          "value": "none",
+          "limit": "none",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "No out-of-memory event",
+          "value": "none",
+          "limit": "none",
+          "result": "PASS",
+          "note": ""
+        }
+      ],
+      "pass": false,
+      "hints": [
+        "The loop work alone takes 11.28 ms (median) of the 10 ms budget. Largest stages (median): TCN inference 3.26 ms, FSR + encoder read 3.06 ms, adapter + features + assist 2.90 ms, IMU read (2x BNO085) 1.48 ms."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "overall_pass": false,
+  "runs": [
+    {
+      "kind": "idle",
+      "path": "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_181615/idle",
+      "loop": {
+        "timed_loops": 993,
+        "window_s": 10.001444990979508,
+        "mean_rate_hz": 99.28565331265688,
+        "period_ms": {
+          "n": 993,
+          "mean": 10.071948631399303,
+          "p50": 10.070181975606829,
+          "p99": 10.114642535336316,
+          "max": 10.38740499643609,
+          "median": 10.070181975606829,
+          "std": 0.022275722817458557
+        },
+        "pct_over_10ms": 100.0,
+        "pct_over_20ms": 0.0,
+        "count_over_50ms": 0,
+        "work_pct_over_10ms": 0.0,
+        "work_pct_over_20ms": 0.0,
+        "busy_ms": {
+          "n": 993,
+          "mean": 0.01109306829956183,
+          "p50": 0.009695999324321747,
+          "p99": 0.038700508885085604,
+          "max": 0.05756900645792484
+        },
+        "sched_overshoot_ms": {
+          "n": 993,
+          "mean": 0.07539322071550233,
+          "p50": 0.07373269740492105,
+          "p99": 0.12016291633248188,
+          "max": 0.3918213122524321
+        },
+        "watchdog_trips": 0,
+        "stages": {
+          "log_ms": {
+            "label": "logging",
+            "n": 993,
+            "mean": 0.005132274150713285,
+            "p50": 0.004479952622205,
+            "p99": 0.018439279794692943,
+            "max": 0.042145024985075
+          }
+        },
+        "worst_periods": [
+          {
+            "t_s": 8.993082316010259,
+            "period_ms": 10.38740499643609,
+            "busy_ms": 0.011263997294008732,
+            "log_ms": 0.0053119729273021,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 9.829971581988502,
+            "period_ms": 10.360524989664555,
+            "busy_ms": 0.011263997294008732,
+            "log_ms": 0.0049919472075998,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 3.9976442910265177,
+            "period_ms": 10.351948963943869,
+            "busy_ms": 0.01702498411759734,
+            "log_ms": 0.0081920297816395,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 6.45491462800419,
+            "period_ms": 10.264170006848872,
+            "busy_ms": 0.01660798443481326,
+            "log_ms": 0.0062719918787479,
+            "step_ms": 0.0
+          },
+          {
+            "t_s": 6.313694034994114,
+            "period_ms": 10.250346036627889,
+            "busy_ms": 0.04240102134644985,
+            "log_ms": 0.0181770306080579,
+            "step_ms": 0.0
+          }
+        ]
+      },
+      "integrity": {
+        "status": "completed",
+        "completed": true,
+        "rows_match": true,
+        "seq_contiguous": true,
+        "can_send_errors": 0,
+        "recorder_grow_events": 0,
+        "exception": null,
+        "monitor_ok": true
+      },
+      "can": {},
+      "sys": {
+        "oom_check": {
+          "method": "journalctl -k",
+          "ok": true,
+          "matches": []
+        },
+        "rss_mb": {
+          "start": 512.46484375,
+          "end": 514.08984375,
+          "max": 514.08984375
+        },
+        "mem_available_min_mb": 2557.76953125,
+        "cpu_temp_max_c": 46.375,
+        "cpu_freq_mhz": {
+          "min": 729.6,
+          "max": 1344.0
+        },
+        "load1_max": 1.97314453125
+      }
+    },
+    {
+      "kind": "load",
+      "path": "/home/axilles/exo_ws/fall_test_plan/test_4/results/20261027_181615/load",
+      "loop": {
+        "timed_loops": 0,
+        "error": "fewer than 3 timed loops"
+      },
+      "integrity": {
+        "status": "interrupted",
+        "completed": false,
+        "rows_match": true,
+        "seq_contiguous": true,
+        "can_send_errors": 0,
+        "recorder_grow_events": 0,
+        "exception": null,
+        "send_rows_match": true,
+        "monitor_ok": true
+      },
+      "can": {},
+      "sys": {
+        "oom_check": {
+          "method": "journalctl -k",
+          "ok": true,
+          "matches": []
+        },
+        "rss_mb": {
+          "start": 513.6484375,
+          "end": 669.90625,
+          "max": 669.90625
+        },
+        "mem_available_min_mb": 2439.703125,
+        "cpu_temp_max_c": 47.218,
+        "cpu_freq_mhz": {
+          "min": 806.4,
+          "max": 1344.0
+        },
+        "load1_max": 2.6201171875
+      },
+      "crit": [
+        {
+          "criterion": "Mean loop rate",
+          "value": "nan Hz",
+          "limit": ">= 100 Hz",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "99th-percentile period",
+          "value": "nan ms",
+          "limit": "<= 20 ms",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "Largest period",
+          "value": "nan ms",
+          "limit": "<= 50 ms",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "CAN torque-command rate",
+          "value": "no data",
+          "limit": ">= 100 Hz",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "No controller restart",
+          "value": "interrupted",
+          "limit": "single run, completed",
+          "result": "FAIL",
+          "note": ""
+        },
+        {
+          "criterion": "No log or frame loss",
+          "value": "none",
+          "limit": "none",
+          "result": "PASS",
+          "note": ""
+        },
+        {
+          "criterion": "No out-of-memory event",
+          "value": "none",
+          "limit": "none",
+          "result": "PASS",
+          "note": ""
+        }
+      ],
+      "pass": false,
+      "hints": []
+    }
+  ]
+}

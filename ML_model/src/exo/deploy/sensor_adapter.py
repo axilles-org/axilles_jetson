@@ -18,6 +18,10 @@ _FOOT_GYRO = ("foot_gx", "foot_gy", "foot_gz")
 _SHANK_ACCEL = ("shank_ax", "shank_ay", "shank_az")
 _SHANK_GYRO = ("shank_gx", "shank_gy", "shank_gz")
 
+# MIN_ENCODER_DEG = -30.0
+# MAX_ENCODER_DEG = 30.0
+# ENCODER_OFFSET_DEG = 130.0
+
 
 def _skew(v: np.ndarray) -> np.ndarray:
     return np.array([[0.0, -v[2], v[1]],
@@ -93,6 +97,11 @@ class SensorAdapter:
 
         angle_deg = raw["ankle_encoder_deg"] - c.ankle_encoder_neutral_deg
         out["gon_ankle_sagittal"] = float(np.radians(angle_deg) * c.ankle_encoder_sign)
+
+        # # Output zero torque to the motor if angle is outside the safe range (to avoid damage to the exo).
+        # if not (ENCODER_OFFSET_DEG + MIN_ENCODER_DEG <= raw["ankle_encoder_deg"] 
+        #         <= ENCODER_OFFSET_DEG + MAX_ENCODER_DEG):
+        #     out["motor_torque"] = 0.0
 
         out["stance"] = self._stance_flag(
             raw.get("heel_fsr_raw", 0.0), raw.get("toe_fsr_raw", 0.0), dt)

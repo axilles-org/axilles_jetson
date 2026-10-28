@@ -47,7 +47,7 @@ torque. If you want that too, mount the actuator safely and run with
 | Procedure step | Here |
 |---|---|
 | 1. 10 s idle reference | `idle` phase: the same loop, scheduler and logger with no work. Shows how much timing jitter the Jetson adds on its own. The CAN monitor also records any background bus traffic. |
-| 2. 10 min walk with everything enabled | `load` phase, 600 s timed window: live sensors, gait injection, TCN, safety checks, a CAN frame every loop, the deploy runner's logging (CSV row, dashboard `RunLogger`, console line), Teleplot |
+| 2. 10 min walk with everything enabled | `load` phase, 60 s timed window by default (`--duration 600` for the plan's full 10 minutes): live sensors, gait injection, TCN, safety checks, a CAN frame every loop, the deploy runner's logging (CSV row, dashboard `RunLogger`, console line), Teleplot |
 | 3. Record each loop start/end and every CAN send | `loops.csv` (start, end and per-stage time for every loop), `can_sends.csv` (every `send()` call), `can_monitor.npz` (every frame on the wire, kernel timestamp) |
 | 4. Flush the log after the run; optional marked flush run | The test's own timing log stays in RAM and is written after the timed window, so measuring adds no disk I/O. `--flush-run` adds a marked run that writes and fsyncs the log every second inside the loop. |
 
@@ -98,7 +98,8 @@ All commands are run from the repository root.
 #    (sends nothing to the motor; add --motor-check to also send 20 zero-torque frames)
 python3 fall_test_plan/test_4/test4_run.py --phase check --ml-root ../exo_ws_ml/ML_model
 
-# 2. the whole test: check -> 10 s idle -> 600 s load -> analysis
+# 2. the whole test: check -> 10 s idle -> 60 s load -> analysis
+#    (add --duration 600 for the test plan's full 10-minute run)
 python3 fall_test_plan/test_4/test4_run.py --phase all --ml-root ../exo_ws_ml/ML_model
 
 # same, plus the marked disk-flush run (120 s, write + fsync every 1 s)
@@ -109,11 +110,25 @@ Results go to `fall_test_plan/test_4/results/<date_time>/` (`idle/`, `load/`,
 `flush/`, `report.md` and the plots). The console prints the verdict at the end.
 The exit code is 0 only if the test passes.
 
-Ctrl-C at any point zeroes the torque, takes the motor out of MIT mode, and
+Ctrl-C at any point sends 0 N·m frames, closes the CAN bus, and
 still writes everything recorded so far. The run is then marked `interrupted`.
+With `--phase all`, the outer process waits for the running step to finish its
+own shutdown and never kills it.
+
+**Dead-man switch.** The bus monitor runs as a separate process. If the
+controller dies without shutting down after commanding the motor (`kill -9`,
+a crash), the monitor sends 0 N·m itself within about 20–100 ms,
+then saves its data and exits. Without this, the motor would hold its last
+torque command until its own CAN timeout (about 2 s on this motor).
 If set-up is stuck (for example an IMU reconnect loop), press Ctrl-C a second
 time. Once shutdown has started, further Ctrl-Cs are ignored until the logs are
 written.
+
+Closing the terminal stops the run the same way, and the output goes to
+`console_after_hangup.log` in the run folder. The rest of an `all` session
+(flush run, analysis) is then skipped. For a 10-minute run, start it inside
+`tmux` (or with `nohup ... &`) so that it keeps going if the terminal closes.
+`kill -9` still loses the RAM log: only `deploy_log.csv` survives that.
 
 ### Motor only, no sensors attached (`--sim-sensors`)
 
@@ -150,7 +165,7 @@ python3 fall_test_plan/test_4/test4_analyze.py <run dir> [<run dir> ...] --out <
 
 | Option | Default | Meaning |
 |---|---|---|
-| `--duration` | 600 | Timed window of the load run, in s |
+| `--duration` | 60 | Timed window of the load run, in s. The test plan asks for 600 (10 min). Rare stalls (> 50 ms) were seen only in the 10-minute run, so use 600 for the result you report. |
 | `--idle-duration` | 10 | Idle reference, in s |
 | `--preroll` | 5 (load), 1 (idle) | Settling time before the timed window. The load window also waits for the TCN's 300-sample buffer to fill. Pre-roll loops are logged but not scored. |
 | `--rate` | 100 | Control rate, in Hz |
@@ -164,7 +179,7 @@ python3 fall_test_plan/test_4/test4_analyze.py <run dir> [<run dir> ...] --out <
 | `--no-teleplot` | off | Teleplot is on by default because the deploy runner streams it |
 | `--imu-bus`, `--can-channel` | 1, can0 | |
 | `--sim-sensors`, `--sim-imu-ms`, `--sim-fsr-enc-ms` | off, 1.4, 3.0 | Real CAN and motor, simulated sensor reads |
-| `--motor-check` | off | Preflight also sends 20 zero-torque frames (puts the motor in MIT mode) |
+| `--motor-check` | off | Preflight also sends 20 zero-torque frames |
 | `--sim` | off | No hardware |
 
 ---
@@ -264,6 +279,23 @@ problems:
 | `bus monitor saw N receive errors (Network is down)` | The CAN link went down during the run (bus-off). Check wiring and termination. |
 
 ## Notes on the current code (found while building this test)
+
+- **Safety: the MIT "enter/exit/zero" frames are full-scale commands on this
+  motor.** The AK80-9 runs CubeMars *servo-mode* firmware (its status frames
+  are id `0x2968`). That firmware takes the 8-byte "special" frames
+  `FF FF FF FF FF FF FF FC/FD/FE` as ordinary MIT commands with every field at
+  maximum: kp ≈ 500, kd ≈ 5, target +12.56 rad at +65 rad/s, near-max torque.
+  On the bench, each "enter" frame produced 41–46 A and drove the shaft to full
+  speed within 64 ms. Each "exit" frame produced up to 59 A and full speed,
+  held until the motor's ~2 s CAN timeout.
+  `ML_model/src/exo/deploy/motor.py` sends them from `enter()`, `exit()` /
+  `shutdown()` and `zero_position()`, and `ML_model/scripts/jetson_deploy.py`
+  calls `enter()` at start and `shutdown()` at the end. That is the torque
+  that continued after stopping the walking test. This test never sends those
+  frames: it starts and stops with 0 N·m frames. `motor.py` has since been fixed
+  the same way: `enter()` and `exit()` send 0 N·m, and `zero_position()` uses
+  the servo-mode set-origin command. `tests/test_motor.py` checks that no
+  special frame is ever sent.
 
 - `TBE_controller/data_obtainer.py` has `self.can_bus.send(msg)` commented out
   in `sendTorqueData`, on every branch. The TBE controller computes torque but

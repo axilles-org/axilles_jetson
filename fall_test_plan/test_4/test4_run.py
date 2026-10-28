@@ -26,7 +26,7 @@ Phases
 ------
     check   preflight: CAN link, I2C sensors, motor reply, TCN load
     idle    10 s reference: the same loop, scheduler and logger with no work
-    load    the full-load run (default 600 s)
+    load    the full-load run (default 60 s; the test plan's full run is 600 s)
     all     check -> idle -> load [-> flush run] -> analysis, each in a fresh
             process, into one session folder
 
@@ -458,6 +458,30 @@ def build_controller(ml, run_dir, backend, mass):
     return controller, cfg
 
 
+def motor_start(motor):
+    """Start with 0 N·m frames instead of MotorInterface.enter().
+
+    The AK80-9 here runs CubeMars servo-mode firmware (status id 0x2968). It
+    decodes the MIT "special" frames FF..FC / FD / FE sent by enter(), exit()
+    and zero_position() as ordinary MIT commands with every field at maximum
+    (kp~500, kd~5, p=+12.56 rad, v=+65 rad/s, near-max torque): measured 41-59 A
+    and full speed, held until the motor's CAN timeout (~2 s). So they are never
+    sent here."""
+    for _ in range(3):
+        motor.send_torque(0.0)
+
+
+def motor_finish(motor):
+    """0 N·m frames, then close the bus — no exit() (see motor_start)."""
+    try:
+        for _ in range(3):
+            motor.send_torque(0.0)
+    finally:
+        if motor._bus is not None:
+            motor._bus.shutdown()
+            motor._bus = None
+
+
 def build_motor(ml, args):
     import can
     MotorInterface = ml["MotorInterface"]
@@ -487,6 +511,8 @@ class Monitor:
                "--channel", chan, "--out", str(out_npz), "--parent-pid", str(os.getpid())]
         if args.sim:
             cmd.append("--sim-motor-reply")
+        if args.phase != "idle":
+            cmd.append("--deadman")
         self.out_npz = out_npz
         # own session: a Ctrl-C in the terminal must not stop the monitor before
         # the controller's last frames (zero torque, exit MIT mode) are sent
@@ -586,8 +612,8 @@ def phase_check(args):
             bus = motor._bus
             replies = {}
             try:
-                motor.enter()
-                t_end = time.perf_counter() + 0.3                # drain the enter reply
+                motor_start(motor)
+                t_end = time.perf_counter() + 0.3                # drain the first replies
                 while bus.recv(timeout=0.05) is not None and time.perf_counter() < t_end:
                     pass
                 t0 = time.perf_counter()
@@ -608,7 +634,7 @@ def phase_check(args):
                        + ("" if n else " — motor powered? CAN H/L, 120 ohm termination, "
                           "motor id 0x68?"))
             finally:
-                motor.shutdown()
+                motor_finish(motor)
         if problem is None:
             link = can_link(args.can_channel)
             report("CAN bus state", True, link.get("linkinfo", {}).get("info_data", {})
@@ -644,6 +670,18 @@ def phase_run(args):
 
     signal.signal(signal.SIGINT, _handle_signal)
     signal.signal(signal.SIGTERM, _handle_signal)
+
+    def on_hangup(signum, frame):
+        # terminal closed: stop like Ctrl-C, and keep printing into a file so a
+        # print to the dead terminal cannot abort the shutdown
+        global _STOP
+        try:
+            sys.stdout = sys.stderr = open(out / "console_after_hangup.log", "a", buffering=1)
+        except OSError:
+            pass
+        _STOP = True
+
+    signal.signal(signal.SIGHUP, on_hangup)
     capacity = int((duration + preroll + 30.0) * rate * 1.5) + 1000
     rec = LoopRecorder(capacity)
     monitor = None if args.no_can_monitor else Monitor(args, out / "can_monitor.npz")
@@ -710,7 +748,7 @@ def phase_run(args):
                 print(f"!! --torque-mode computed: the motor WILL be driven (cap "
                       f"{motor.torque_limit_nm} N·m). Starting in 3 s, Ctrl-C to abort.")
                 time.sleep(3.0)
-            motor.enter()
+            motor_start(motor)
 
         if args.flush_every > 0:
             flusher = StreamFlusher(out / "loops_stream.csv")
@@ -864,11 +902,11 @@ def phase_run(args):
         # every wait in it is bounded
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, lambda *_: print("  (finishing shutdown and writing logs...)"))
+        signal.signal(signal.SIGHUP, on_hangup)
         wall_end = time.time()
         if sends is not None:
             sends.current_loop = -1                        # shutdown frames belong to no loop
-        for what, fn in (("motor stop", lambda: motor and motor.stop()),
-                         ("motor shutdown", lambda: motor and motor.shutdown()),
+        for what, fn in (("motor stop", lambda: motor and motor_finish(motor)),
                          ("sensors", lambda: sensors and sensors.shutdown()),
                          ("teleplot", lambda: tp and tp.close()),
                          ("deploy log", lambda: deploy_log and deploy_log.close(meta["status"])),
@@ -929,16 +967,37 @@ def phase_all(args):
                                 "--out", str(session / "flush"),
                                 "--duration", str(args.flush_duration),
                                 "--flush-every", str(args.flush_every or 1.0)]))
+    # A Ctrl-C (or closed terminal) reaches the running step directly — it is in
+    # the same process group — and the step zeroes the torque, exits MIT mode and
+    # writes its logs. This process must only wait for it: subprocess.call() would
+    # SIGKILL the step on KeyboardInterrupt and leave the motor holding its last
+    # torque command. SIGTERM sent to this process is passed on to the step.
+    child = None
+
+    def forward_term(signum, frame):
+        if child is not None and child.poll() is None:
+            child.send_signal(signal.SIGTERM)
+
+    signal.signal(signal.SIGINT, lambda *_: None)
+    signal.signal(signal.SIGHUP, lambda *_: None)
+    signal.signal(signal.SIGTERM, forward_term)
+
+    def run_step(cmd):
+        nonlocal child
+        child = subprocess.Popen(cmd)
+        return child.wait()
+
+    analyze = [sys.executable, str(TEST_DIR / "test4_analyze.py"), str(session)]
     for name, extra in steps:
         print(f"\n=== {name} ===", flush=True)
-        rc = subprocess.call(base + extra)
+        rc = run_step(base + extra)
         if rc != 0:
             print(f"\n{name} step exited with code {rc}; stopping. Session: {session}")
             if name != "check":
-                subprocess.call([sys.executable, str(TEST_DIR / "test4_analyze.py"), str(session)])
+                run_step(analyze)
             return rc
     print("\n=== analysis ===", flush=True)
-    return subprocess.call([sys.executable, str(TEST_DIR / "test4_analyze.py"), str(session)])
+    return run_step(analyze)
 
 
 def main():
@@ -962,8 +1021,8 @@ def main():
 
     g = ap.add_argument_group("timing")
     g.add_argument("--rate", type=float, default=100.0, help="control rate, Hz")
-    g.add_argument("--duration", type=float, default=600.0,
-                   help="timed window, s (load default 600 = the 10-minute run)")
+    g.add_argument("--duration", type=float, default=60.0,
+                   help="timed window of the load run, s (test plan: 600 = 10 minutes)")
     g.add_argument("--idle-duration", type=float, default=10.0)
     g.add_argument("--preroll", type=float, default=None,
                    help="s before the timed window (default 5 load / 1 idle); the load "

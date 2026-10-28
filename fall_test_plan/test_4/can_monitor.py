@@ -16,6 +16,13 @@ loop being measured. It records:
 Everything is kept in RAM and written to one .npz file when the process gets
 SIGINT/SIGTERM. Prints "READY" on stdout once it is listening.
 
+Dead-man switch (--deadman): if the control process dies without stopping this
+monitor (kill -9, crash) after it has commanded the motor, the monitor itself
+sends 0 N·m frames, then saves and exits. Without it the motor keeps its last
+torque command until its own CAN timeout (~2 s). It never sends the MIT
+"exit" frame FF..FD: this motor's servo-mode firmware runs that as a
+full-scale command (see test4_run.motor_start).
+
 Normally started by test4_run.py. Standalone:
     python3 can_monitor.py --out /tmp/mon.npz            # Ctrl-C to stop
 """
@@ -35,12 +42,24 @@ import can
 CMD_ARB_ID = (8 << 8) | 0x68        # MIT-mode torque command to motor 0x68
 SIM_REPLY_ID = (0x29 << 8) | 0x68   # status frame id used by the simulated motor
 
+# MIT frame with p = v = t = 0 and kp = kd = 0 (same packing as exo.deploy.motor)
+ZERO_TORQUE = bytes([0x00, 0x00, 0x00, 0x80, 0x00, 0x80, 0x08, 0x00])
+
 # setsockopt values to also receive CAN error frames (linux/can/raw.h)
 _SOL_CAN_RAW = getattr(socket, "SOL_CAN_RAW", 101)
 _CAN_RAW_ERR_FILTER = getattr(socket, "CAN_RAW_ERR_FILTER", 2)
 _CAN_ERR_MASK = 0x1FFFFFFF
 
 _STOP = False
+
+
+def _say(text):
+    """print() that survives the reader of our stdout (the control process) being
+    gone — a broken pipe must not stop the dead-man switch or the final save."""
+    try:
+        print(text, flush=True)
+    except (BrokenPipeError, OSError):
+        pass
 
 
 def _handle_signal(signum, frame):
@@ -105,6 +124,8 @@ def main():
     ap.add_argument("--out", required=True, help=".npz output path")
     ap.add_argument("--parent-pid", type=int, default=None,
                     help="process whose RSS is sampled (the control loop)")
+    ap.add_argument("--deadman", action="store_true",
+                    help="zero the torque and exit MIT mode if --parent-pid dies first")
     ap.add_argument("--sim-motor-reply", action="store_true",
                     help="simulation only: answer every torque command like the motor would")
     args = ap.parse_args()
@@ -162,6 +183,8 @@ def main():
 
     recv_err = _Grow(np.float64, cap=1024)      # wall time of each receive error
     last_err = ""
+    deadman = _Grow(np.float64, cap=16)         # wall time the dead-man switch fired
+    armed = False                               # the controller has commanded the motor
 
     def recv(timeout):
         nonlocal last_err
@@ -174,11 +197,13 @@ def main():
             return None
 
     while not _STOP:
-        msg = recv(0.2)
+        msg = recv(0.02)          # short: bounds the dead-man reaction time
         if msg is not None:
             if args.sim_motor_reply and msg.arbitration_id == SIM_REPLY_ID:
                 continue                # our own reply, looped back by udp_multicast
             record(msg, msg.is_rx)
+            if msg.arbitration_id == CMD_ARB_ID and msg.is_extended_id:   # only we send this id
+                armed = True
             if (args.sim_motor_reply and msg.arbitration_id == CMD_ARB_ID
                     and msg.is_extended_id):
                 reply = can.Message(arbitration_id=SIM_REPLY_ID, is_extended_id=True,
@@ -188,6 +213,21 @@ def main():
         if time.monotonic() >= next_sample:
             sample_system()
             next_sample += 1.0
+        if args.parent_pid and os.getppid() != args.parent_pid:
+            # the control process is gone without having stopped us
+            if args.deadman and armed:
+                for payload in (ZERO_TORQUE, ZERO_TORQUE, ZERO_TORQUE):
+                    frame = can.Message(arbitration_id=CMD_ARB_ID, is_extended_id=True,
+                                        timestamp=time.time(), data=payload)
+                    try:
+                        bus.send(frame)
+                        record(frame, False)
+                    except can.CanError as exc:
+                        last_err = f"dead-man send failed: {exc}"
+                deadman.add(time.time())
+                _say("[can_monitor] control process died after commanding the motor: "
+                     "sent 0 N·m")
+            break
 
     # read what is still queued (the controller's last frames) before closing;
     # bounded, in case another node keeps talking
@@ -208,10 +248,11 @@ def main():
              sys_cpu_freq_min_khz=s_freq_min.get(), sys_cpu_freq_max_khz=s_freq_max.get(),
              sys_load1=s_load.get(),
              recv_error_wall=recv_err.get(), recv_last_error=np.array(last_err),
+             deadman_wall=deadman.get(),
              clock_pair=np.array(clock_pair), clock_pair_end=np.array(clock_pair_end),
              interface=np.array(args.interface), channel=np.array(args.channel))
-    print(f"[can_monitor] {ts.n} frames, {s_wall.n} system samples, "
-          f"{recv_err.n} receive errors {last_err} -> {out}", flush=True)
+    _say(f"[can_monitor] {ts.n} frames, {s_wall.n} system samples, "
+         f"{recv_err.n} receive errors {last_err} -> {out}")
 
 
 if __name__ == "__main__":

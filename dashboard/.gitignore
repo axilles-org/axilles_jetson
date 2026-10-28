@@ -1,0 +1,10 @@
+# Run data, uploads, and the local run-metadata DB are generated at runtime,
+# not source — every trial run creates files here.
+data/
+
+# Frontend build artifacts / deps
+frontend/node_modules/
+frontend/dist/
+
+__pycache__/
+*.pyc

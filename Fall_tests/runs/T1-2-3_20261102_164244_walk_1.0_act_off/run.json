@@ -1,0 +1,48 @@
+{
+  "test": "1,2,3",
+  "run_id": "T1-2-3_20261102_164244_walk_1.0_act_off",
+  "date": "2026-11-02T16:47:51",
+  "condition": "walk_1.0_act_off",
+  "treadmill_speed_mps": 1.0,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "c41d705",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "P01",
+  "notes": "Test 3 run 2: motor power off; recorded after act_on run 163606; no changes to fit or wiring between runs",
+  "t_start_ns": 3142553044558,
+  "t_end_ns": 3442554216940,
+  "duration_s": 300.001172382,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 2,
+    "shank": 1
+  },
+  "imu_lost_packets": {
+    "foot": 54,
+    "shank": 496
+  },
+  "n_samples": 466443,
+  "n_loops": 29121,
+  "gc_disabled": true,
+  "cpu_pinned": 5
+}

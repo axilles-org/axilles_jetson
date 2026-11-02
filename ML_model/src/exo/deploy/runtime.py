@@ -161,4 +161,5 @@ class ExoController:
             "stance": float(cmd.stance),
             "ramp": cmd.ramp,
             "buffer_ready": float(self.buffer.ready),
+            "model_fault": float(self.assistance.faulted),
         }

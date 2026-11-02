@@ -1,8 +1,9 @@
 """Powered ML deployment: live sensors -> ExoController -> AK80-9 torque.
 
 Torque is off unless --arm. Safety: session ramp (--arm-ramp), loop-overrun
-watchdog, and any exception / Ctrl-C -> zero torque -> exit MIT mode. --dry-run
-runs the motor interface without a CAN bus. Run scripts/jetson_mock_deploy.py and
+watchdog, a motor thread that zeroes torque if the loop hangs or the motor reports
+a problem, and any exception / Ctrl-C -> zero torque. --dry-run runs the motor
+interface without a CAN bus. Run scripts/jetson_mock_deploy.py and
 review it first. See docs/DEPLOYMENT.md.
 
     python scripts/jetson_deploy.py --run runs/<dir> --mass 72 \
@@ -73,14 +74,20 @@ def main() -> None:
                     help="hard N.m ceiling on the command (<= 5)")
     ap.add_argument("--arm-ramp", type=float, default=5.0,
                     help="seconds to fade assistance 0 -> full after arming")
-    ap.add_argument("--command-sign", type=float, default=-1.0,
-                    help="maps assist magnitude to the actuator direction "
-                         "(-1: plantarflexion assist is negative motor torque, as in TBE)")
+    ap.add_argument("--command-sign", type=float, default=1.0,
+                    help="maps assist magnitude to the actuator direction (+1: plantarflexion "
+                         "assist is positive motor torque; -1 gave dorsiflexion on a wearer)")
     ap.add_argument("--slew", type=float, default=10.0,
                     help="max N.m/s change of the sent torque, incl. assist on/off "
                          "and watchdog (Stop / crash still zero immediately)")
     ap.add_argument("--watchdog-ms", type=float, default=25.0,
                     help="zero torque if a loop takes longer than this")
+    ap.add_argument("--sender-stale-ms", type=float, default=100.0,
+                    help="the motor thread zeroes torque and ends the run if the loop "
+                         "gives it no target for this long (saved runs had gaps up to 79 ms)")
+    ap.add_argument("--disable-on-exit", action="store_true",
+                    help="also send the motor disable command on exit (not yet "
+                         "tested on this motor)")
     ap.add_argument("--start-passive", action="store_true",
                     help="assistance off until switched on from the dashboard")
     ap.add_argument("--max-scale", type=float, default=0.3,
@@ -92,6 +99,8 @@ def main() -> None:
     ap.add_argument("--no-teleplot", action="store_true")
     ap.add_argument("--print-every", type=int, default=50)
     args = ap.parse_args()
+    if not 0.0 < args.torque_cap <= SAFE_T_MAX:
+        ap.error(f"--torque-cap must be above 0 and at most {SAFE_T_MAX}")
 
     signal.signal(signal.SIGINT, _handle_signal)
     signal.signal(signal.SIGTERM, _handle_signal)
@@ -114,7 +123,7 @@ def main() -> None:
 
     rate = args.rate or float(cfg.deploy.control_rate_hz)
     dt = 1.0 / rate
-    torque_cap = min(args.torque_cap, SAFE_T_MAX)
+    torque_cap = args.torque_cap
 
     controller = ExoController(run_dir, cfg.deploy, subject_mass_kg=args.mass)
     controller.reset()
@@ -155,11 +164,13 @@ def main() -> None:
     # motor. dry_run drives the interface (clamp/sign/pack, session ramp) without
     # a CAN bus; --arm without --dry-run actually transmits.
     motor = MotorInterface(torque_limit_nm=torque_cap, command_sign=args.command_sign,
-                           dry_run=args.dry_run, slew_nm_per_s=args.slew)
+                           dry_run=args.dry_run, slew_nm_per_s=args.slew,
+                           disable_on_shutdown=args.disable_on_exit)
     live_torque = args.arm and not args.dry_run
     exercise_command = args.arm or args.dry_run       # compute + ramp the command
     if live_torque or args.dry_run:
         motor.enter()
+        motor.start_sender(stale_s=args.sender_stale_ms / 1000.0)
 
     switch = (AssistSwitch(cfg.deploy.assistance_scale, args.max_scale)
               if args.start_passive else None)
@@ -177,7 +188,7 @@ def main() -> None:
     fields = ["t_s", *FRAME_KEYS, "predicted_nm_per_kg", "predicted_nm",
               "assist_cmd_nm", "sent_torque_nm", "session_ramp", "stance",
               "ramp", "buffer_ready", "ankle_angle_deg", "calibrated",
-              "assist_on", "assist_scale", "loop_ms"]
+              "assist_on", "assist_scale", "loop_ms", "motor_iq_a", "model_fault"]
     csv_file = out_path.open("w", newline="")
     writer = csv.DictWriter(csv_file, fieldnames=fields)
     writer.writeheader()
@@ -201,6 +212,7 @@ def main() -> None:
     sent = 0.0
     session_ramp = 0.0
     prev_start = None
+    model_fault_seen = False
     try:
         while not _STOP and (t_now := time.perf_counter() - t0) < args.duration:
             loop_start = time.perf_counter()
@@ -220,6 +232,9 @@ def main() -> None:
             out = controller.step(raw, dt)
             pred_kg = out["predicted_nm_per_kg"]
             assist_cmd = out["command_nm"]                 # N.m from AssistanceController
+            if out["model_fault"] and not model_fault_seen:
+                model_fault_seen = True
+                print(f"!! non-finite model output at {t_now:.1f} s: assistance stays off")
 
             assist_on = exercise_command
             if switch:
@@ -251,7 +266,9 @@ def main() -> None:
                    "calibrated": int(calibrated),
                    "assist_on": int(assist_on),
                    "assist_scale": round(controller.assistance.scale, 3),
-                   "loop_ms": round(loop_ms, 2)}
+                   "loop_ms": round(loop_ms, 2),
+                   "motor_iq_a": round(motor.status["current_a"], 2) if motor.status else 0.0,
+                   "model_fault": int(out["model_fault"])}
             writer.writerow(row)
             run_logger.log_sample(t=loop_start, **row)
 

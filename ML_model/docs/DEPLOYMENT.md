@@ -124,18 +124,29 @@ The powered runner is the mock runner plus a CAN torque command. It is
 **self-contained in this repo** — `src/exo/deploy/motor.py` speaks the AK80-9 MIT
 protocol directly (no dependency on `axilles_jetson` for actuation).
 
-### Safety layers (four, in order)
+### Safety layers (six, in order)
 
 1. **`AssistanceController.torque_limit_nm`** (config) — the controller's own cap.
-2. **`--torque-cap`** (CLI, default 2.0) — a second ceiling, ≤ 5 N·m.
-3. **`MotorInterface`** hard-clamps every command to `min(cap, MIT_T_MAX=5.0)`
-   before packing — the last line.
+   A NaN or infinite model output turns assistance off until reset.
+2. **`--torque-cap`** (CLI, default 2.0) — a second ceiling, above 0 and ≤ 5 N·m.
+3. **`MotorInterface`** hard-clamps every command to `min(cap, SAFE_T_MAX=5.0)`
+   before packing — the last line. A non-finite command is refused.
 4. **Watchdog** — if a control loop takes longer than `--watchdog-ms` (25),
    that frame's torque is zeroed.
+5. **Motor thread** — sends the torque frames. If the loop gives it no target for
+   `--sender-stale-ms` (100), it sends 0 N·m and ends the run, so a hung sensor
+   read or inference does not leave torque on.
+6. **Status check** — the same thread reads status frames and ends the run on a
+   motor error code, `|Iq|` above `max(2 A, 1.5 × cap / Kt)`, or no status for
+   100 ms. This is the only current limit we can apply without CubeMarsTool.
 
 Plus: torque is **off unless `--arm`**; a session ramp (`--arm-ramp`, default 5 s)
 fades assistance 0 → full after arming; `Ctrl-C` / `SIGTERM` / any exception →
-zero torque → exit MIT mode.
+zero torque.
+
+These do not cover the whole process dying or the CAN link failing. The motor then
+holds its last torque until its own CAN timeout (about 3 s in the saved Test 4
+frames), so keep the physical e-stop in reach.
 
 ### Progression
 
@@ -160,8 +171,8 @@ wanted), `sent_torque_nm` (what the motor got, after ramp + clamp),
 
 ### Tuning the envelope
 
-The AK80-9 MIT range is **±5 N·m** (`MotorInterface.MIT_T_MAX`); TBE delivers
-≈ 0.7 N·m effective. Starting point: `--assist-scale 0.1 --torque-cap 2.0`.
+Commands are capped at **±5 N·m** (`SAFE_T_MAX`) inside the motor's ±22 N·m MIT
+encoding range; TBE delivers ≈ 0.7 N·m effective. Starting point: `--assist-scale 0.1 --torque-cap 2.0`.
 
 Note: at `assist-scale 0.1` the raw command at push-off (~9–10 N·m for a 72 kg
 wearer) is far above a 2 N·m cap, so the delivered torque is a **flat-topped 2 N·m

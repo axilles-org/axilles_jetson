@@ -26,8 +26,8 @@ MIT_P_MIN  = -12.56
 MIT_P_MAX  =  12.56
 MIT_V_MIN  = -65.0    # AK80-9 specific
 MIT_V_MAX  =  65.0
-MIT_T_MIN  = -18.0    # AK80-9 specific  (NOT 54!)
-MIT_T_MAX  =  18.0
+MIT_T_MIN  = -22.0    # AK80-9 specific  (NOT 54!)
+MIT_T_MAX  =  22.0
 MIT_KP_MIN =   0.0
 MIT_KP_MAX = 500.0
 MIT_KD_MIN =   0.0
@@ -251,24 +251,13 @@ def cmd_calibrate():
 
     # ── Step 1: Motor identification ──────────────────────────────
     # The CubeMarsTool triggers this via the serial DETECT command.
-    # Over CAN we use the COMM_SET_DETECT equivalent by sending
-    # a special MIT frame that the firmware recognises as an
-    # identification trigger: all fields 0xFFFF except the position
-    # field which is set to 0x7FFF (midpoint = identity trigger).
-    #
-    # Specifically: send MIT frame with kp=0, kd=0, p=0, v=0, t=0
-    # but with the special "enter motor mode" sequence first.
+    # No MIT enter or exit frames here: this motor's firmware runs them as
+    # full-scale commands (41-59 A and full speed on the bench).
 
     print("\n[Step 1] Sending Motor Identification trigger...")
     print("  You should hear a beep, then the motor will rotate for ~10 seconds.")
 
-    # Enter MIT mode first (required before MIT commands work)
-    # Special entry frame: data = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC]
-    enter_frame = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC]
-    _send_can(bus, 8, MOTOR_ID, enter_frame)
-    time.sleep(0.1)
-
-    # Now trigger motor identification via duty cycle ramp
+    # Trigger motor identification via duty cycle ramp
     # The firmware identifies motor parameters by applying a test signal
     print("  Applying identification duty cycle sequence...")
     for duty in [0.01, 0.02, 0.03, 0.02, 0.01, 0.0]:
@@ -318,10 +307,6 @@ def cmd_calibrate():
     # Stop
     _send_can(bus, 3, MOTOR_ID, _pack32(0))
     time.sleep(0.5)
-
-    # Exit MIT mode
-    exit_frame = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD]
-    _send_can(bus, 8, MOTOR_ID, exit_frame)
 
     bus.shutdown()
 

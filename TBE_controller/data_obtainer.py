@@ -29,6 +29,15 @@ SAFE_T_MIN = -5.0
 MODE_MIT      = 8
 MODE_VELOCITY = 3
 
+# Status frames from the motor
+STATUS_ID = (0x29 << 8) | MOTOR_ID
+
+# No MIT "special" frames (FF FF FF FF FF FF FF FC / FD): this motor's firmware needs
+# no mode switch and runs them as full-scale commands. See ML_model/src/exo/deploy/motor.py.
+
+# Longest wait for one ADS1115 conversion (about 1.2 ms at 860 SPS)
+ADC_TIMEOUT_S = 0.05
+
 # ── CAN Helpers (from ak_80_test.py) ──────────────────────────────────────── # ADDED
 
 def _clamp(val, lo, hi):
@@ -37,13 +46,13 @@ def _clamp(val, lo, hi):
 def _float_to_uint(x, x_min, x_max, bits):
     x = _clamp(x, x_min, x_max)
     span = x_max - x_min
-    return int((x - x_min) * ((1 << bits) / span))
+    return int((x - x_min) * (((1 << bits) - 1) / span))
 
 
 # Class to obtain the data from the sensors and store it in a structured format
 class SensorData():
 
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger, use_can: bool = True):
 
         # Logger for logging the sensor data
         self.logger = logger
@@ -74,16 +83,16 @@ class SensorData():
         # Bus to read FSR sensor data
         self.bus = smbus2.SMBus(I2C_BUS)
 
-        # ADDED: CAN bus for motor communication
-        try:
-            self.can_bus = can.interface.Bus(channel=CAN_INTERFACE, interface="socketcan")
-            self.logger.logger.info(f"CAN bus opened on {CAN_INTERFACE}")
-
-            self.enterMotorMode()  # Ensure motor is in MIT mode at startup
-        except Exception as e:
-            self.logger.logger.error(f"Failed to open CAN bus: {e}")
-            self.logger.logger.error("Run: sudo ip link set can0 up type can bitrate 1000000")
-            self.can_bus = None
+        # ADDED: CAN bus for motor communication. The ML path passes use_can=False
+        # because MotorInterface owns the motor there.
+        self.can_bus = None
+        if use_can:
+            try:
+                self.can_bus = can.interface.Bus(channel=CAN_INTERFACE, interface="socketcan")
+                self.logger.logger.info(f"CAN bus opened on {CAN_INTERFACE}")
+            except Exception as e:
+                self.logger.logger.error(f"Failed to open CAN bus: {e}")
+                self.logger.logger.error("Run: sudo ip link set can0 up type can bitrate 1000000")
 
         self.logger.logger.info("Sensor stream channel opened.")
 
@@ -137,22 +146,6 @@ class SensorData():
         # Simple low-pass filter using exponential moving average
         self.filtered_heel_fsr = self.alpha * self.heel_fsr + (1 - self.alpha) * self.filtered_heel_fsr 
         self.filtered_toe_fsr = self.alpha * self.toe_fsr + (1 - self.alpha) * self.filtered_toe_fsr 
-
-    def enterMotorMode(self):
-        if self.can_bus is None:
-            return
-        data = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC]
-        msg = can.Message(arbitration_id=MOTOR_ID, data=data, is_extended_id=False)
-        self.can_bus.send(msg)
-        self.logger.logger.info("Entered MIT motor mode.")
-
-    def exitMotorMode(self):
-        if self.can_bus is None:
-            return
-        data = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFD]
-        msg = can.Message(arbitration_id=MOTOR_ID, data=data, is_extended_id=False)
-        self.can_bus.send(msg)
-        self.logger.logger.info("Exited MIT motor mode.")
 
     # ADDED: Send torque command to motor via CAN (MIT impedance mode, pure torque)
     def sendTorqueData(self):
@@ -216,7 +209,6 @@ class SensorData():
         self._tp_sock.close()
         self.logger.logger.info("Teleplot socket closed.")
         if self.can_bus is not None:
-            self.exitMotorMode()
             self.can_bus.shutdown()
             self.logger.logger.info("CAN bus shut down.")
         self.bus.close()
@@ -225,7 +217,7 @@ class SensorData():
     # Read b
     def read_feedback(self):
         msg = self.can_bus.recv(timeout=0.001)
-        if msg is None or len(msg.data) < 8:
+        if msg is None or msg.arbitration_id != STATUS_ID or len(msg.data) < 8:
             return None
         return {
             "position":    struct.unpack(">h", bytes(msg.data[0:2]))[0] * 0.1,   # deg
@@ -240,11 +232,15 @@ class SensorData():
         # Write config register to start conversion
         bus.write_i2c_block_data(ADC_ADDR, REG_CONFIG, config)
 
-        # Poll the OS bit (bit 15 of config register) until conversion completes
+        # Poll the OS bit (bit 15 of config register) until conversion completes.
+        # The deadline stops a stuck ADC from hanging the control loop.
+        deadline = time.perf_counter() + ADC_TIMEOUT_S
         while True:
             cfg = bus.read_i2c_block_data(ADC_ADDR, REG_CONFIG, 2)
             if cfg[0] & 0x80:
                 break
+            if time.perf_counter() > deadline:
+                raise TimeoutError(f"ADC 0x{ADC_ADDR:02X} conversion took over {ADC_TIMEOUT_S} s")
 
         # Read 2 bytes from conversion register
         data = bus.read_i2c_block_data(ADC_ADDR, REG_CONVERSION, 2)

@@ -172,7 +172,7 @@ python3 fall_test_plan/test_4/test4_analyze.py <run dir> [<run dir> ...] --out <
 | `--scheduler` | `relative` | `relative` = `sleep(dt - elapsed)`, as `jetson_deploy.py` and TBE `main.py` do. `deadline` = fixed 10 ms deadlines (see below). |
 | `--logger` | `deploy` | `deploy` adds `jetson_deploy.py`'s per-loop logging: `csv.DictWriter` row, `RunLogger.log_sample` (which writes Parquet from a thread every 500 rows), and a console line every 50 loops. `buffered` = RAM only (lighter than the real runner). |
 | `--torque-mode` | `zero` | `computed` sends the controller's torque. The motor moves. |
-| `--torque-cap`, `--command-sign`, `--slew`, `--watchdog-ms`, `--arm-ramp` | 2.0, -1, 10, 25, 5 | Same safety settings as `jetson_deploy.py` |
+| `--torque-cap`, `--command-sign`, `--slew`, `--watchdog-ms`, `--arm-ramp` | 2.0, 1, 10, 25, 5 | Same safety settings as `jetson_deploy.py` |
 | `--backend` | from the run's config | `onnx`, `jit` or `trt` |
 | `--no-gait-inject` | off | Feed the controller live sensor values instead of the recorded walk |
 | `--flush-run`, `--flush-duration`, `--flush-every` | off, 120, 1.0 | The marked disk-flush run |
@@ -301,10 +301,11 @@ problems:
   in `sendTorqueData`, on every branch. The TBE controller computes torque but
   never transmits it. This test drives the ML controller's `MotorInterface`,
   which does transmit.
-- `TBE_controller/data_obtainer.py` (`SensorData`) opens its own handle on
-  `can0` and sends a standard-id enter-MIT frame at start-up. The test keeps this
-  behaviour because it is part of the real sensor path. The monitor reports such
-  frames under `rx_ids` / other ids.
+- `TBE_controller/data_obtainer.py` (`SensorData`) used to open its own handle on
+  `can0` and send standard-id enter and exit frames. Those frames are gone, and
+  the test and the ML runner now pass `use_can=False`, so the sensor path never
+  opens CAN. All saved results used simulated sensors, so none of them show what
+  the motor did with the standard-id frames.
 - `Sensor_Tests/IMUs/BNO085/bno085_live_dual_fast.py` defaults to I2C bus 7. The
   exo uses bus 1, which the ML branch also passes. The test passes `--imu-bus`,
   default 1.

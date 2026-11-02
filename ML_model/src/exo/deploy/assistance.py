@@ -6,6 +6,7 @@ slew-rate limits.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from ..config import DeployConfig, SensorAdapterConfig
@@ -40,10 +41,12 @@ class AssistanceController:
         self.exo_command_sign = cfg.exo_command_sign
         self.stance_detector = StanceDetector(cfg.sensor_adapter)
 
+        self.faulted = False
         self._ramp = 0.0
         self._last_command = 0.0
 
     def reset(self) -> None:
+        self.faulted = False
         self._ramp = 0.0
         self._last_command = 0.0
 
@@ -56,6 +59,15 @@ class AssistanceController:
         dt: float,
     ) -> AssistCommand:
         stance = self.stance_detector(heel_fsr, toe_fsr)
+
+        # NaN passes straight through the max/min/_clamp below, past the stance
+        # gate and both limits, so stop here and stay off until reset().
+        if self.faulted or not math.isfinite(
+                predicted_moment_nm_per_kg * self.scale * subject_mass_kg):
+            self.faulted = True
+            self._ramp = 0.0
+            self._last_command = 0.0
+            return AssistCommand(torque_nm=0.0, stance=stance, ramp=0.0)
 
         target_ramp = 1.0 if stance else 0.0
         step = dt / (self.ramp_in_s if stance else self.ramp_out_s)

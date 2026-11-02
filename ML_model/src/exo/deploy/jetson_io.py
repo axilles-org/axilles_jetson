@@ -62,7 +62,7 @@ class JetsonSensors:
 
         self._log = Logger()
         self._imus = FastDualIMUReader(bus=i2c_bus)
-        self._fsr_enc = SensorData(self._log)
+        self._fsr_enc = SensorData(self._log, use_can=False)    # sensors only
         self._last = {k: 0.0 for k in FRAME_KEYS}
 
     def read(self) -> dict[str, float]:
@@ -83,7 +83,6 @@ class JetsonSensors:
         return dict(f)
 
     def shutdown(self) -> None:
-        # SensorData.shutdown() also stops its motor + closes CAN; harmless here.
         try:
             self._fsr_enc.shutdown()
         except Exception:

@@ -100,13 +100,35 @@ def test_imu_that_stops_ends_the_run(sensors, mode, address):
         s.frame_at(time.monotonic())
 
 
-def test_stuck_adc_still_ends_the_run(sensors, monkeypatch):
+def test_adc_i2c_error_ends_the_run(sensors, monkeypatch):
     from exo.deploy.jetson_io import SensorFault
     s = sensors()
-    monkeypatch.setattr(FakeSMBus, "ready", False)
+
+    def unplugged(self, addr, reg, data):
+        raise OSError("ADC unplugged")
+
+    monkeypatch.setattr(FakeSMBus, "write_i2c_block_data", unplugged)
     assert wait_for(lambda: s._error is not None) is not None
-    with pytest.raises(SensorFault, match="TimeoutError"):
+    with pytest.raises(SensorFault, match="ADC unplugged"):
         s.read()
+
+
+def test_fsrs_are_raw_counts_read_after_timed_conversions(sensors, monkeypatch):
+    from exo.deploy.jetson_io import TimedADS1115
+    log = []
+    monkeypatch.setattr(FakeSMBus, "write_i2c_block_data",
+                        lambda self, addr, reg, data: log.append(("start", data, time.perf_counter())))
+    monkeypatch.setattr(FakeSMBus, "read_i2c_block_data",
+                        lambda self, addr, reg, count: log.append(("read", reg, time.perf_counter()))
+                        or [0x12, 0x34])
+    s = sensors()
+    assert wait_for(lambda: s.read()["toe_fsr_raw"] == 0x1234 == s.read()["heel_fsr_raw"]) is not None
+    adc = [e for e in log if e[0] == "start" or e[1] == TimedADS1115.REG_CONV]
+    assert TimedADS1115.REG_CFG not in [e[1] for e in log if e[0] == "read"]     # no ready-bit polls
+    pairs = list(zip(adc, adc[1:]))
+    assert all(b[0] == "read" for a, b in pairs if a[0] == "start")
+    assert all(b[2] - a[2] >= TimedADS1115.CONV_S for a, b in pairs if a[0] == "start")
+    assert [e[1] for e in adc if e[0] == "start"][:2] == list(TimedADS1115.CFG)
 
 
 def test_no_teleplot_packets_from_the_sensor_thread(sensors, monkeypatch):

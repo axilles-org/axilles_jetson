@@ -46,13 +46,61 @@ class SensorFault(RuntimeError):
     """A sensor stopped updating, or the sensor thread failed."""
 
 
+class TimedADS1115:
+    """Toe and heel FSRs on the ADS1115, read as Pawan's
+    ``pawan/all_sensors_rate_test.py`` does: single-shot at 860 SPS, AIN0 (toe)
+    then AIN1 (heel). Each conversion is timed rather than polled via the ready
+    bit, and ``step`` never waits, so the IMUs use the bus during conversions.
+    Values are raw counts, like data_collection.py records."""
+
+    ADDR = 0x48
+    REG_CONV = 0x00
+    REG_CFG = 0x01
+    CFG = ([0xC3, 0xE3], [0xD3, 0xE3])     # ±4.096 V, 860 SPS, comparator off
+    CONV_S = 0.0013                         # 1/860 s = 1.16 ms, +10% clock tolerance
+
+    def __init__(self, bus, sample_hz: float):
+        self._bus = bus
+        self._period = 1.0 / sample_hz
+        self._next = 0.0
+        self._ch: int | None = None         # channel converting, None when idle
+        self._t_trigger = 0.0
+        self._raw = [0, 0]
+
+    def step(self, now: float) -> tuple[int, int] | None:
+        """Start a sample if one is due, or read a finished conversion and start
+        the next channel. Returns (toe, heel) when both channels are new."""
+        if self._ch is None:
+            if now >= self._next:
+                self._next = max(self._next + self._period, now)
+                self._trigger(0)
+            return None
+        if now - self._t_trigger < self.CONV_S:
+            return None
+        d = self._bus.read_i2c_block_data(self.ADDR, self.REG_CONV, 2)
+        raw = (d[0] << 8) | d[1]
+        self._raw[self._ch] = raw - 0x10000 if raw >= 0x8000 else raw
+        if self._ch == 0:
+            self._trigger(1)
+            return None
+        self._ch = None
+        return self._raw[0], self._raw[1]
+
+    def _trigger(self, ch: int) -> None:
+        self._bus.write_i2c_block_data(self.ADDR, self.REG_CFG, self.CFG[ch])
+        self._ch = ch
+        self._t_trigger = time.perf_counter()
+
+
 class JetsonSensors:
     """Exo sensors, read continuously in a background thread.
 
     Foot IMU = BNO085 IMU-A (0x4A), shank IMU = IMU-B (0x4B), both on
-    ``i2c_bus`` (bus 1 on the exo, same as TBE_controller); FSR + encoder from
-    ``SensorData``. BNO085 accel is m/s^2 and gyro rad/s — passed through; the
-    SensorAdapter's per-IMU accel_scale converts m/s^2 -> g.
+    ``i2c_bus`` (bus 1 on the exo, same as TBE_controller); FSRs from
+    ``TimedADS1115`` at ``fsr_hz``, encoder from ``SensorData``. BNO085 accel is
+    m/s^2 and gyro rad/s — passed through; the SensorAdapter's per-IMU
+    accel_scale converts m/s^2 -> g. The ADC is stepped after every IMU poll, so
+    a finished conversion waits at most one IMU read.
 
     The IMUs are read with Pawan's lean reader (``pawan/bno085_lean.py``, one I2C
     read per packet) and report accel and gyro every ``imu_interval_ms``; the old
@@ -69,7 +117,8 @@ class JetsonSensors:
     MAX_POLLS = 4               # packets drained from each IMU per pass
 
     def __init__(self, axilles_root: str, i2c_bus: int = 1,
-                 imu_interval_ms: float = 10.0, stale_s: float = 0.1):
+                 imu_interval_ms: float = 10.0, stale_s: float = 0.1,
+                 fsr_hz: float = 200.0):
         root = Path(axilles_root).expanduser()
         if not (root / "TBE_controller" / "data_obtainer.py").is_file():
             raise FileNotFoundError(
@@ -87,12 +136,13 @@ class JetsonSensors:
         self._imus = [(prefix, LeanBNO085(i2c_bus, address, report_hz, (ACCEL, GYRO),
                                           label=f"IMU-{prefix}"))
                       for prefix, address in (("foot", 0x4A), ("shank", 0x4B))]
-        # sensors only: no CAN, no Teleplot packets on every read
-        self._fsr_enc = SensorData(self._log, use_can=False, use_teleplot=False)
+        # encoder only: no CAN, no Teleplot packets on every read
+        self._enc = SensorData(self._log, use_can=False, use_teleplot=False)
+        self._fsr = TimedADS1115(self._enc.bus, fsr_hz)
 
         self.stale_s = stale_s
         self._frame = {k: 0.0 for k in FRAME_KEYS}
-        self._updated = {"foot IMU": None, "shank IMU": None, "FSR/encoder": None}
+        self._updated = {"foot IMU": None, "shank IMU": None, "FSR": None, "encoder": None}
         self._history: deque[tuple[float, dict[str, float]]] = deque()
         self._lock = threading.Lock()
         self._error: BaseException | None = None
@@ -105,16 +155,18 @@ class JetsonSensors:
         try:
             while not self._stop.is_set():
                 fresh = []
+                fsr = self._fsr.step(time.perf_counter())
                 for prefix, imu in self._imus:
                     got = 0
                     for _ in range(self.MAX_POLLS):
                         n = imu.poll()
+                        fsr = self._fsr.step(time.perf_counter()) or fsr
                         if not n:
                             break
                         got += n
                     if got and imu.accel is not None and imu.gyro is not None:
                         fresh.append((prefix, imu.accel, imu.gyro))
-                self._fsr_enc.readSensors()
+                self._enc.readEncoder()
                 now = time.monotonic()
                 with self._lock:
                     f = self._frame
@@ -122,10 +174,11 @@ class JetsonSensors:
                         f[f"{prefix}_ax"], f[f"{prefix}_ay"], f[f"{prefix}_az"] = accel
                         f[f"{prefix}_gx"], f[f"{prefix}_gy"], f[f"{prefix}_gz"] = gyro
                         self._updated[f"{prefix} IMU"] = now
-                    f["ankle_encoder_deg"] = float(self._fsr_enc.encoder_data)
-                    f["heel_fsr_raw"] = float(self._fsr_enc.filtered_heel_fsr)
-                    f["toe_fsr_raw"] = float(self._fsr_enc.filtered_toe_fsr)
-                    self._updated["FSR/encoder"] = now
+                    if fsr is not None:
+                        f["toe_fsr_raw"], f["heel_fsr_raw"] = float(fsr[0]), float(fsr[1])
+                        self._updated["FSR"] = now
+                    f["ankle_encoder_deg"] = float(self._enc.encoder_data)
+                    self._updated["encoder"] = now
                     self._history.append((now, dict(f)))
                     while now - self._history[0][0] > self.HISTORY_S:
                         self._history.popleft()
@@ -177,7 +230,7 @@ class JetsonSensors:
         self._stop.set()
         self._thread.join(timeout=1.0)
         try:
-            self._fsr_enc.shutdown()
+            self._enc.shutdown()
         except Exception:
             pass
         for _, imu in self._imus:

@@ -188,7 +188,8 @@ def main() -> None:
     fields = ["t_s", *FRAME_KEYS, "predicted_nm_per_kg", "predicted_nm",
               "assist_cmd_nm", "sent_torque_nm", "session_ramp", "stance",
               "ramp", "buffer_ready", "ankle_angle_deg", "calibrated",
-              "assist_on", "assist_scale", "loop_ms", "motor_iq_a", "model_fault"]
+              "assist_on", "assist_scale", "loop_ms", "motor_iq_a", "model_fault",
+              "sensor_age_ms"]
     csv_file = out_path.open("w", newline="")
     writer = csv.DictWriter(csv_file, fieldnames=fields)
     writer.writeheader()
@@ -207,6 +208,10 @@ def main() -> None:
     if not calibrated:
         print(f"CALIBRATING: walk normally for {args.calib_s:.0f} s to zero the ankle angle.")
 
+    model_dt = 1.0 / float(cfg.deploy.control_rate_hz)   # the rate the model was trained at
+    live_sensors = hasattr(sensors, "frame_at")
+    next_frame_t = None
+
     t0 = time.perf_counter()
     i = 0
     sent = 0.0
@@ -221,7 +226,19 @@ def main() -> None:
             tick_dt = min(loop_start - prev_start, 0.05) if prev_start else dt
             prev_start = loop_start
 
-            raw = sensors.read()
+            if live_sensors:
+                # feed the model evenly spaced frames at its training rate, however
+                # long this loop took; then predict once
+                now = time.monotonic()
+                if next_frame_t is None:
+                    next_frame_t = now
+                while next_frame_t <= now:
+                    controller.push(sensors.frame_at(next_frame_t), model_dt)
+                    next_frame_t += model_dt
+                raw = sensors.read()
+            else:
+                raw = sensors.read()
+                controller.push(raw, dt)
             if not calibrated:
                 calib_samples.append(raw["ankle_encoder_deg"])
                 if t_now >= args.calib_s:
@@ -229,7 +246,7 @@ def main() -> None:
                     controller.set_ankle_neutral(neutral)
                     calibrated = True
                     print(f"ankle zero set: encoder {neutral:.1f} deg = GaTech 0")
-            out = controller.step(raw, dt)
+            out = controller.update(raw, tick_dt)
             pred_kg = out["predicted_nm_per_kg"]
             assist_cmd = out["command_nm"]                 # N.m from AssistanceController
             if out["model_fault"] and not model_fault_seen:
@@ -268,7 +285,8 @@ def main() -> None:
                    "assist_scale": round(controller.assistance.scale, 3),
                    "loop_ms": round(loop_ms, 2),
                    "motor_iq_a": round(motor.status["current_a"], 2) if motor.status else 0.0,
-                   "model_fault": int(out["model_fault"])}
+                   "model_fault": int(out["model_fault"]),
+                   "sensor_age_ms": round(sensors.age_ms(), 1) if live_sensors else 0.0}
             writer.writerow(row)
             run_logger.log_sample(t=loop_start, **row)
 

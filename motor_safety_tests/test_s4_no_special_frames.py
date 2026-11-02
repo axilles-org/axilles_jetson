@@ -43,9 +43,11 @@ def test_sensor_only_mode_never_opens_can():
 
 def test_jetson_sensors_never_opens_can(monkeypatch):
     # the path used by mock, dry-run and live runs with real sensors
-    imu = types.ModuleType("bno085_live_dual_fast")
-    imu.FastDualIMUReader = lambda bus: types.SimpleNamespace(read=lambda: (None, None))
-    monkeypatch.setitem(sys.modules, "bno085_live_dual_fast", imu)
+    imu = types.ModuleType("bno085_lean")
+    imu.LeanBNO085 = lambda *args, **kwargs: types.SimpleNamespace(
+        poll=lambda: 0, accel=None, gyro=None, close=lambda: None)
+    imu.ACCEL, imu.GYRO = 0x01, 0x02
+    monkeypatch.setitem(sys.modules, "bno085_lean", imu)
     from exo.deploy.jetson_io import JetsonSensors
 
     fake_can.opened.clear()

@@ -144,9 +144,19 @@ class ExoController:
 
     def step(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
         """Process one sensor frame; returns the command and diagnostics."""
+        self.push(raw_frame, dt)
+        return self.update(raw_frame, dt)
+
+    def push(self, raw_frame: dict[str, float], dt: float) -> None:
+        """Add one frame to the model window without predicting. ``dt`` must be
+        the model's sample period (the window is in samples, not seconds)."""
         adapted = self.adapter.transform_frame(raw_frame, dt)
         self.buffer.push(self.pipeline.transform_row(adapted))
 
+    def update(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
+        """Predict from the current window and run assistance. ``raw_frame``
+        supplies the FSRs for the stance gate; ``dt`` is the real time since the
+        last update, for the ramps and slew limit."""
         predicted = 0.0
         if self.buffer.ready:
             predicted = self.backend.predict(self.buffer.window())

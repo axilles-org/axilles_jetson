@@ -1,0 +1,12 @@
+{
+  "test": "8",
+  "run_id": "T8_20261102_180049_manifest",
+  "date": "2026-11-02T18:00:49",
+  "condition": "manifest",
+  "software_commit": "473514b",
+  "model_dir": "/home/axilles/exo_ws/ML_model/runs/deploy",
+  "model_hash": "5a35381f451d",
+  "feature_list_hash": "d539c634604e",
+  "source_runs": [],
+  "notes": "Test 8 steps 1-2: training artifacts vs deployed runtime (adapter probe + ONNX normaliser), model runs/deploy"
+}

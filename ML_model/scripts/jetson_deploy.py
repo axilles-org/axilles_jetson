@@ -77,7 +77,7 @@ def main() -> None:
     ap.add_argument("--command-sign", type=float, default=1.0,
                     help="maps assist magnitude to the actuator direction (+1: plantarflexion "
                          "assist is positive motor torque; -1 gave dorsiflexion on a wearer)")
-    ap.add_argument("--slew", type=float, default=10.0,
+    ap.add_argument("--slew", type=float, default=20.0,
                     help="max N.m/s change of the sent torque, incl. assist on/off "
                          "and watchdog (Stop / crash still zero immediately)")
     ap.add_argument("--watchdog-ms", type=float, default=25.0,

@@ -6,6 +6,9 @@ analyze.py -- scoring scripts for Fall Test Plan Tests 1-3.
     python3 analyze.py test2 runs/<run> [...]          # positive-control runs use run.json "freeze"
     python3 analyze.py test3 runs/<run> [...]
     python3 analyze.py test3 --off runs/<walk_off> --on runs/<walk_on>   # adds the actuator delta check
+    python3 analyze.py test3 --off ... --on ... --exclude-dropouts       # + SECONDARY analysis
+        (loops inside IMU dropout windows +-100 ms removed; written as separate
+         T3-excl rows; the official T3 rows and exit code are unchanged)
 
 Each command prints a PASS/FAIL summary, the rows used / dropped / missing, and
 writes its metrics into <run>/summary.csv (one row per metric; rows from other
@@ -36,6 +39,7 @@ FSR_LOADED_V = 0.05            # ... or an FSR above this voltage (loaded pad)
 T3_P99_MAX_MS = 10.0
 T3_DELTA_MAX_MS = 2.0
 COPIED_MAX_PCT = 0.1           # revised: copied-value loops allowed (plan: 0)
+T3_EXCL_PAD_MS = 100.0         # T3 secondary: padding around each IMU dropout window
 SUMMARY_HEADER = ["test", "run_id", "channel", "metric", "value", "unit", "limit", "result"]
 
 
@@ -292,22 +296,69 @@ def test2(run):
 
 
 # ── Test 3 ──────────────────────────────────────────────────────────────────
-def test3(run):
-    s = Summary("T3", run)
+def dropout_windows(run, pad_ms):
+    """Merged [lo, hi] ns windows around every run of failed IMU reads: from the
+    last ok read before the failure to the first ok read after it, +-pad_ms."""
+    w = []
+    for name, d in run.ch.items():
+        if kind(name) != "imu":
+            continue
+        bad = np.where(~d["ok"])[0]
+        if not len(bad):
+            continue
+        starts = bad[np.r_[True, np.diff(bad) > 1]]
+        ends = bad[np.r_[np.diff(bad) > 1, True]]
+        for b, e in zip(starts, ends):
+            lo = d["t"][b - 1] if b > 0 else d["t"][b]
+            hi = d["t"][e + 1] if e + 1 < len(d["t"]) else d["t"][e]
+            w.append((lo - pad_ms * 1e6, hi + pad_ms * 1e6))
+    merged = []
+    for lo, hi in sorted(w):
+        if merged and lo <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], hi)
+        else:
+            merged.append([lo, hi])
+    return merged
+
+
+def test3(run, exclude_pad_ms=None):
+    """Official T3 scoring. With exclude_pad_ms set, a SECONDARY analysis that
+    drops loops starting inside IMU dropout windows; its rows are labelled
+    T3-excl and never change the official T3 result."""
+    excl = exclude_pad_ms is not None
+    s = Summary("T3-excl" if excl else "T3", run)
     head, a = run.control()
     chans = [h[len("sid_"):] for h in head[3:]]
+    if excl:
+        wins = dropout_windows(run, exclude_pad_ms)
+        drop = np.zeros(len(a), dtype=bool)
+        for lo, hi in wins:
+            drop |= (a[:, 1] >= lo) & (a[:, 1] <= hi)
+        excl_s = sum(hi - lo for lo, hi in wins) / 1e9
+        s.add("all", "secondary_analysis", "excludes IMU dropout windows; not the plan criterion")
+        s.add("all", "dropout_windows", len(wins), "", f"pad {exclude_pad_ms:g} ms")
+        s.add("all", "dropout_window_time", excl_s, "s")
+        s.add("all", "excluded_loops", int(drop.sum()))
+        s.add("all", "excluded_loops_pct", 100.0 * drop.sum() / max(1, len(a)), "%")
+        print(f"SECONDARY (T3-excl): {len(wins)} IMU dropout windows ({excl_s:.2f} s, "
+              f"pad {exclude_pad_ms:g} ms) -> excluded {int(drop.sum())} of {len(a)} loops "
+              f"({100.0 * drop.sum() / max(1, len(a)):.2f}%)")
+    else:
+        drop = np.zeros(len(a), dtype=bool)
     sids = a[:, 3:]
     # sample id -> read time
     t_of = {}
     for d in run.ch.values():
         for sid, t in zip(d["sid"], d["t"]):
             t_of[int(sid)] = int(t)
-    n_loops = len(a)
-    missing = (sids < 0).any(axis=1)
-    copied = np.zeros(n_loops, dtype=bool)
+    keep = ~drop                     # all True for the official T3 scoring
+    n_loops = int(keep.sum())
+    missing = (sids < 0).any(axis=1) & keep
+    copied = np.zeros(len(a), dtype=bool)
     copied[1:] = ((sids[1:] == sids[:-1]) & (sids[1:] >= 0)).any(axis=1)
-    copied_by_ch = ((sids[1:] == sids[:-1]) & (sids[1:] >= 0)).sum(axis=0)
-    good = ~missing
+    copied &= keep
+    copied_by_ch = ((sids[1:] == sids[:-1]) & (sids[1:] >= 0) & keep[1:, None]).sum(axis=0)
+    good = keep & ~missing
     times = np.full(sids.shape, np.nan)
     for j in range(sids.shape[1]):
         times[:, j] = [t_of.get(int(x), np.nan) if x >= 0 else np.nan for x in sids[:, j]]
@@ -355,13 +406,21 @@ def main():
     ap.add_argument("runs", nargs="*")
     ap.add_argument("--off", help="T3: actuator-off walking run")
     ap.add_argument("--on", help="T3: actuator-on walking run")
+    ap.add_argument("--exclude-dropouts", action="store_true",
+                    help="T3: also run a SECONDARY analysis excluding loops inside IMU "
+                         "dropout windows (rows labelled T3-excl; official T3 unchanged)")
+    ap.add_argument("--pad-ms", type=float, default=T3_EXCL_PAD_MS,
+                    help=f"T3-excl: padding around each dropout window (default {T3_EXCL_PAD_MS:g})")
     args = ap.parse_args()
+    if args.exclude_dropouts and args.test != "test3":
+        ap.error("--exclude-dropouts only applies to test3")
     fn = {"test1": test1, "test2": test2, "test3": test3}[args.test]
     paths = list(args.runs) + [p for p in (args.off, args.on) if p]
     if not paths:
         ap.error("give at least one run folder")
     results = {}
-    all_ok = True
+    sec = {}                       # T3-excl secondary results
+    all_ok = sec_ok = True
     for p in paths:
         run = Run(p)
         print(f"\n=== {args.test.upper()}  {run.id}  ({run.dur:.1f} s, "
@@ -381,7 +440,24 @@ def main():
         path = s.write()
         print(f"{'PASS' if s.ok else 'FAIL'}  -> {path}")
         all_ok &= s.ok
+        if args.exclude_dropouts:
+            print()
+            x = test3(run, exclude_pad_ms=args.pad_ms)
+            sec[p] = x
+            if args.off and args.on and p == args.on:
+                delta = x.p99 - sec[args.off].p99
+                ok = delta <= T3_DELTA_MAX_MS
+                x.add("all", "p99_increase_vs_actuator_off", delta, "ms",
+                      f"<={T3_DELTA_MAX_MS}", ok)
+                print(f"SECONDARY actuator-on p99 - actuator-off p99 = {delta:+.2f} ms "
+                      f"-> {'PASS' if ok else 'FAIL'}")
+            x.write()
+            print(f"SECONDARY (T3-excl) {'PASS' if x.ok else 'FAIL'}  -> {path}")
+            sec_ok &= x.ok
     print(f"\nOVERALL {args.test.upper()}: {'PASS' if all_ok else 'FAIL'}")
+    if args.exclude_dropouts:
+        print(f"SECONDARY T3-excl (dropout windows excluded, NOT the plan criterion): "
+              f"{'PASS' if sec_ok else 'FAIL'}")
     sys.exit(0 if all_ok else 1)
 
 

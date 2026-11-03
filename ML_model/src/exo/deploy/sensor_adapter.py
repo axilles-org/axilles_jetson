@@ -3,7 +3,8 @@
 Per IMU: ``gyro = R . (s_g . gyro_exo)`` and
 ``accel = s_a . R . accel_exo - (w x (w x r) + wdot x r)`` — the accelerometer
 lever-arm term needs ``wdot``, so the adapter keeps a one-sample history and is
-stateful. Encoder deg -> rad; FSR counts -> debounced binary stance. Parameters
+stateful. Encoder deg -> rad; FSR counts -> low-passed, optionally debounced
+binary stance. Parameters
 come from ``SensorAdapterConfig`` (scripts/fit_adapter.py). See
 docs/SENSOR_ADAPTER.md.
 """
@@ -67,12 +68,16 @@ class SensorAdapter:
                                  cfg.shank_gyro_scale, cfg.shank_lever_arm_m)
         self._stance = 0.0
         self._stance_age = 0.0
+        self._heel_f: float | None = None   # low-passed FSRs, None until the first frame
+        self._toe_f: float | None = None
 
     def reset(self) -> None:
         self.foot.reset()
         self.shank.reset()
         self._stance = 0.0
         self._stance_age = 0.0
+        self._heel_f = None
+        self._toe_f = None
 
     def transform_frame(self, raw: dict[str, float], dt: float = 0.01
                         ) -> dict[str, float]:
@@ -108,8 +113,18 @@ class SensorAdapter:
         return out
 
     def _stance_flag(self, heel: float, toe: float, dt: float) -> float:
+        """Stance as the TBE controller detects it: low-pass the FSRs, then stance
+        while the heel is loaded or the toe has not yet come off."""
         c = self.cfg
-        raw = 1.0 if (heel > c.heel_fsr_threshold or toe > c.toe_fsr_threshold) else 0.0
+        if self._heel_f is None or c.fsr_filter_cutoff_hz <= 0.0:
+            self._heel_f, self._toe_f = heel, toe          # start from the first reading
+        else:
+            k = 2 * np.pi * c.fsr_filter_cutoff_hz * dt
+            alpha = k / (k + 1.0)
+            self._heel_f += alpha * (heel - self._heel_f)
+            self._toe_f += alpha * (toe - self._toe_f)
+        raw = 1.0 if (self._heel_f > c.heel_fsr_threshold
+                      or self._toe_f >= c.toe_fsr_threshold) else 0.0
         if raw != self._stance:
             self._stance_age += dt
             if self._stance_age >= c.fsr_debounce_s:

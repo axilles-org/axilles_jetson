@@ -143,8 +143,9 @@ class JetsonSensors:
         self._imus = [(prefix, LeanBNO085(i2c_bus, address, report_hz, (ACCEL, GYRO),
                                           label=f"IMU-{prefix}"))
                       for prefix, address in (("foot", 0x4A), ("shank", 0x4B))]
-        # encoder only: no CAN, no Teleplot packets on every read
-        self._enc = SensorData(self._log, use_can=False, use_teleplot=False)
+        # encoder only, no CAN. SensorData opens a Teleplot socket but only sends
+        # from publishTelemetry(), which is never called here.
+        self._enc = SensorData(self._log, use_can=False)
         self._fsr = TimedADS1115(self._enc.bus, fsr_hz)
 
         self.stale_s = stale_s

@@ -199,7 +199,8 @@ class SensorAdapterConfig:
     ankle_encoder_sign: float = 1.0
     heel_fsr_threshold: float = 2000.0  # raw ADC counts -> stance
     toe_fsr_threshold: float = 2000.0
-    fsr_debounce_s: float = 0.10       # min stance/swing dwell time
+    fsr_debounce_s: float = 0.00       # min stance/swing dwell time (0 = off)
+    fsr_filter_cutoff_hz: float = 20.0  # low-pass on the FSRs before thresholding, as TBE does
 
 
 @dataclass(frozen=True)

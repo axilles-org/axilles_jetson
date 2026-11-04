@@ -1,0 +1,127 @@
+# imu_only_dropout_monitor: sensors=['foot', 'shank'] reconnect=True idle_us=0; sensors not listed are not addressed
+[   0.467s] SEQ    shank IMU: 1 packet(s) missing
+[   1.134s] SEQ    foot IMU: 1 packet(s) missing
+[   1.140s] SEQ    shank IMU: 1 packet(s) missing
+[   1.811s] SEQ    shank IMU: 1 packet(s) missing
+[   2.222s] SEQ    foot IMU: 1 packet(s) missing
+[   2.275s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.277s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.278s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.281s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.283s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.287s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.288s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.290s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.291s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.293s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.295s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.296s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.298s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.299s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.301s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.303s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.305s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.306s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.307s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.310s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.312s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.313s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.315s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.317s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.318s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.321s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.322s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.325s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.327s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.329s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.330s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.333s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.335s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.337s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.338s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.341s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.342s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.344s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.345s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.347s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.348s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.350s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.352s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.353s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.356s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.358s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.359s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.362s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.365s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.379s] BADPKT foot IMU: KeyError(0)
+[   2.447s] BADPKT foot IMU: RuntimeError(('Unprocessable Batch bytes', 1))
+[   2.482s] SEQ    shank IMU: 1 packet(s) missing
+[   2.777s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.779s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.781s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.784s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.786s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.787s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.788s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.789s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.792s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.794s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.795s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.798s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.799s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.800s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.803s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.806s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.808s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.809s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.810s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.812s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.815s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.816s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.818s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.819s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.820s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.824s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.826s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.829s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.830s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.833s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.835s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.837s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.838s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.839s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.840s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.843s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.846s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.847s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.848s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.849s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.851s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.855s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.857s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.858s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.859s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.861s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.864s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.866s] I2CERR foot IMU: [Errno 121] Remote I/O error
+[   2.880s] BADPKT foot IMU: KeyError(0)
+[   2.937s] BADPKT foot IMU: RuntimeError(('Unprocessable Batch bytes', 1))
+[   3.154s] SEQ    shank IMU: 1 packet(s) missing
+[   3.225s] RECON  foot IMU silent for 1.0 s; re-initialising (all sensors pause while it reconnects)
+[   5.070s] RECON  foot IMU reconnected
+[   5.080s] BADPKT shank IMU: KeyError(0)
+[   5.080s] RECON  shank IMU silent for 1.9 s; re-initialising (all sensors pause while it reconnects)
+[  15.547s] RECON  shank IMU reconnected
+[  15.550s] RECON  foot IMU silent for 10.5 s; re-initialising (all sensors pause while it reconnects)
+
+Summary over 16.7 s (1673 frames of 10 ms) - sensors read: foot, shank; not addressed: encoder, fsr
+  stream      readings    frames missed  longest gap
+  foot_acc         278     1451 (86.7%)     14500 ms
+  foot_gyro        222     1451 (86.7%)     14510 ms
+  shank_acc        408     1359 (81.2%)     13500 ms
+  shank_gyro       322     1380 (82.5%)     13500 ms
+  events: BADPKT 5  I2CERR 97  RECON 5  SEQ 7
+  foot IMU: 514 packets, 2 missing by sequence number, 8 continuation reads
+  shank IMU: 733 packets, 5 missing by sequence number, 4 continuation reads
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/sel_foot-shank_20261104_145512.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/sel_foot-shank_20261104_145512_events.log

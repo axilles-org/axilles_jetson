@@ -1,0 +1,1097 @@
+[monitor] connecting foot IMU (bus 1, 0x4A) at 100 Hz...
+[monitor] connecting shank IMU (bus 1, 0x4B) at 100 Hz...
+[monitor] opening bus 1 for the encoder and FSR ADC...
+[monitor] fsr: no reading after 3 s
+
+[monitor] live. 10 ms frames, GAP >= 30 ms, STALL >= 20 ms. Ctrl+C to stop.
+
+   t [s] |        foot acc m/s2 |      foot gyro rad/s |       shank acc m/s2 |     shank gyro rad/s |enc deg |    toe   heel | missing
+[  -3.007s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -3.005s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.998s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.997s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.991s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.987s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.983s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.978s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.972s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.968s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.962s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.958s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.952s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.947s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.943s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.937s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.932s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.928s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.923s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.917s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.913s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.907s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.903s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.898s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.893s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.888s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.883s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.878s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.873s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.867s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.862s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.856s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.852s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.848s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.843s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.837s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.833s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.828s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.823s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.818s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.812s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.808s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.802s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.798s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.792s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.788s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.783s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.778s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.773s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.768s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.762s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.757s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.753s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.747s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.743s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.738s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.733s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.727s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.723s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.717s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.712s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.707s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.703s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.697s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.692s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.688s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.683s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.678s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.673s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.667s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.662s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.658s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.653s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.648s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.642s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.637s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.632s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.627s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.623s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.616s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.613s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.608s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.603s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.597s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.592s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.588s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.582s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.578s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.572s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.568s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.563s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.558s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.551s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.547s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.543s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.538s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.532s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.527s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.523s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.518s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.513s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.507s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.503s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.497s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.492s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.487s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.482s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.459s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.457s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.455s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.452s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.447s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.442s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.436s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.432s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.428s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.422s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.417s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.412s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.407s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.402s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.396s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.391s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.386s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.382s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.377s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.372s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.368s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.362s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.357s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.352s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.347s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.341s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.337s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.332s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.327s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.322s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.316s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.312s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.307s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.303s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.296s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.292s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.287s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.282s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.277s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.272s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.267s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.262s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.257s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.252s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.247s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.242s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.237s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.232s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.227s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.222s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.217s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.212s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.207s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.202s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.197s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.192s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.186s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.182s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.177s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.172s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.167s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.162s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.157s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.152s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.147s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.142s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.137s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.132s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.127s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.123s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.115s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.112s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.107s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.102s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.095s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.092s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.087s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.081s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.077s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.072s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.067s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.062s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.057s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.052s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.047s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.043s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.037s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.032s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.027s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.022s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.018s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.012s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.007s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -2.001s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.997s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.992s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.987s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.982s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.977s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.972s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.967s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.962s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.957s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.952s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.947s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.942s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.937s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.932s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.927s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.922s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.916s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.912s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.907s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.902s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.897s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.891s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.887s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.882s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.877s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.872s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.867s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.862s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.857s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.852s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.847s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.841s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.837s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.832s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.827s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.821s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.817s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.812s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.807s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.801s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.797s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.792s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.786s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.782s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.777s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.772s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.768s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.762s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.757s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.752s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.747s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.742s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.737s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.731s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.727s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.722s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.718s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.711s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.707s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.702s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.697s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.691s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.686s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.682s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.677s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.672s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.667s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.662s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.657s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.652s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.646s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.642s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.637s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.631s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.627s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.622s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.617s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.611s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.607s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.602s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.596s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.592s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.587s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.582s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.577s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.572s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.567s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.562s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.557s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.552s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.547s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.542s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.536s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.532s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.527s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.522s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.517s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.511s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.507s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.502s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.496s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.492s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.487s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.482s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.477s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.472s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.467s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.462s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.457s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.451s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.447s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.442s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.437s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.432s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.426s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.422s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.417s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.412s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.405s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.401s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.397s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.393s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.387s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.382s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.376s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.372s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.366s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.362s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.357s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.352s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.347s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.342s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.337s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.332s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.326s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.322s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.317s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.312s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.307s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.302s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.296s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.292s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.287s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.283s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.277s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.270s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.266s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.262s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.257s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.252s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.247s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.242s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.237s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.232s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.226s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.222s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.217s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.212s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.206s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.202s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.197s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.192s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.188s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.182s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.177s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.172s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.167s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.161s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.157s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.152s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.147s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.142s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.137s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.132s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.127s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.122s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.117s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.112s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.107s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.102s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.097s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.092s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.087s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.082s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.077s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.072s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.067s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.061s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.058s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.051s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.047s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.042s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.037s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.030s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.027s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.022s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.017s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.011s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.007s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -1.002s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.997s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.991s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.986s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.982s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.977s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.972s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.967s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.961s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.957s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.953s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.947s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.942s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.937s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.932s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.927s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.923s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.917s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.912s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.907s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.902s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.897s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.891s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.887s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.882s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.877s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.872s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.867s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.862s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.857s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.852s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.847s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.842s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.837s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.832s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.826s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.822s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.817s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.812s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.807s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.802s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.796s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.791s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.787s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.782s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.777s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.772s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.766s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.760s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.756s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.752s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.746s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.742s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.737s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.732s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.727s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.722s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.717s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.711s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.707s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.702s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.697s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.692s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.687s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.682s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.677s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.673s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.667s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.661s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.657s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.652s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.645s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.642s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.637s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.632s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.627s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.622s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.617s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.611s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.606s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.602s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.597s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.592s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.587s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.581s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.577s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.572s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.567s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.562s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.557s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.552s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.547s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.542s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.536s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.532s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.527s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.522s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.517s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.512s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.507s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.502s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.497s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.492s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.487s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.482s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.478s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.472s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.467s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.462s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.457s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.452s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.446s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.442s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.437s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.432s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.426s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.422s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.417s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.412s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.407s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.402s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.397s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.392s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.387s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.383s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.377s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.372s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.367s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.362s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.357s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.352s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.347s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.342s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.337s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.331s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.327s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.322s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.317s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.312s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.307s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.302s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.297s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.291s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.287s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.282s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.277s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.272s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.267s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.262s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.257s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.252s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.247s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.242s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.237s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.232s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.228s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.222s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.217s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.212s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.207s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.202s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.197s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.192s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.187s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.182s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.177s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.172s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.167s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.163s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.158s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.152s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.147s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.141s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.137s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.132s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.127s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.122s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.117s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.112s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.107s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.102s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.097s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.092s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.087s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.082s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.077s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.072s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.067s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.062s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.057s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.052s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.047s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.042s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.037s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.032s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.026s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.022s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.017s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.012s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.007s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[  -0.002s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.003s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.008s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.013s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.019s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.024s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.01 |   8.75  -4.60  -1.87 |  -0.10   0.05  -0.06 |   9.84  -0.77  -2.78 |  -0.20   0.04  -0.65 | 162.25 |    NaN    NaN | fsr
+    0.02 |   8.79  -4.34  -1.91 |  -0.05   0.08  -0.09 |  10.26   1.50  -3.16 |  -0.16   0.08  -0.73 | 162.51 |    NaN    NaN | fsr
+[   0.028s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.03 |   9.18  -3.91  -1.68 |  -0.07   0.14  -0.15 |   9.84   1.50  -2.86 |  -0.21   0.11  -0.74 | 162.95 |    NaN    NaN | fsr
+[   0.033s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.038s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.04 |   8.91  -4.37  -1.76 |  -0.09   0.17  -0.17 |  10.02   1.57  -2.78 |  -0.31   0.14  -0.73 | 163.12 |    NaN    NaN | fsr
+[   0.044s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.048s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.05 |   9.10  -4.07  -1.80 |  -0.10   0.20  -0.19 |  10.14   0.80  -2.67 |  -0.39   0.17  -0.73 | 163.56 |    NaN    NaN | fsr
+[   0.053s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.058s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.06 |   8.87  -4.22  -1.72 |  -0.09   0.24  -0.22 |  10.34   0.12  -2.63 |  -0.41   0.20  -0.75 | 163.92 |    NaN    NaN | fsr
+[   0.064s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.069s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.07 |   9.07  -4.37  -1.57 |  -0.07   0.28  -0.26 |  10.48   0.12  -2.55 |  -0.39   0.23  -0.81 | 164.18 |    NaN    NaN | fsr
+[   0.073s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.079s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.08 |   8.98  -4.49  -1.61 |  -0.04   0.32  -0.31 |  10.64   0.08  -2.55 |  -0.38   0.26  -0.85 | 164.44 |    NaN    NaN | fsr
+[   0.083s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.088s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.09 |   9.21  -4.14  -1.53 |   0.00   0.36  -0.38 |  10.68  -0.23  -2.36 |  -0.37   0.29  -0.91 | 164.79 |    NaN    NaN | fsr
+[   0.093s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.098s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.10 |   9.21  -4.03  -1.53 |   0.01   0.40  -0.41 |  10.68   0.00  -2.36 |  -0.32   0.31  -0.98 | 165.15 |    NaN    NaN | fsr
+[   0.103s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.108s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.11 |   9.41  -4.14  -1.18 |   0.02   0.44  -0.47 |  10.10   0.46  -2.44 |  -0.28   0.34  -1.07 | 165.50 |    NaN    NaN | fsr
+[   0.114s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.118s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.12 |   8.98  -4.30  -1.34 |   0.04   0.49  -0.49 |  10.10   1.34  -2.21 |  -0.24   0.37  -1.13 | 165.85 |    NaN    NaN | fsr
+[   0.123s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.129s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.13 |   9.94  -2.54  -0.99 |   0.05   0.51  -0.48 |   9.96   1.50  -2.02 |  -0.25   0.40  -1.17 | 166.29 |    NaN    NaN | fsr
+[   0.133s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.139s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.14 |   9.25  -4.34  -0.80 |   0.04   0.55  -0.50 |  10.14   1.80  -1.75 |  -0.27   0.43  -1.22 | 166.55 |    NaN    NaN | fsr
+[   0.143s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.148s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.15 |   9.07  -4.45  -2.41 |   0.07   0.55  -0.49 |    NaN    NaN    NaN |  -0.27   0.47  -1.25 | 167.26 |    NaN    NaN | shank_acc fsr
+[   0.153s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.160s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.16 |    NaN    NaN    NaN |    NaN    NaN    NaN |  10.26   0.92  -2.67 |  -0.21   0.49  -1.27 | 167.43 |    NaN    NaN | foot_acc foot_gyro fsr
+[   0.163s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.168s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.17 |   9.29  -4.87  -1.45 |   0.13   0.60  -0.52 |  10.64  -0.07  -3.16 |  -0.16   0.49  -1.30 | 168.05 |    NaN    NaN | fsr
+[   0.173s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.178s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.18 |   9.03  -5.41  -2.14 |   0.20   0.63  -0.63 |  11.33  -1.22  -2.59 |  -0.09   0.53  -1.35 | 168.40 |    NaN    NaN | fsr
+[   0.183s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.188s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.19 |   9.75  -4.49  -2.33 |   0.28   0.65  -0.77 |  11.02  -1.11  -2.17 |   0.02   0.57  -1.43 | 168.84 |    NaN    NaN | fsr
+[   0.192s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.199s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.20 |   9.94  -5.02  -1.49 |   0.27   0.69  -0.92 |  11.14  -0.34  -1.79 |   0.08   0.54  -1.53 | 169.19 |    NaN    NaN | fsr
+[   0.203s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.208s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.21 |  10.48  -5.37  -0.65 |   0.27   0.69  -1.07 |  11.67   0.27  -0.68 |   0.04   0.50  -1.64 | 169.54 |    NaN    NaN | fsr
+[   0.213s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.218s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.22 |  13.36  -5.14  -1.34 |   0.23   0.62  -1.16 |  14.29   1.46  -1.48 |   0.04   0.50  -1.75 | 169.89 |    NaN    NaN | fsr
+[   0.223s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.228s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.23 |  13.27  -6.44  -0.57 |   0.12   0.61  -1.32 |  15.62   1.50  -1.59 |  -0.08   0.48  -1.90 | 170.16 |    NaN    NaN | fsr
+[   0.233s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.238s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.24 |  12.01  -6.82  -0.72 |   0.10   0.59  -1.66 |  15.16  -1.15  -0.48 |  -0.24   0.46  -1.97 | 170.24 |    NaN    NaN | fsr
+[   0.243s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.248s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.25 |    NaN    NaN    NaN |   0.16   0.56  -2.05 |  15.16  -1.15  -0.71 |  -0.27   0.46  -2.05 | 170.16 |    NaN    NaN | foot_acc fsr
+[   0.253s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.258s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.26 |  13.20  -7.02  -0.04 |   0.15   0.53  -2.41 |  15.01  -0.96  -0.52 |  -0.25   0.46  -2.15 | 169.89 |    NaN    NaN | fsr
+[   0.263s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.268s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.27 |  16.00  -5.52  -0.65 |   0.20   0.49  -2.71 |    NaN    NaN    NaN |  -0.24   0.47  -2.29 | 169.89 |    NaN    NaN | shank_acc fsr
+[   0.273s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.278s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.28 |  12.63  -6.06  -1.18 |   0.25   0.40  -2.79 |  13.63  -2.30   0.40 |  -0.11   0.46  -2.54 | 169.80 |    NaN    NaN | fsr
+[   0.283s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.289s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.29 |    NaN    NaN    NaN |   0.20   0.39  -3.04 |  15.39  -1.42  -0.75 |  -0.03   0.40  -2.84 | 169.63 |    NaN    NaN | foot_acc fsr
+[   0.293s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.298s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.30 |  16.19  -7.44  -0.68 |   0.16   0.40  -3.34 |  16.31  -0.84  -0.64 |  -0.04   0.34  -3.03 | 169.45 |    NaN    NaN | fsr
+[   0.303s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.308s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.31 |  17.60  -6.86  -0.88 |   0.12   0.40  -3.63 |  16.24   0.08  -0.83 |  -0.09   0.30  -3.22 | 169.19 |    NaN    NaN | fsr
+[   0.313s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.319s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.32 |  19.21  -7.52  -0.42 |   0.08   0.39  -3.95 |  17.00   1.42  -0.94 |  -0.11   0.27  -3.39 | 168.93 |    NaN    NaN | fsr
+[   0.323s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.328s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.33 |    NaN    NaN    NaN |   0.08   0.40  -4.15 |  17.08   3.34  -1.90 |  -0.13   0.25  -3.49 | 168.31 |    NaN    NaN | foot_acc fsr
+[   0.332s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.338s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.34 |  18.68  -6.90  -0.53 |   0.06   0.44  -4.36 |  17.04   2.91  -1.90 |  -0.17   0.26  -3.55 | 168.05 |    NaN    NaN | fsr
+[   0.343s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.348s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.35 |  18.02  -6.02  -1.03 |   0.14   0.49  -4.51 |    NaN    NaN    NaN |  -0.14   0.29  -3.59 | 167.34 |    NaN    NaN | shank_acc fsr
+[   0.353s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.358s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.36 |  17.76  -5.25  -0.68 |   0.27   0.58  -4.52 |  12.33   5.79  -3.36 |   0.00   0.31  -3.64 | 167.08 |    NaN    NaN | fsr
+[   0.364s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.368s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.37 |    NaN    NaN    NaN |   0.34   0.68  -4.34 |  11.41   9.04  -2.97 |   0.06   0.36  -3.72 | 166.82 |    NaN    NaN | foot_acc fsr
+[   0.374s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.378s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.38 |  16.15  -4.75  -1.64 |   0.36   0.60  -3.99 |  10.37  12.14  -1.86 |   0.10   0.42  -3.70 | 166.64 |    NaN    NaN | fsr
+[   0.383s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.389s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.39 |  12.81  -6.48  -1.49 |   0.20   0.54  -3.67 |   7.31  10.30  -1.06 |  -0.04   0.38  -3.41 | 166.38 |    NaN    NaN | fsr
+[   0.393s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.398s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.40 |   8.68  -8.24  -1.14 |  -0.01   0.49  -3.33 |   6.32   5.55  -1.44 |  -0.35   0.31  -2.93 | 165.67 |    NaN    NaN | fsr
+[   0.403s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.408s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.41 |  -0.21 -11.23  -4.29 |  -0.14   0.47  -3.24 |   3.25  -3.02  -1.59 |  -0.62   0.28  -2.37 | 165.32 |    NaN    NaN | fsr
+[   0.413s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.418s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.42 |   1.78 -11.73  -1.53 |   0.02   0.55  -2.64 |   1.03   4.60  -0.75 |  -0.42   0.22  -1.91 | 165.15 |    NaN    NaN | fsr
+[   0.423s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.428s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.43 |  -1.70 -11.61  -2.26 |   0.12   0.29  -1.63 |    NaN    NaN    NaN |  -0.18   0.27  -1.60 | 164.88 |    NaN    NaN | shank_acc fsr
+[   0.433s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.438s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.44 |   0.82  -9.20  -2.45 |   0.05   0.14  -1.08 |   3.44   3.72  -0.48 |  -0.28   0.23  -0.88 | 164.53 |    NaN    NaN | fsr
+[   0.443s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.447s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.45 |   1.13  -8.12  -2.48 |  -0.03   0.01  -0.73 |   3.56   1.11  -0.83 |  -0.43   0.17  -0.25 | 164.27 |    NaN    NaN | fsr
+[   0.454s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.458s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.46 |   0.10  -7.86  -1.80 |  -0.04  -0.02  -0.44 |   2.94  -1.34  -1.06 |  -0.39   0.10   0.09 | 163.92 |    NaN    NaN | fsr
+[   0.463s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.469s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.47 |  -0.36  -7.82  -1.57 |   0.02   0.01  -0.16 |   2.48  -1.19  -2.13 |  -0.19   0.07   0.31 | 163.74 |    NaN    NaN | fsr
+[   0.473s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.478s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.48 |   0.29  -7.90  -1.61 |   0.10   0.05   0.16 |   2.71   0.19  -2.13 |   0.00   0.08   0.53 | 163.39 |    NaN    NaN | fsr
+[   0.483s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.488s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.49 |   0.48  -7.90  -1.61 |   0.16   0.04   0.50 |   2.75   1.23  -1.67 |   0.11   0.11   0.80 | 163.21 |    NaN    NaN | fsr
+[   0.493s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.498s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.50 |   0.98  -7.97  -1.53 |   0.21  -0.02   0.84 |   2.67   1.50  -0.60 |   0.17   0.12   1.12 | 162.95 |    NaN    NaN | fsr
+[   0.503s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.507s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.51 |   1.32  -7.97  -1.53 |   0.27  -0.10   1.25 |   2.60   1.46  -0.64 |   0.24   0.11   1.46 | 162.86 |    NaN    NaN | fsr
+[   0.513s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.518s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.52 |   2.28  -7.21  -1.99 |   0.32  -0.17   1.67 |   2.63   1.69  -0.71 |   0.33   0.08   1.75 | 162.86 |    NaN    NaN | fsr
+[   0.523s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.528s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.53 |   2.82  -6.98  -2.18 |   0.32  -0.23   2.07 |   2.75   2.38  -0.83 |   0.41   0.04   2.03 | 162.77 |    NaN    NaN | fsr
+[   0.534s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.539s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.54 |   3.43  -6.67  -2.10 |   0.27  -0.28   2.43 |   3.36   2.95  -0.83 |   0.41  -0.01   2.31 | 162.86 |    NaN    NaN | fsr
+[   0.543s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.548s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.55 |   4.70  -6.56  -1.99 |   0.20  -0.32   2.75 |   3.67   2.95  -0.83 |   0.38  -0.07   2.60 | 162.86 |    NaN    NaN | fsr
+[   0.553s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.558s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.56 |   5.30  -6.68  -1.87 |   0.12  -0.35   3.04 |   4.05   2.95  -0.98 |   0.33  -0.13   2.86 | 162.95 |    NaN    NaN | fsr
+[   0.563s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.568s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.57 |   6.07  -6.75  -1.84 |   0.05  -0.37   3.32 |   4.78   3.03  -1.25 |   0.30  -0.19   3.13 | 163.04 |    NaN    NaN | fsr
+[   0.573s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.578s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.58 |   6.65  -6.90  -1.80 |  -0.01  -0.38   3.58 |   5.09   3.14  -1.29 |   0.27  -0.23   3.38 | 163.04 |    NaN    NaN | fsr
+[   0.583s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.588s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.59 |   7.30  -6.98  -1.87 |  -0.07  -0.41   3.83 |    NaN    NaN    NaN |   0.22  -0.27   3.62 | 163.21 |    NaN    NaN | shank_acc fsr
+[   0.593s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.598s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.60 |   7.88  -6.98  -1.87 |    NaN    NaN    NaN |   5.55   3.03  -1.21 |   0.20  -0.32   3.87 | 163.30 |    NaN    NaN | foot_gyro fsr
+[   0.604s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.608s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.61 |   9.10  -7.02  -1.99 |  -0.17  -0.47   4.29 |   5.78   2.88  -1.13 |   0.17  -0.36   4.09 | 163.30 |    NaN    NaN | fsr
+[   0.613s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.618s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.62 |   9.83  -7.13  -2.03 |  -0.21  -0.51   4.49 |   6.50   2.61  -1.17 |   0.16  -0.42   4.30 | 163.39 |    NaN    NaN | fsr
+[   0.623s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.630s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.63 |  10.56  -7.25  -2.03 |  -0.25  -0.54   4.67 |   7.00   2.53  -1.40 |   0.16  -0.47   4.47 | 163.48 |    NaN    NaN | fsr
+[   0.633s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.638s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.64 |  11.74  -7.55  -2.10 |  -0.28  -0.56   4.83 |   7.42   2.64  -1.63 |   0.17  -0.52   4.64 | 163.56 |    NaN    NaN | fsr
+[   0.643s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.648s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.65 |    NaN    NaN    NaN |  -0.35  -0.58   4.96 |   7.81   2.80  -1.71 |   0.15  -0.57   4.81 | 163.56 |    NaN    NaN | foot_acc fsr
+[   0.653s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.658s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.66 |  13.16  -8.24  -2.37 |  -0.41  -0.60   5.07 |   8.61   2.91  -1.86 |   0.12  -0.63   4.99 | 163.56 |    NaN    NaN | fsr
+[   0.663s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.668s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.67 |  14.73  -9.05  -2.60 |  -0.47  -0.63   5.20 |   9.07   2.95  -1.86 |   0.10  -0.68   5.16 | 163.56 |    NaN    NaN | fsr
+[   0.673s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.678s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.68 |  15.80  -9.54  -2.60 |  -0.52  -0.68   5.34 |   9.72   2.84  -1.86 |   0.09  -0.74   5.33 | 163.56 |    NaN    NaN | fsr
+[   0.683s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.688s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.69 |  16.80 -10.00  -2.75 |  -0.52  -0.76   5.48 |  10.52   2.68  -1.75 |   0.10  -0.80   5.49 | 163.48 |    NaN    NaN | fsr
+[   0.693s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.698s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.70 |  17.91 -10.12  -2.83 |  -0.47  -0.88   5.59 |  12.48   1.76  -1.17 |   0.16  -0.86   5.64 | 163.39 |    NaN    NaN | fsr
+[   0.703s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.708s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.71 |  19.17  -9.73  -2.95 |  -0.36  -1.05   5.63 |  13.55   1.57  -1.32 |   0.28  -0.92   5.75 | 163.30 |    NaN    NaN | fsr
+[   0.713s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.720s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.72 |  21.86  -7.32  -2.91 |  -0.21  -1.21   5.55 |  14.59   1.38  -1.40 |   0.44  -0.97   5.81 | 163.12 |    NaN    NaN | fsr
+[   0.723s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.728s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.73 |  23.08  -5.29  -2.64 |  -0.07  -1.33   5.37 |  15.54   1.50  -1.75 |   0.62  -0.99   5.79 | 162.77 |    NaN    NaN | fsr
+[   0.734s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.737s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.74 |  24.77  -3.11  -2.03 |    NaN    NaN    NaN |  16.92   3.26  -2.36 |   0.75  -1.00   5.67 | 162.42 |    NaN    NaN | foot_gyro fsr
+[   0.743s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.748s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.75 |  27.18  -0.08  -0.91 |   0.01  -1.29   4.74 |  18.65   4.98  -2.40 |   0.81  -0.99   5.41 | 162.16 |    NaN    NaN | fsr
+[   0.753s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.758s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.76 |  26.57   3.98   1.61 |  -0.05  -1.10   4.42 |  17.35   6.82  -2.32 |   0.73  -0.96   5.05 | 161.98 |    NaN    NaN | fsr
+[   0.762s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.769s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.77 |    NaN    NaN    NaN |  -0.13  -0.94   4.08 |  15.51   8.66  -2.17 |   0.58  -0.87   4.67 | 161.72 |    NaN    NaN | foot_acc fsr
+[   0.773s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.778s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.78 |  24.34   9.19   1.57 |  -0.30  -0.72   3.73 |  13.79   9.16  -2.21 |   0.36  -0.80   4.22 | 161.54 |    NaN    NaN | fsr
+[   0.783s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.788s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.79 |  23.58  12.41   0.92 |  -0.51  -0.56   3.36 |  12.48   8.93  -0.91 |   0.06  -0.74   3.67 | 161.54 |    NaN    NaN | fsr
+[   0.793s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.798s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.80 |  22.05  18.61   0.62 |  -0.73  -0.47   2.80 |  11.79   9.20  -0.33 |  -0.20  -0.75   3.01 | 161.54 |    NaN    NaN | fsr
+[   0.803s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.807s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.81 |    NaN    NaN    NaN |  -0.93  -0.42   2.05 |  11.11   9.46  -0.25 |  -0.45  -0.80   2.26 | 161.54 |    NaN    NaN | foot_acc fsr
+[   0.813s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.818s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.82 |  21.12  21.02   4.95 |  -0.99  -0.36   1.23 |  11.64   8.70  -0.18 |  -0.70  -0.76   1.45 | 161.54 |    NaN    NaN | fsr
+[   0.822s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.828s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.83 |  21.13  18.23   7.55 |  -0.77  -0.28   0.35 |  13.06   6.05   0.44 |  -0.79  -0.55   0.58 | 161.54 |    NaN    NaN | fsr
+[   0.834s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.838s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.84 |    NaN    NaN    NaN |  -0.30  -0.12  -0.59 |  17.38   1.30   1.36 |  -0.51  -0.24  -0.34 | 161.46 |    NaN    NaN | foot_acc fsr
+[   0.843s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.848s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.85 |  22.81  15.28   8.47 |   0.40   0.04  -1.76 |  37.11  -6.13   3.85 |   0.03   0.11  -1.25 | 161.19 |    NaN    NaN | fsr
+[   0.853s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.859s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.86 |   9.86 -23.02  -1.22 |   1.20  -0.26  -2.66 |  24.85 -13.98  -0.94 |   0.98   0.63  -1.92 | 160.58 |    NaN    NaN | fsr
+[   0.863s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.868s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.87 |   7.84 -10.70   0.62 |   1.51   0.36  -2.97 |   2.86  -0.80   0.74 |   1.63   0.55  -1.78 | 160.22 |    NaN    NaN | fsr
+[   0.873s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.878s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.88 |   5.08  -4.26  -1.38 |   1.25   0.29  -2.39 |   3.90   1.30   0.44 |   1.60   0.47  -2.03 | 159.96 |    NaN    NaN | fsr
+[   0.883s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.888s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.89 |   6.57  -7.66   0.70 |   0.88   0.13  -2.54 |   9.38  -3.60   0.63 |   1.04   0.38  -1.97 | 159.43 |    NaN    NaN | fsr
+[   0.893s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.898s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.90 |  10.82  -8.09   0.73 |   0.75   0.25  -2.97 |  12.90  -5.02  -1.02 |   0.80   0.30  -1.83 | 158.73 |    NaN    NaN | fsr
+[   0.904s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.908s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.91 |   9.48  -5.71  -0.11 |   0.54   0.46  -2.90 |   7.77   1.69  -3.16 |   0.65   0.30  -1.92 | 158.38 |    NaN    NaN | fsr
+[   0.913s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.918s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.92 |   8.48  -5.91   0.50 |   0.23   0.62  -2.69 |   9.18   2.22  -1.71 |   0.24   0.32  -1.98 | 157.76 |    NaN    NaN | fsr
+[   0.923s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.928s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.93 |   9.60  -6.06   0.81 |   0.05   0.67  -2.57 |   8.57   4.37  -1.55 |  -0.04   0.39  -1.87 | 157.32 |    NaN    NaN | fsr
+[   0.933s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.938s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.94 |   8.06  -5.60  -1.49 |  -0.20   0.68  -2.41 |   7.65   2.91  -1.36 |  -0.45   0.39  -1.73 | 157.06 |    NaN    NaN | fsr
+[   0.943s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.948s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.95 |   7.14  -5.41  -2.14 |  -0.27   0.59  -2.35 |   7.08  -0.77  -0.33 |  -0.67   0.35  -1.59 | 156.53 |    NaN    NaN | fsr
+[   0.953s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.958s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.96 |    NaN    NaN    NaN |  -0.11   0.42  -2.40 |   7.23  -1.88  -0.56 |  -0.48   0.31  -1.51 | 155.74 |    NaN    NaN | foot_acc fsr
+[   0.963s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.970s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.97 |   7.34  -4.98  -1.87 |   0.07   0.29  -2.44 |    NaN    NaN    NaN |  -0.22   0.28  -1.43 | 155.30 |    NaN    NaN | shank_acc fsr
+[   0.973s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.978s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.98 |   7.61  -4.53  -0.91 |   0.14   0.26  -2.47 |   7.12   0.54  -0.91 |  -0.07   0.24  -1.31 | 154.60 |    NaN    NaN | fsr
+[   0.983s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.989s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    0.99 |   8.45  -3.76  -0.11 |   0.11   0.27  -2.45 |   7.58   1.27  -0.64 |  -0.05   0.21  -1.20 | 153.81 |    NaN    NaN | fsr
+[   0.993s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   0.998s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.00 |   9.60  -3.88  -0.11 |   0.01   0.29  -2.38 |   8.45   2.61  -0.83 |  -0.13   0.21  -1.11 | 153.02 |    NaN    NaN | fsr
+── 1 s ── frames missed in the last 1 s: foot_acc 10  foot_gyro 3  shank_acc 6  shank_gyro 0  encoder 0  fsr 100 | events so far: I2CERR 801
+[   1.003s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.008s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.01 |    NaN    NaN    NaN |  -0.12   0.28  -2.27 |   8.65   3.30  -0.45 |  -0.27   0.20  -0.99 | 152.23 |    NaN    NaN | foot_acc fsr
+[   1.013s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.018s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.02 |  14.16  -5.56  -0.99 |  -0.20   0.21  -1.94 |   9.45   3.30  -0.68 |  -0.39   0.19  -0.91 | 152.14 |    NaN    NaN | fsr
+[   1.023s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.028s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.03 |   7.98  -4.22  -2.79 |  -0.31   0.09  -0.90 |   7.96   7.05  -2.40 |  -0.46   0.18  -1.02 | 152.40 |    NaN    NaN | fsr
+[   1.034s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.038s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.04 |  10.55  -4.26  -0.91 |  -0.38   0.07  -0.40 |   9.64   1.76  -2.09 |  -0.74   0.17  -1.01 | 152.67 |    NaN    NaN | fsr
+[   1.043s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.047s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.05 |   9.14  -4.45  -0.72 |  -0.33   0.10  -0.29 |   9.07   0.61  -1.75 |  -0.73   0.15  -0.88 | 153.11 |    NaN    NaN | fsr
+[   1.053s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.059s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.06 |   5.54  -7.12  -1.72 |  -0.33   0.12  -0.25 |   8.80  -2.07  -0.79 |  -0.65   0.17  -0.92 | 153.19 |    NaN    NaN | fsr
+[   1.063s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.068s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.07 |   8.10  -4.45  -0.46 |  -0.27   0.13  -0.61 |   7.16   1.11   0.17 |  -0.52   0.11  -0.68 | 153.19 |    NaN    NaN | fsr
+[   1.073s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.078s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.08 |  10.78  -4.87  -1.41 |  -0.30   0.07  -0.60 |  10.22   0.42  -0.64 |  -0.52   0.08  -0.58 | 153.28 |    NaN    NaN | fsr
+[   1.083s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.088s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.09 |   8.57  -5.21  -1.07 |  -0.21   0.02  -0.39 |   9.88   1.73  -1.25 |  -0.47   0.05  -0.55 | 153.37 |    NaN    NaN | fsr
+[   1.093s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.098s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.10 |   8.83  -4.07  -1.87 |  -0.21  -0.00  -0.30 |   9.15  -0.07  -0.94 |  -0.46   0.04  -0.48 | 153.46 |    NaN    NaN | fsr
+[   1.104s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.108s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.11 |   9.13  -4.41  -0.76 |  -0.17   0.02  -0.21 |   9.11  -1.64   0.02 |  -0.40   0.01  -0.50 | 153.81 |    NaN    NaN | fsr
+[   1.114s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.118s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.12 |   9.10  -3.95  -0.99 |  -0.09  -0.02  -0.08 |   9.57  -0.50  -0.83 |  -0.19  -0.01  -0.58 | 153.98 |    NaN    NaN | fsr
+[   1.123s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.129s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.13 |   8.95  -3.99  -1.11 |  -0.04  -0.04  -0.02 |   9.68  -0.04  -0.60 |  -0.06  -0.04  -0.61 | 154.34 |    NaN    NaN | fsr
+[   1.133s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.138s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.14 |   8.87  -4.03  -0.91 |  -0.01  -0.06   0.03 |   9.84   0.84  -0.60 |   0.04  -0.07  -0.61 | 154.78 |    NaN    NaN | fsr
+[   1.143s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.149s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.15 |   9.21  -3.57  -1.07 |    NaN    NaN    NaN |   9.72   0.80  -1.02 |   0.08  -0.09  -0.58 | 155.21 |    NaN    NaN | foot_gyro fsr
+[   1.154s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.158s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.16 |   9.52  -3.03  -1.03 |   0.01  -0.11   0.12 |   9.68   0.65  -0.83 |   0.12  -0.11  -0.57 | 155.57 |    NaN    NaN | fsr
+[   1.163s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.169s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.17 |   8.68  -4.26  -1.22 |   0.02  -0.12   0.14 |   9.26   0.46  -1.17 |   0.16  -0.11  -0.57 | 155.92 |    NaN    NaN | fsr
+[   1.174s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.178s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.18 |   9.07  -3.57  -0.91 |   0.05  -0.10   0.18 |   9.49   1.11  -1.40 |   0.20  -0.11  -0.57 | 156.45 |    NaN    NaN | fsr
+[   1.183s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.188s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.19 |   9.45  -3.03  -1.14 |   0.05  -0.10   0.20 |    NaN    NaN    NaN |   0.23  -0.11  -0.56 | 156.97 |    NaN    NaN | shank_acc fsr
+[   1.194s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.198s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.20 |   9.37  -3.03  -0.76 |   0.05  -0.09   0.20 |   9.46   1.11  -1.67 |   0.21  -0.11  -0.55 | 157.32 |    NaN    NaN | fsr
+[   1.203s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.209s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.21 |    NaN    NaN    NaN |   0.07  -0.07   0.21 |   9.76   1.27  -1.55 |   0.23  -0.09  -0.53 | 157.85 |    NaN    NaN | foot_acc fsr
+[   1.213s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.219s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.22 |   9.09  -3.84  -0.84 |    NaN    NaN    NaN |  10.14   1.19  -1.67 |   0.26  -0.06  -0.51 | 158.20 |    NaN    NaN | foot_gyro fsr
+[   1.223s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.229s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.23 |   8.95  -3.53  -1.07 |   0.09  -0.04   0.14 |   9.34   1.69  -1.71 |   0.26  -0.05  -0.48 | 158.38 |    NaN    NaN | fsr
+[   1.234s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.238s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.24 |   8.75  -3.49  -1.07 |   0.05  -0.03   0.08 |   9.76   1.99  -1.29 |   0.19  -0.05  -0.44 | 158.64 |    NaN    NaN | fsr
+[   1.244s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.248s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.25 |   8.75  -3.41  -0.88 |  -0.00  -0.06   0.04 |   9.07   2.64  -1.29 |   0.08  -0.06  -0.36 | 158.82 |    NaN    NaN | fsr
+[   1.253s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.259s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.26 |   8.71  -3.53  -0.99 |  -0.05  -0.08   0.05 |   9.11   1.65  -1.17 |  -0.04  -0.06  -0.29 | 159.08 |    NaN    NaN | fsr
+[   1.263s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.268s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.27 |   8.71  -3.72  -1.14 |  -0.07  -0.09   0.04 |   9.34   0.65  -0.98 |  -0.08  -0.07  -0.25 | 159.26 |    NaN    NaN | fsr
+[   1.273s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.278s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.28 |   8.60  -3.91  -1.14 |  -0.07  -0.10   0.03 |   9.26   0.65  -1.21 |  -0.06  -0.09  -0.26 | 159.35 |    NaN    NaN | fsr
+[   1.283s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.288s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.29 |   8.83  -3.72  -0.84 |  -0.06  -0.10   0.02 |   9.46   0.77  -1.13 |  -0.03  -0.10  -0.28 | 159.61 |    NaN    NaN | fsr
+[   1.293s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.298s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.30 |   8.57  -4.11  -0.95 |  -0.07  -0.10   0.01 |   9.42   1.15  -1.10 |  -0.03  -0.11  -0.28 | 159.70 |    NaN    NaN | fsr
+[   1.303s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.309s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.31 |   8.57  -4.34  -0.88 |  -0.08  -0.11  -0.01 |   9.53   1.07  -1.17 |  -0.06  -0.11  -0.26 | 159.79 |    NaN    NaN | fsr
+[   1.313s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.318s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.32 |   8.64  -4.95  -1.30 |  -0.11  -0.12  -0.03 |   9.54   0.84  -1.17 |  -0.09  -0.11  -0.23 | 159.87 |    NaN    NaN | fsr
+[   1.323s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.329s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.33 |    NaN    NaN    NaN |    NaN    NaN    NaN |   9.53   0.84  -1.79 |  -0.14  -0.12  -0.21 | 160.05 |    NaN    NaN | foot_acc foot_gyro fsr
+[   1.333s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.338s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.34 |   8.83  -4.18  -1.11 |  -0.15  -0.12  -0.05 |   9.76   0.61  -1.44 |  -0.20  -0.12  -0.20 | 160.14 |    NaN    NaN | fsr
+[   1.343s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.348s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.35 |   8.52  -4.53  -1.07 |  -0.15  -0.12  -0.04 |   9.11   0.23  -1.40 |  -0.20  -0.12  -0.21 | 160.31 |    NaN    NaN | fsr
+[   1.353s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.358s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.36 |    NaN    NaN    NaN |  -0.14  -0.12  -0.03 |   9.96   0.08  -1.90 |  -0.17  -0.11  -0.24 | 160.40 |    NaN    NaN | foot_acc fsr
+[   1.363s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.368s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.37 |   8.60  -4.53  -1.38 |  -0.12  -0.10  -0.04 |   9.99  -0.04  -2.29 |  -0.14  -0.10  -0.25 | 160.49 |    NaN    NaN | fsr
+[   1.373s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.378s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.38 |   8.41  -4.83  -1.68 |  -0.11  -0.07  -0.04 |   9.57  -0.42  -2.25 |  -0.13  -0.08  -0.29 | 160.66 |    NaN    NaN | fsr
+[   1.383s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.388s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.39 |   9.03  -4.07  -1.11 |  -0.09  -0.05  -0.05 |  10.18  -0.07  -2.32 |  -0.10  -0.06  -0.32 | 160.84 |    NaN    NaN | fsr
+[   1.393s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.398s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.40 |   8.87  -4.11  -1.41 |  -0.10  -0.03  -0.06 |   9.64   0.12  -2.21 |  -0.12  -0.04  -0.35 | 161.02 |    NaN    NaN | fsr
+[   1.403s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.408s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.41 |    NaN    NaN    NaN |  -0.10  -0.00  -0.08 |   9.98   0.35  -2.25 |  -0.15  -0.02  -0.38 | 161.19 |    NaN    NaN | foot_acc fsr
+[   1.415s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.419s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.42 |   9.07  -3.84  -1.26 |    NaN    NaN    NaN |   9.84   0.77  -2.02 |  -0.20  -0.01  -0.39 | 161.37 |    NaN    NaN | foot_gyro fsr
+[   1.423s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.428s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.43 |   9.06  -3.88  -1.34 |  -0.14   0.02  -0.12 |   9.72   0.54  -1.75 |  -0.25   0.01  -0.42 | 161.54 |    NaN    NaN | fsr
+[   1.433s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.438s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.44 |   8.49  -4.56  -1.49 |  -0.14   0.03  -0.14 |   9.98   0.27  -1.90 |  -0.28   0.02  -0.45 | 161.72 |    NaN    NaN | fsr
+[   1.443s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.448s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.45 |   8.87  -4.26  -1.26 |  -0.14   0.04  -0.14 |  10.18   0.00  -2.05 |  -0.29   0.02  -0.49 | 161.98 |    NaN    NaN | fsr
+[   1.453s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.459s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.46 |   8.83  -4.37  -1.49 |    NaN    NaN    NaN |  10.14   0.08  -2.05 |  -0.30   0.04  -0.54 | 162.16 |    NaN    NaN | foot_gyro fsr
+[   1.463s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.468s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.47 |   9.02  -4.18  -1.18 |  -0.14   0.09  -0.18 |  10.30   0.19  -2.25 |  -0.34   0.06  -0.59 | 162.51 |    NaN    NaN | fsr
+[   1.473s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.478s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.48 |   8.83  -4.41  -1.38 |  -0.13   0.13  -0.20 |  10.37  -0.27  -2.25 |  -0.34   0.09  -0.65 | 162.77 |    NaN    NaN | fsr
+[   1.484s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.488s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.49 |   9.09  -4.11  -1.38 |  -0.09   0.16  -0.22 |  10.48  -0.27  -2.29 |  -0.31   0.12  -0.72 | 163.04 |    NaN    NaN | fsr
+[   1.493s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.497s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.50 |   9.14  -4.37  -1.45 |  -0.05   0.19  -0.25 |  10.49  -0.11  -2.13 |  -0.27   0.15  -0.79 | 163.30 |    NaN    NaN | fsr
+[   1.503s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.508s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.51 |   9.21  -4.26  -1.49 |  -0.03   0.22  -0.28 |  10.68   0.27  -2.29 |  -0.23   0.17  -0.84 | 163.74 |    NaN    NaN | fsr
+[   1.513s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.518s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.52 |   8.99  -4.37  -1.34 |  -0.02   0.26  -0.32 |  10.56   0.23  -2.02 |  -0.23   0.19  -0.90 | 164.00 |    NaN    NaN | fsr
+[   1.523s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.529s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.53 |    NaN    NaN    NaN |    NaN    NaN    NaN |  10.11   0.35  -1.79 |  -0.20   0.21  -0.96 | 164.53 |    NaN    NaN | foot_acc foot_gyro fsr
+[   1.533s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.538s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.54 |   9.14  -3.95  -1.34 |  -0.02   0.29  -0.33 |  10.02   0.54  -1.82 |  -0.21   0.21  -1.03 | 164.88 |    NaN    NaN | fsr
+[   1.542s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.549s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.55 |   9.33  -3.88  -1.26 |   0.01   0.30  -0.37 |  10.45  -0.50  -1.55 |  -0.19   0.23  -1.10 | 165.41 |    NaN    NaN | fsr
+[   1.554s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.558s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.56 |   9.06  -4.30  -1.22 |   0.04   0.31  -0.40 |   9.98  -0.19  -1.86 |  -0.11   0.25  -1.20 | 165.85 |    NaN    NaN | fsr
+[   1.563s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.568s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+    1.57 |   9.33  -4.03  -1.26 |   0.07   0.35  -0.43 |  10.56   0.61  -2.13 |  -0.05   0.27  -1.30 | 166.38 |    NaN    NaN | fsr
+[   1.572s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+[   1.578s] I2CERR FSR ADC: [Errno 121] Remote I/O error
+
+Summary over 1.6 s (157 frames of 10 ms)
+  stream      readings    frames missed  longest gap
+  foot_acc         190       16 (10.2%)        10 ms
+  foot_gyro        157        9 ( 5.7%)        10 ms
+  shank_acc        192        7 ( 4.5%)        10 ms
+  shank_gyro       157        0 ( 0.0%)         0 ms
+  encoder          345        0 ( 0.0%)         0 ms
+  fsr                0      157 (100.0%)      1570 ms
+  events: I2CERR 917
+  foot IMU: 1005 packets, 0 missing by sequence number, 19 continuation reads
+  shank IMU: 1016 packets, 0 missing by sequence number, 17 continuation reads
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/dropout_20261104_144226.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/dropout_20261104_144226_events.log

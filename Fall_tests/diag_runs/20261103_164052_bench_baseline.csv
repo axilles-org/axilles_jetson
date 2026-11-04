@@ -1,0 +1,4 @@
+t_s,imu,event,detail
+4.2428,foot,START,cause after driver init = 2 (internal)
+8.4914,shank,START,cause after driver init = 2 (internal)
+23.4926,all,END,foot: naks=0 reboots=0 parse=0 quiet=0; shank: naks=0 reboots=0 parse=0 quiet=0; enc_err=0

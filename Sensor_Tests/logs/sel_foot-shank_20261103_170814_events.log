@@ -1,0 +1,13 @@
+# imu_only_dropout_monitor: sensors=['foot', 'shank'] reconnect=True idle_us=0; sensors not listed are not addressed
+
+Summary over 25.3 s (2529 frames of 10 ms) - sensors read: foot, shank; not addressed: encoder, fsr
+  stream      readings    frames missed  longest gap
+  foot_acc        3154       19 ( 0.8%)        10 ms
+  foot_gyro       2525      104 ( 4.1%)        10 ms
+  shank_acc       3209       22 ( 0.9%)        10 ms
+  shank_gyro      2523      132 ( 5.2%)        10 ms
+  events: none
+  foot IMU: 5687 packets, 0 missing by sequence number, 1 continuation reads
+  shank IMU: 5738 packets, 0 missing by sequence number, 2 continuation reads
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/sel_foot-shank_20261103_170814.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/sel_foot-shank_20261103_170814_events.log

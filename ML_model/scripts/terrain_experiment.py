@@ -127,7 +127,7 @@ def evaluate(cfg: Config, run_dir: Path, device: torch.device, eval_stride: int)
             m = np.array([mass[s] for s in subjects])
             preds.append((p * y_scale + y_mean) / m)
             truth.append((y[:, 0, -1].numpy() * y_scale + y_mean) / m)
-            ends = ds.index.entries[k:k + len(names), 2]
+            ends = ds.index.entries[k:k + len(names), 2] + cfg.data.prediction_horizon_samples
             keep += [n not in faulty for n in names]
             groups += [mode_group(modes[n][e]) if modes[n] is not None else "treadmill"
                        for n, e in zip(names, ends)]

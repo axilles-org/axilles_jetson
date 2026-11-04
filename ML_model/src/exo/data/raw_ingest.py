@@ -39,15 +39,15 @@ class Trial:
         return len(self.features)
 
 
-def _decimate(x: np.ndarray, factor: int, antialias: bool) -> np.ndarray:
+def _decimate(x: np.ndarray, factor: int, antialias: bool, *, zero_phase: bool = True) -> np.ndarray:
     if factor == 1:
         return x
     if not antialias:
         return x[::factor]
     if x.ndim == 1:
-        return decimate(x, factor, ftype="iir", zero_phase=True)
+        return decimate(x, factor, ftype="iir", zero_phase=zero_phase)
     return np.stack(
-        [decimate(x[:, c], factor, ftype="iir", zero_phase=True) for c in range(x.shape[1])],
+        [decimate(x[:, c], factor, ftype="iir", zero_phase=zero_phase) for c in range(x.shape[1])],
         axis=1,
     )
 
@@ -146,7 +146,8 @@ class RawTrialReader:
                 if col in df.columns:
                     cols.append(col)
                     names.append(f"imu_{seg}_{ax}")
-        arr = _decimate(df[cols].to_numpy(np.float64), factor, self.cfg.antialias)
+        arr = _decimate(df[cols].to_numpy(np.float64), factor, self.cfg.antialias,
+                        zero_phase=not self.cfg.causal_inputs)
         return {name: arr[:, i] for i, name in enumerate(names)}
 
     def _decimate_target(self, df: pd.DataFrame, factor: int) -> np.ndarray:
@@ -161,7 +162,8 @@ class RawTrialReader:
         if df is None:
             return {}
         cols = [c for c in wanted if c in df.columns]
-        arr = _decimate(df[cols].to_numpy(np.float64), factor, self.cfg.antialias)
+        arr = _decimate(df[cols].to_numpy(np.float64), factor, self.cfg.antialias,
+                        zero_phase=not self.cfg.causal_inputs)
         if to_radians:
             arr = np.radians(arr)
         return {f"{prefix}{c}": arr[:, i] for i, c in enumerate(cols)}

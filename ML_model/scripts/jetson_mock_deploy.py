@@ -40,6 +40,7 @@ from exo.config import Config, replace
 from exo.deploy.dashboard_info import build_model_info
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
 from exo.deploy.runtime import ExoController
+from exo.deploy.prepare_backend import prepare_backend
 
 from dashboard.backend.run_logger import RunLogger
 
@@ -48,6 +49,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, help="trained run dir (best.ts / best.onnx)")
     ap.add_argument("--mass", type=float, required=True, help="wearer body mass (kg)")
+    ap.add_argument("--height", type=float, default=None)
+    ap.add_argument("--gender", choices=["M", "F"], default=None)
     ap.add_argument("--axilles", default=str(Path(__file__).resolve().parents[2]),
                     help="path to the axilles_jetson repo (hardware I/O; default: this checkout)")
     ap.add_argument("--replay", default=None,
@@ -66,6 +69,8 @@ def main() -> None:
         cfg = replace(cfg, **{"deploy.backend": args.backend})
     rate = args.rate or float(cfg.deploy.control_rate_hz)
     dt = 1.0 / rate
+
+    prepare_backend(run_dir, cfg, args.mass, args.height, args.gender)
 
     controller = ExoController(run_dir, cfg.deploy, subject_mass_kg=args.mass)
     controller.reset()

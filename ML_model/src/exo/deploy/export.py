@@ -120,6 +120,11 @@ def build_deploy_module(
     info = {
         "feature_names": feature_names,
         "window_length": cfg.data.window_length,
+        "prediction_horizon_ms": cfg.data.prediction_horizon_ms,
+        "prediction_horizon_samples": cfg.data.prediction_horizon_samples,
+        "target_semantics": "biological ankle moment at input_end + prediction_horizon",
+        "input_rate_hz": cfg.data.ingest.target_rate_hz,
+        "causal_input_filtering": cfg.data.ingest.causal_inputs,
         "num_input_channels": len(feature_names),
         "output_units": "Nm/kg",
         "subject_mass_kg": subject_mass_kg,

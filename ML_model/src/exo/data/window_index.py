@@ -21,8 +21,9 @@ import numpy as np
 
 
 def _key(trial_names: list[str], window_length: int, stride: int, min_seg: int,
-         valid_tail: int = 0, drop_modes: tuple[str, ...] = ()) -> str:
+         valid_tail: int = 0, drop_modes: tuple[str, ...] = (), horizon: int = 0) -> str:
     h = hashlib.sha1()
+    h.update(f"forecast-v1|{horizon}".encode())
     h.update(json.dumps(sorted(trial_names)).encode())
     h.update(f"|{window_length}|{stride}|{min_seg}".encode())
     if valid_tail:
@@ -32,16 +33,16 @@ def _key(trial_names: list[str], window_length: int, stride: int, min_seg: int,
 
 def _tail_windows(features: np.ndarray, target: np.ndarray, mode: np.ndarray | None,
                   window_length: int, stride: int, valid_tail: int,
-                  drop_modes: tuple[str, ...]) -> list[tuple[int, int]]:
-    x_bad = np.isnan(features).any(axis=1).astype(np.int64)
-    y_bad = np.isnan(target).any(axis=1).astype(np.int64)
+                  drop_modes: tuple[str, ...], horizon: int = 0) -> list[tuple[int, int]]:
+    x_bad = (~np.isfinite(features)).any(axis=1).astype(np.int64)
+    y_bad = (~np.isfinite(target)).any(axis=1).astype(np.int64)
     x_cum, y_cum = np.r_[0, np.cumsum(x_bad)], np.r_[0, np.cumsum(y_bad)]
     out = []
-    for e in range(window_length - 1, len(target), stride):
+    for e in range(window_length - 1, min(len(features), len(target) - horizon), stride):
         s = e - window_length + 1
-        if x_cum[e + 1] - x_cum[s] or y_cum[e + 1] - y_cum[e + 1 - valid_tail]:
+        if x_cum[e + 1] - x_cum[s] or y_cum[e + horizon + 1] - y_cum[e + horizon + 1 - valid_tail]:
             continue
-        if mode is not None and mode[e] in drop_modes:
+        if mode is not None and mode[e + horizon] in drop_modes:
             continue
         out.append((s, e))
     return out
@@ -49,7 +50,7 @@ def _tail_windows(features: np.ndarray, target: np.ndarray, mode: np.ndarray | N
 
 def _windows_for_trial(target: np.ndarray, window_length: int, stride: int,
                        min_seg: int) -> list[tuple[int, int]]:
-    valid = ~np.isnan(target).any(axis=1)
+    valid = np.isfinite(target).all(axis=1)
     out: list[tuple[int, int]] = []
     n = len(valid)
     start = None
@@ -87,10 +88,15 @@ class WindowIndex:
         cache: bool = True,
         valid_tail: int = 0,
         drop_modes: tuple[str, ...] = (),
+        horizon: int = 0,
     ) -> "WindowIndex":
+        if not isinstance(horizon, (int, np.integer)) or horizon < 0:
+            raise ValueError("horizon must be a nonnegative integer")
+        if not 0 <= valid_tail <= window_length:
+            raise ValueError("valid_tail must be within [0, window_length]")
         processed_dir = Path(processed_dir)
         cache_dir = processed_dir / "window_index"
-        key = _key(trial_names, window_length, stride, min_seg, valid_tail, tuple(drop_modes))
+        key = _key(trial_names, window_length, stride, min_seg, valid_tail, tuple(drop_modes), horizon)
         cache_path = cache_dir / f"{key}.npz"
 
         if cache and cache_path.exists():
@@ -107,9 +113,16 @@ class WindowIndex:
                 if valid_tail:
                     windows = _tail_windows(d["features"], target,
                                             d["mode"] if "mode" in d.files else None,
-                                            window_length, stride, valid_tail, tuple(drop_modes))
+                                            window_length, stride, valid_tail, tuple(drop_modes), horizon)
                 else:
-                    windows = _windows_for_trial(target, window_length, stride, min_seg)
+                    windows = _windows_for_trial(target[horizon:], window_length, stride, min_seg)
+                    if horizon:
+                        # Target validity is checked at future times; inputs must
+                        # still be finite and entirely within this same trial.
+                        features = d["features"]
+                        bad = np.r_[0, np.cumsum((~np.isfinite(features)).any(axis=1))]
+                        windows = [(s, e) for s, e in windows
+                                   if e < len(features) and bad[e+1] == bad[s]]
             for s, e in windows:
                 entries.append((tid, s, e))
 

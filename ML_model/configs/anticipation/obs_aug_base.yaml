@@ -1,0 +1,26 @@
+# Timing-only augmentation on the transformed dataset. Experimental ranges;
+# not fitted to hardware logs and not a replacement for live freshness checks.
+extends: base.yaml
+train:
+  augment:
+    enabled: true
+    noise_std: 0.0
+    imu_gain_jitter: 0.0
+    time_warp: 0.0
+    channel_dropout: 0.0
+    latency_samples: 0
+    imu_rotation_deg: 0.0
+    encoder_offset_rad: 0.0
+    stance_jitter_samples: 0
+    assist_perturb: 0.0
+    timing:
+      enabled: true
+      probability: 0.75
+      rate_min_hz: 50.0
+      rate_max_hz: 100.0
+      interval_jitter_fraction: 0.2
+      delay_max_ms: 20.0
+      packet_drop_probability: 0.02
+      burst_probability: 0.25
+      burst_min_ms: 20.0
+      burst_max_ms: 80.0

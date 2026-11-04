@@ -16,6 +16,7 @@ from __future__ import annotations
 import shlex
 import signal
 import subprocess
+import sys
 import threading
 import time
 from dataclasses import dataclass, field
@@ -199,13 +200,16 @@ def build_argv(
         # they're printed instead of only appearing in a burst at exit
         # (Python fully buffers stdout by default when it isn't a TTY, which
         # a subprocess pipe never is).
-        return ["python3", "-u", str(TBE_DIR / "main.py")], TBE_DIR
+        return [sys.executable, "-u", str(TBE_DIR / "main.py")], TBE_DIR
+
+    if backend not in (None, "onnx", "trt", "jit"):
+        raise ValueError("backend must be onnx (CPU), trt (GPU), or jit")
 
     if controller == "ml-live":
         if not run_dir or not mass or not height or gender not in ("M", "F"):
             raise ValueError("live mode needs run_dir, mass, height and gender")
         argv = [
-            "python3", "-u", "scripts/jetson_deploy.py",
+            sys.executable, "-u", "scripts/jetson_deploy.py",
             "--run", run_dir,
             "--mass", str(mass), "--height", str(height), "--gender", gender,
             "--duration", str(duration),
@@ -234,7 +238,7 @@ def build_argv(
         # and in history.
         script = "scripts/jetson_mock_deploy.py" if controller == "ml-mock" else "scripts/jetson_deploy.py"
         argv = [
-            "python3",
+            sys.executable,
             "-u",
             script,
             "--run", run_dir,
@@ -244,6 +248,10 @@ def build_argv(
         ]
         if controller == "ml-dry-run":
             argv += ["--dry-run"]
+        if height is not None or gender is not None:
+            if height is None or gender not in ("M", "F"):
+                raise ValueError("provide both height and gender for wearer-specific export")
+            argv += ["--height", str(height), "--gender", gender]
         if replay_path:
             argv += ["--replay", replay_path]
         if backend:

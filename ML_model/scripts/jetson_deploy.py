@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from exo.config import Config, replace
 from exo.deploy.assist_switch import AssistSwitch
 from exo.deploy.dashboard_info import build_model_info
-from exo.deploy.export import export
+from exo.deploy.prepare_backend import prepare_backend
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
 from exo.deploy.motor import SAFE_T_MAX, MotorInterface
 from exo.deploy.runtime import ExoController
@@ -133,11 +133,7 @@ def main() -> None:
     if overrides:
         cfg = replace(cfg, **overrides)
 
-    if args.height is not None and args.gender is not None:
-        checkpoint = "deploy.pt" if (run_dir / "deploy.pt").exists() else "best.pt"
-        export(run_dir, args.mass, subject_demo=(args.height, args.mass, args.gender),
-               onnx=cfg.deploy.backend == "onnx", checkpoint=checkpoint)
-        print(f"exported {checkpoint} for {args.mass} kg, {args.height} m, {args.gender}")
+    prepare_backend(run_dir, cfg, args.mass, args.height, args.gender)
 
     rate = args.rate or float(cfg.deploy.control_rate_hz)
     dt = 1.0 / rate

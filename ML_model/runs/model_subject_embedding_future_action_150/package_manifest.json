@@ -1,0 +1,28 @@
+{
+  "model_name": "model_subject_embedding_future_action_150",
+  "source_run": "runs/anticipation/20261104_193420_UTC/tcn_150ms",
+  "checkpoint_sha256": "31bc942dda3ad8b5d64deb2d3a7be9ed65dda8533d66ac4776813d5f63020a12",
+  "prediction_horizon_ms": 150,
+  "observation_augmentation": false,
+  "target_semantics": "biological ankle moment, not a learned motor action",
+  "export_default_subject": {
+    "height_m": 1.75,
+    "mass_kg": 72.0,
+    "gender": "M"
+  },
+  "files_sha256": {
+    "best.onnx": "dbb1d1204987dca48372bc7c54ec997f8bca356f30895d6f132317c116ebbb13",
+    "best.pt": "31bc942dda3ad8b5d64deb2d3a7be9ed65dda8533d66ac4776813d5f63020a12",
+    "best.ts": "2dce5a15ff31e3ecdb032b14b5119d2192b625d8d63cd93296a49e6fd018c579",
+    "config.yaml": "8a2a90d9cf61d1c21298cb84d077e07bc432391ede9b29f1e747882493040da9",
+    "demographics.parquet": "98af55f561dc1c5b7ef61dfda30e84f06438e1ee0ca7289f207813320d6c69a1",
+    "deploy_metadata.json": "bf7a2437a16e0cbc1665ce246115d20aad15ed6ca56fec2f11b98a39113caabf",
+    "display_name.txt": "349253f130f454161afc8cedfd34494b9890290f55cbad3e6f8c7ab4be6ce65b",
+    "forecast_metrics.json": "9df42abddfab81ca660f82b74365e9a06820f51d8892250583c6f769750c8e19",
+    "history.jsonl": "fd34338e9ff4cde5128e663908140f68569edc982c5f755788463262399a1028",
+    "model_meta.json": "85e6960012a7bd97774e8f5c9540fcee3e1bd179af3d485ea6f07f7dbb7b0ee8",
+    "scaler_bundle.pkl": "83a9c347dad9e23056c5b47b2bc43b3f180e23e6ddff975ccc4bb7cc56816f3e",
+    "test_metrics.json": "d5858b85949d85bd0c3fa48173672bf4d8588d4bf32d8ff9551fb61afa1510f1",
+    "training_config.yaml": "30acb462a4dfca23e71af67b0da5c5af461d5ed21ed15ef77e9f72d85edafb3a"
+  }
+}

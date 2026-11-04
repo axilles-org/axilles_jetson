@@ -33,6 +33,17 @@ TBE_DIR = REPO_ROOT / "TBE_controller"
 ALLOWED_MODES = ("mock", "dry-run", "live")
 
 MAX_LOG_LINES = 2000
+MAX_TORQUE_CAP_NM = 5.0  # SAFE_T_MAX in ML_model/src/exo/deploy/motor.py
+
+
+def _checked_torque_cap(torque_cap: Any) -> float:
+    try:
+        cap = float(torque_cap)
+    except (TypeError, ValueError):
+        raise ValueError(f"torque cap must be a number, got {torque_cap!r}") from None
+    if not 0.0 < cap <= MAX_TORQUE_CAP_NM:
+        raise ValueError(f"torque cap must be above 0 and at most {MAX_TORQUE_CAP_NM} N·m")
+    return cap
 
 
 @dataclass
@@ -199,7 +210,7 @@ def build_argv(
             "--mass", str(mass), "--height", str(height), "--gender", gender,
             "--duration", str(duration),
             "--arm", "--start-passive", "--ankle-zero", "auto",
-            "--torque-cap", str(torque_cap or 2.0),
+            "--torque-cap", str(_checked_torque_cap(torque_cap)),
             "--no-teleplot",
         ]
         if assist_scale is not None:

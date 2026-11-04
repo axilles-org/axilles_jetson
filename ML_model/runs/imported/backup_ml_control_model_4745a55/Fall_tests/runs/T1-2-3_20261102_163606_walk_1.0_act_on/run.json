@@ -1,0 +1,48 @@
+{
+  "test": "1,2,3",
+  "run_id": "T1-2-3_20261102_163606_walk_1.0_act_on",
+  "date": "2026-11-02T16:41:14",
+  "condition": "walk_1.0_act_on",
+  "treadmill_speed_mps": 1.0,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "c41d705",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "P01",
+  "notes": "Test 3 run 1: actuator powered, 0 Nm MIT (Kp=Kd=0), no assist; recorded before act_off run",
+  "t_start_ns": 2745819881105,
+  "t_end_ns": 3045821712047,
+  "duration_s": 300.001830942,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": null,
+  "actuator": true,
+  "torque_cmd_nm": 0.0,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 2,
+    "shank": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0,
+    "shank": 0
+  },
+  "n_samples": 460642,
+  "n_loops": 29404,
+  "gc_disabled": true,
+  "cpu_pinned": 5
+}

@@ -1,11 +1,12 @@
 """Convert a predicted human ankle moment into a safe exo assist command.
 
 The exo provides a fraction of the predicted biological moment, only during
-stance, ramped at the stance transitions and bounded by hard torque and
+stance, ramped on entry, zeroed immediately on exit, and bounded by torque and
 slew-rate limits.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from ..config import DeployConfig, SensorAdapterConfig
@@ -31,6 +32,15 @@ class AssistCommand:
 
 class AssistanceController:
     def __init__(self, cfg: DeployConfig):
+        if cfg.assistance_mode not in ("plantarflexion", "bidirectional"):
+            raise ValueError("assistance_mode must be plantarflexion or bidirectional")
+        for name in ("dorsiflexion_scale_ratio", "dorsiflexion_limit_nm"):
+            value = getattr(cfg, name)
+            if not math.isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and nonnegative")
+        self.mode = cfg.assistance_mode
+        self.dorsi_ratio = cfg.dorsiflexion_scale_ratio
+        self.dorsi_limit = cfg.dorsiflexion_limit_nm
         self.scale = cfg.assistance_scale
         self.torque_limit = cfg.torque_limit_nm
         self.rate_limit = cfg.rate_limit_nm_per_s
@@ -40,10 +50,12 @@ class AssistanceController:
         self.exo_command_sign = cfg.exo_command_sign
         self.stance_detector = StanceDetector(cfg.sensor_adapter)
 
+        self.faulted = False
         self._ramp = 0.0
         self._last_command = 0.0
 
     def reset(self) -> None:
+        self.faulted = False
         self._ramp = 0.0
         self._last_command = 0.0
 
@@ -54,23 +66,38 @@ class AssistanceController:
         heel_fsr: float,
         toe_fsr: float,
         dt: float,
+        *, stance: bool | None = None,
     ) -> AssistCommand:
-        stance = self.stance_detector(heel_fsr, toe_fsr)
+        stance = self.stance_detector(heel_fsr, toe_fsr) if stance is None else bool(stance)
 
-        target_ramp = 1.0 if stance else 0.0
-        step = dt / (self.ramp_in_s if stance else self.ramp_out_s)
-        if target_ramp > self._ramp:
-            self._ramp = min(target_ramp, self._ramp + step)
+        # NaN passes straight through the max/min/_clamp below, past the stance
+        # gate and both limits, so stop here and stay off until reset().
+        if self.faulted or not math.isfinite(
+                predicted_moment_nm_per_kg * self.scale * subject_mass_kg):
+            self.faulted = True
+            self._ramp = 0.0
+            self._last_command = 0.0
+            return AssistCommand(torque_nm=0.0, stance=stance, ramp=0.0)
+
+        # A swing sample must not inherit torque from the previous stance.
+        if not stance:
+            self._ramp = 0.0
+            self._last_command = 0.0
+            return AssistCommand(torque_nm=0.0, stance=False, ramp=0.0)
+
+        self._ramp = min(1.0, self._ramp + dt / self.ramp_in_s)
+        # Positive here means plantarflexion, negative means dorsiflexion.
+        signed_moment = predicted_moment_nm_per_kg * self.plantarflexion_sign
+        if signed_moment >= 0.0:
+            desired = min(self.scale * signed_moment * subject_mass_kg * self._ramp,
+                          self.torque_limit)
+        elif self.mode == "bidirectional":
+            desired = -min(self.scale * self.dorsi_ratio * (-signed_moment)
+                           * subject_mass_kg * self._ramp,
+                           self.dorsi_limit, self.torque_limit)
         else:
-            self._ramp = max(target_ramp, self._ramp - step)
-
-        # Magnitude of the plantarflexion moment the human is producing.
-        plantarflexion = max(predicted_moment_nm_per_kg * self.plantarflexion_sign, 0.0)
-        magnitude = min(
-            self.scale * plantarflexion * subject_mass_kg * self._ramp,
-            self.torque_limit,
-        )
-        desired = magnitude * self.exo_command_sign
+            desired = 0.0
+        desired *= self.exo_command_sign
 
         max_delta = self.rate_limit * dt
         command = _clamp(desired, self._last_command - max_delta, self._last_command + max_delta)

@@ -168,7 +168,10 @@ train:
   wandb_run_name: ablation_tx_all
   device: auto
 deploy:
-  assistance_scale: 0.2
+  assistance_mode: bidirectional
+  dorsiflexion_scale_ratio: 1.0
+  dorsiflexion_limit_nm: 2.0
+  assistance_scale: 0.02
   torque_limit_nm: 30.0
   rate_limit_nm_per_s: 200.0
   ramp_in_s: 0.05
@@ -215,4 +218,5 @@ deploy:
     ankle_encoder_sign: 1.0
     heel_fsr_threshold: 22446.0
     toe_fsr_threshold: 8737.2
-    fsr_debounce_s: 0.1
+    fsr_debounce_s: 0.0
+    fsr_filter_cutoff_hz: 20.0

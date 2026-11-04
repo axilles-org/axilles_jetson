@@ -110,6 +110,12 @@ async function getJson(path) {
   return res.json();
 }
 
+export async function getHealth() {
+  const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
+  if (!res.ok) throw new Error("health check failed");
+  return res.json();
+}
+
 export const listTransformVerifications = () => getJson("/experiments/transform");
 export const getTransformVerification = (id) => getJson(`/experiments/transform/${id}`);
 export const getSubjectStrides = (id, subject) =>

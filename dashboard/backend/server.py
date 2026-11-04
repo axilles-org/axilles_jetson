@@ -30,6 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import process_manager
 from .experiments import router as experiments_router
+from .health import router as health_router
 
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
@@ -52,6 +53,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(experiments_router)
+app.include_router(health_router)
 
 
 # ---------------------------------------------------------------------- #

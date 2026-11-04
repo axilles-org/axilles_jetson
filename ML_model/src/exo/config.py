@@ -199,11 +199,15 @@ class SensorAdapterConfig:
     ankle_encoder_sign: float = 1.0
     heel_fsr_threshold: float = 2000.0  # raw ADC counts -> stance
     toe_fsr_threshold: float = 2000.0
-    fsr_debounce_s: float = 0.10       # min stance/swing dwell time
+    fsr_debounce_s: float = 0.00       # min stance/swing dwell time (0 = off)
+    fsr_filter_cutoff_hz: float = 20.0  # low-pass on the FSRs before thresholding, as TBE does
 
 
 @dataclass(frozen=True)
 class DeployConfig:
+    assistance_mode: str = "plantarflexion"  # plantarflexion | bidirectional; stance only
+    dorsiflexion_scale_ratio: float = 1.0    # multiplied by assistance_scale
+    dorsiflexion_limit_nm: float = 2.0
     assistance_scale: float = 0.2       # fraction of predicted human moment
     torque_limit_nm: float = 30.0       # hard saturation on the exo command magnitude
     rate_limit_nm_per_s: float = 200.0  # slew-rate limit

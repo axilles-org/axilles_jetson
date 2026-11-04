@@ -18,6 +18,7 @@ from __future__ import annotations
 import dataclasses
 import collections
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -144,16 +145,20 @@ class ExoController:
 
     def step(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
         """Process one sensor frame; returns the command and diagnostics."""
+        start = time.perf_counter()
         adapted = self.adapter.transform_frame(raw_frame, dt)
         self.buffer.push(self.pipeline.transform_row(adapted))
 
+        inference_start = time.perf_counter()
         predicted = 0.0
         if self.buffer.ready:
             predicted = self.backend.predict(self.buffer.window())
 
+        inference_end = time.perf_counter()
         cmd = self.assistance.update(
             predicted, self.subject_mass_kg,
             raw_frame.get("heel_fsr_raw", 0.0), raw_frame.get("toe_fsr_raw", 0.0), dt,
+            stance=bool(adapted["stance"]),
         )
         return {
             "command_nm": cmd.torque_nm,
@@ -161,4 +166,7 @@ class ExoController:
             "stance": float(cmd.stance),
             "ramp": cmd.ramp,
             "buffer_ready": float(self.buffer.ready),
+            "model_fault": float(self.assistance.faulted),
+            "preprocess_ms": (inference_start - start) * 1000.0,
+            "inference_ms": (inference_end - inference_start) * 1000.0,
         }

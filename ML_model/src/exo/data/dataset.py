@@ -47,6 +47,7 @@ class WindowDataset(Dataset):
             self.processed_dir, self.trial_names,
             cfg.window_length, cfg.stride, cfg.min_segment_length,
             cache=cfg.cache_window_index,
+            valid_tail=cfg.valid_tail, drop_modes=tuple(cfg.drop_modes),
         )
 
         self._augment = split == "train" and augment_cfg is not None and augment_cfg.enabled
@@ -110,6 +111,8 @@ class WindowDataset(Dataset):
         feat = self.pipeline.transform(raw, columns=cols)         # (T, C) ordered
         x = (feat - self._x_mean) / self._x_scale                 # z-score
         y = (np.asarray(targ_all[s : e + 1]) - self._y_mean) / self._y_scale
+        if self.cfg.valid_tail:
+            y = np.nan_to_num(y)              # NaN only before the scored tail
 
         x_t = torch.from_numpy(np.ascontiguousarray(x.T))         # (C, T)
         y_t = torch.from_numpy(np.ascontiguousarray(y.T))         # (1, T)

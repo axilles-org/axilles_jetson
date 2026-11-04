@@ -70,7 +70,7 @@ class SubjectSplit:
 @dataclass(frozen=True)
 class IngestConfig:
     """Raw-CSV -> aligned, decimated, z-scored per-trial arrays."""
-    terrain: str = "treadmill"
+    terrain: str = "treadmill"                        # comma-separated: treadmill,levelground,ramp
     target_rate_hz: int = 100
     # native sensor rates in the GaTech dataset (verified from Header timestamps)
     native_rates_hz: dict[str, int] = field(default_factory=lambda: {
@@ -93,6 +93,11 @@ class DataConfig:
     window_length: int = 300             # samples fed to the model (== 3.0 s at 100 Hz)
     stride: int = 10                     # sliding-window hop
     min_segment_length: int = 300        # shortest contiguous valid region to window
+    # >0: a window only needs a valid target on its last ``valid_tail`` samples (the
+    # ones the loss sees) instead of the whole window. Overground inverse dynamics
+    # exists only on force-plate steps, so those trials need this.
+    valid_tail: int = 0
+    drop_modes: list[str] = field(default_factory=lambda: ["idle"])  # skip windows ending here
     ingest: IngestConfig = field(default_factory=IngestConfig)
     num_workers: int = 4
     prefetch_factor: int = 4
@@ -123,6 +128,17 @@ class ModelConfig:
     l2_reg: float = 0.0
     use_subject_embedding: bool = True
     emb_dim: int = 4
+    # tcn: plain trunk + 1x1 head (subject embedding, if on, is concatenated to the input)
+    # film: every trunk block is modulated, h * (1 + gamma) + beta, with (gamma, beta) from
+    #   film_source "subject": the subject embedding (instead of concatenating it), or
+    #   film_source "context": a causal encoder over the whole input window
+    # moe: the trunk feeds K expert heads mixed by a per-timestep softmax gate
+    arch: str = "tcn"
+    film_source: str = "subject"
+    film_channels: int = 32
+    moe_experts: int = 4
+    moe_hidden: int = 32
+    moe_balance: float = 0.01            # weight of the gate load-balancing loss
 
     def receptive_field(self) -> int:
         rf = 1

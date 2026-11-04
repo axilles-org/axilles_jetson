@@ -32,6 +32,7 @@ class Trial:
     name: str
     features: pd.DataFrame  # physical units, includes a binary ``stance`` column
     target: pd.DataFrame    # ankle moment in N·m, NaN outside valid inverse-dynamics
+    mode: np.ndarray | None = None  # per-sample locomotion label (overground trials)
 
     @property
     def n_samples(self) -> int:
@@ -85,7 +86,9 @@ class RawTrialReader:
         return sorted(self.metadata["subject"].unique())
 
     def trials(self, subject: str) -> list[str]:
-        rows = self.metadata[self.metadata["subject"] == subject]
+        terrains = [t.strip() for t in self.cfg.terrain.split(",")]
+        meta = self.metadata
+        rows = meta[(meta["subject"] == subject) & meta["terrain"].isin(terrains)]
         return sorted(rows["trial"].unique())
 
     def read(self, subject: str, trial: str) -> Trial | None:
@@ -113,11 +116,17 @@ class RawTrialReader:
 
         features = pd.DataFrame({k: v[:n] for k, v in frames.items()})
         features["stance"] = stance[:n]
+        labels = self._sensor(subject, trial, "labels")
+        mode = None
+        if labels is not None:
+            mode = labels["Label"].astype(str).to_numpy()[::factors["id"]][:n]
+            mode = np.pad(mode, (0, n - len(mode)), mode="edge")
         return Trial(
             subject=subject,
             name=f"{subject}_{trial}",
             features=features,
             target=pd.DataFrame({self.cfg.target_column: target[:n]}),
+            mode=mode,
         )
 
     # -- io ---------------------------------------------------------

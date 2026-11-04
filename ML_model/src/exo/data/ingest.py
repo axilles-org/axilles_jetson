@@ -77,12 +77,14 @@ def run(cfg: Config, dataset_root: Path, out_dir: Path, dataset_revision: str,
                 continue
 
             npz = out_dir / f"{name}.npz"
+            extra = {} if tr.mode is None else {"mode": tr.mode.astype("U24")}
             np.savez(
                 npz,
                 features=tr.features.to_numpy(np.float32),
                 target=tr.target.to_numpy(np.float32),
                 feature_columns=np.array(list(tr.features.columns)),
                 target_column=np.array([tr.target.columns[0]]),
+                **extra,
             )
             manifest.append({
                 "name": name, "subject": subject, "n_samples": tr.n_samples,

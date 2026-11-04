@@ -1,7 +1,10 @@
 """Build (and cache) the list of valid sliding windows for a split.
 
-A window is ``(trial_name, start, end_inclusive)``. Windows only cover contiguous
-regions where the target is non-NaN and at least ``min_segment_length`` long.
+A window is ``(trial_name, start, end_inclusive)``. By default windows only cover
+contiguous regions where the target is non-NaN and at least ``min_segment_length``
+long. With ``valid_tail > 0`` a window instead needs NaN-free inputs throughout and a
+valid target on its last ``valid_tail`` samples only, and windows ending on a mode
+label in ``drop_modes`` are skipped.
 
 The index is deterministic given (trial set, window_length, stride,
 min_segment_length), so it is hashed and cached to ``<processed>/window_index/``
@@ -17,11 +20,31 @@ from pathlib import Path
 import numpy as np
 
 
-def _key(trial_names: list[str], window_length: int, stride: int, min_seg: int) -> str:
+def _key(trial_names: list[str], window_length: int, stride: int, min_seg: int,
+         valid_tail: int = 0, drop_modes: tuple[str, ...] = ()) -> str:
     h = hashlib.sha1()
     h.update(json.dumps(sorted(trial_names)).encode())
     h.update(f"|{window_length}|{stride}|{min_seg}".encode())
+    if valid_tail:
+        h.update(f"|tail{valid_tail}|{sorted(drop_modes)}".encode())
     return h.hexdigest()[:16]
+
+
+def _tail_windows(features: np.ndarray, target: np.ndarray, mode: np.ndarray | None,
+                  window_length: int, stride: int, valid_tail: int,
+                  drop_modes: tuple[str, ...]) -> list[tuple[int, int]]:
+    x_bad = np.isnan(features).any(axis=1).astype(np.int64)
+    y_bad = np.isnan(target).any(axis=1).astype(np.int64)
+    x_cum, y_cum = np.r_[0, np.cumsum(x_bad)], np.r_[0, np.cumsum(y_bad)]
+    out = []
+    for e in range(window_length - 1, len(target), stride):
+        s = e - window_length + 1
+        if x_cum[e + 1] - x_cum[s] or y_cum[e + 1] - y_cum[e + 1 - valid_tail]:
+            continue
+        if mode is not None and mode[e] in drop_modes:
+            continue
+        out.append((s, e))
+    return out
 
 
 def _windows_for_trial(target: np.ndarray, window_length: int, stride: int,
@@ -62,10 +85,12 @@ class WindowIndex:
         stride: int,
         min_seg: int,
         cache: bool = True,
+        valid_tail: int = 0,
+        drop_modes: tuple[str, ...] = (),
     ) -> "WindowIndex":
         processed_dir = Path(processed_dir)
         cache_dir = processed_dir / "window_index"
-        key = _key(trial_names, window_length, stride, min_seg)
+        key = _key(trial_names, window_length, stride, min_seg, valid_tail, tuple(drop_modes))
         cache_path = cache_dir / f"{key}.npz"
 
         if cache and cache_path.exists():
@@ -79,7 +104,13 @@ class WindowIndex:
                 continue
             with np.load(npz) as d:
                 target = d["target"]
-            for s, e in _windows_for_trial(target, window_length, stride, min_seg):
+                if valid_tail:
+                    windows = _tail_windows(d["features"], target,
+                                            d["mode"] if "mode" in d.files else None,
+                                            window_length, stride, valid_tail, tuple(drop_modes))
+                else:
+                    windows = _windows_for_trial(target, window_length, stride, min_seg)
+            for s, e in windows:
                 entries.append((tid, s, e))
 
         if not entries:

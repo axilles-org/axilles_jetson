@@ -2,7 +2,8 @@
 
 Per-trial arrays are memory-mapped; the window index is built once and cached.
 ``__getitem__`` returns ``(x, y, trial_name, subject_id)`` with ``x`` a ``(C, T)``
-z-scored feature window and ``y`` a ``(1, T)`` z-scored target.
+z-scored feature window and ``y`` a ``(1, T)`` z-scored target shifted forward
+by ``prediction_horizon_samples``. Index entries always describe input time.
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ from ..config import AugmentConfig, DataConfig
 from .augment import Augmenter
 from .feature_pipeline import FeaturePipeline
 from .scalers import ScalerBundle
+from .timing_augment import TimingAugmenter
 from .window_index import WindowIndex
 
 
@@ -47,11 +49,14 @@ class WindowDataset(Dataset):
             self.processed_dir, self.trial_names,
             cfg.window_length, cfg.stride, cfg.min_segment_length,
             cache=cfg.cache_window_index,
+            valid_tail=cfg.valid_tail, drop_modes=tuple(cfg.drop_modes),
+            horizon=cfg.prediction_horizon_samples,
         )
 
         self._augment = split == "train" and augment_cfg is not None and augment_cfg.enabled
         self._augment_cfg = augment_cfg
         self._augmenter: Augmenter | None = None
+        self._timing_augmenter: TimingAugmenter | None = None
 
         # lazy per-worker mmap handles
         self._feat_mm: dict[int, np.ndarray] = {}
@@ -109,7 +114,10 @@ class WindowDataset(Dataset):
         raw = np.asarray(feat_all[xs : xe + 1])                   # (T, F_super)
         feat = self.pipeline.transform(raw, columns=cols)         # (T, C) ordered
         x = (feat - self._x_mean) / self._x_scale                 # z-score
-        y = (np.asarray(targ_all[s : e + 1]) - self._y_mean) / self._y_scale
+        h = self.cfg.prediction_horizon_samples
+        y = (np.asarray(targ_all[s + h : e + h + 1]) - self._y_mean) / self._y_scale
+        if self.cfg.valid_tail:
+            y = np.nan_to_num(y)              # NaN only before the scored tail
 
         x_t = torch.from_numpy(np.ascontiguousarray(x.T))         # (C, T)
         y_t = torch.from_numpy(np.ascontiguousarray(y.T))         # (1, T)
@@ -119,6 +127,13 @@ class WindowDataset(Dataset):
                 self._augmenter = Augmenter(self._augment_cfg, self.feature_names)
                 self._augmenter.set_scaler(self._x_mean, self._x_scale)
             x_t = self._augmenter(x_t)
+            if self._augment_cfg.timing.enabled:
+                if self._timing_augmenter is None:
+                    self._timing_augmenter = TimingAugmenter(
+                        self._augment_cfg.timing, self.feature_names,
+                        self.cfg.ingest.target_rate_hz,
+                    )
+                x_t = self._timing_augmenter(x_t)
 
         name = self.index.trial_names[tid]
         return x_t, y_t, name, name.split("_")[0]

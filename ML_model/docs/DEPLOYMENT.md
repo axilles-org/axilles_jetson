@@ -166,7 +166,7 @@ python scripts/jetson_deploy.py --run runs/<dir> --mass 72 --axilles ~/axilles_j
 ```
 
 The log (`logs/powered_run.csv`) records `assist_cmd_nm` (what the controller
-wanted), `sent_torque_nm` (what the motor got, after ramp + clamp),
+wanted), `sent_torque_nm` (the queued motor target, after ramp + clamp; not measured torque),
 `session_ramp`, and `loop_ms` per frame. Teleplot streams the same.
 
 ### Tuning the envelope
@@ -205,3 +205,52 @@ the cap). Decide on the bench.
 | `src/exo/deploy/motor.py` | `MotorInterface` — AK80-9 MIT-mode CAN, torque clamp |
 | `src/exo/deploy/jetson_io.py` | `JetsonSensors`, `ReplaySensors`, `Teleplot` |
 | `src/exo/deploy/export.py` | `best.ts` / `best.onnx` with both scalers baked in |
+
+
+## November 2 recording and bidirectional stance assistance
+
+`runs/deploy/config.yaml` now selects `assistance_mode: bidirectional` with
+`assistance_scale: 0.02`. Other configurations retain plantarflexion-only behavior
+unless explicitly changed. CLI overrides are `--assistance-mode bidirectional`,
+`--dorsi-scale-ratio` (relative to the assistance scale), and `--dorsi-cap`.
+The configured dorsiflexion cap is 2 Nm; the final motor cap still applies.
+
+With `plantarflexion_sign: -1`, negative predicted biological moment requests
+plantarflexion and positive moment requests dorsiflexion. The motor mapping
+(`exo_command_sign` and `--command-sign`) must be checked physically in both
+directions. Direction selection uses predicted moment, not ankle angle.
+The slew limiter smooths direction changes. Both directions use the same stance
+flag as the model input. Swing, disabled assistance, warm-up, model faults and
+watchdog overruns zero the final target without a slew tail. This does not enable
+swing dorsiflexion or guarantee instantaneous cessation of physical torque.
+
+The sensor reader now raises a fault if any accel, gyro, FSR or encoder stream
+exceeds its freshness limit (100 ms, with a 2 s startup grace for unseen streams).
+Receipt counters distinguish fresh identical readings from missing IMU reports.
+A sensor exception zeros the motor before the recording is flushed. Repeated
+read errors are not evidence that fresh data is still arriving.
+
+New log fields separate sensor-read, preprocessing and inference time; include
+per-IMU stream ages, raw and model-input stance, watchdog state, prediction and
+command queue timestamps, latest CAN send completion and motor status age.
+`last_can_tx_*` describes the latest completed bus send, which may correspond to
+an earlier loop target. It is not a measured actuator response timestamp.
+
+The imported source is archived under `runs/imported/backup_ml_control_model_4745a55`
+with a checksum manifest. The latest CSV is available in the dashboard as
+`20261102_182941_1d037a`; its run ID association is inferred from the unique
+8,446-row match in the source database. The other November 2 database records
+are archived, but their unavailable raw Parquet streams have not been fabricated.
+Existing local recordings and the local database were preserved.
+
+Reproduce the analysis without hardware, from `ML_model/`:
+
+```sh
+python3 analysis/analyze_assistance_delay.py
+```
+
+Results are in `runs/hw_analysis/20261102_delay/`. The command counterfactual
+reuses recorded predictions to test routing; it intentionally bypasses sensor
+freshness offline and is not a validation of assistance on a wearer. The live
+freshness guard stops missing reports; the old CSV cannot establish whether
+identical values were accompanied by fresh reports.

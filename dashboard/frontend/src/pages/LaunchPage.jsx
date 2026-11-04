@@ -62,6 +62,12 @@ export default function LaunchPage() {
   const isMl = selectedModel?.controller === "ml";
   const isRunning = job?.status === "running";
 
+  useEffect(() => {
+    if (selectedModel?.backends?.length && !selectedModel.backends.includes(backend)) {
+      setBackend(selectedModel.backends.includes("onnx") ? "onnx" : selectedModel.backends[0]);
+    }
+  }, [selectedModelId, models, backend]);
+
   async function handleReplayDrop(file) {
     setError(null);
     setUploading(true);
@@ -138,8 +144,13 @@ export default function LaunchPage() {
 
           {selectedModel && selectedModel.kind === "tcn" && (
             <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+              <div>{selectedModel.hardware_test_status}</div>
+              <div>Prediction: {selectedModel.prediction_horizon_ms > 0
+                ? `${selectedModel.prediction_horizon_ms} ms ahead`
+                : "current time (0 ms)"}</div>
+              <div>Observation timing augmentation: {selectedModel.observation_augmentation ? "yes" : "no"}</div>
               <div>channels: {JSON.stringify(selectedModel.model_arch?.num_channels)}</div>
-              <div>test RMSE: {selectedModel.test_metrics?.rmse_nm_per_kg?.toFixed(4)} Nm/kg</div>
+              <div>{selectedModel.forecast_metrics?.rmse_nm_per_kg != null ? "Streaming test RMSE" : "Test RMSE"}: {(selectedModel.forecast_metrics?.rmse_nm_per_kg ?? selectedModel.test_metrics?.rmse_nm_per_kg)?.toFixed(4)} Nm/kg</div>
               <div>
                 backends available: {selectedModel.backends?.join(", ") || "none found"}
               </div>
@@ -249,19 +260,30 @@ export default function LaunchPage() {
                 </label>
               )}
               <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
-                Backend
+                Inference backend
                 <select
                   value={backend}
                   onChange={(e) => setBackend(e.target.value)}
                   disabled={isRunning}
                   style={{ width: "100%", padding: 6, marginTop: 4 }}
                 >
-                  {(selectedModel?.backends || ["onnx", "jit"]).map((b) => (
-                    <option key={b} value={b}>
-                      {b}
+                  {(selectedModel?.backend_options || []).map((b) => (
+                    <option key={b.id} value={b.id} disabled={!b.available}>
+                      {b.label}{!b.available ? " — unavailable" : ""}
                     </option>
                   ))}
                 </select>
+                {backend === "trt" && (
+                  <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                    Builds and checks a GPU engine on this Jetson before the controller starts.
+                    The first launch or a wearer change can take longer.
+                  </div>
+                )}
+                {selectedModel?.backend_options?.find((b) => b.id === "trt" && !b.available)?.reason && (
+                  <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                    TensorRT: {selectedModel.backend_options.find((b) => b.id === "trt").reason}.
+                  </div>
+                )}
               </label>
               <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
                 Assistance scale

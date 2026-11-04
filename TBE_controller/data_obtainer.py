@@ -52,11 +52,10 @@ def _float_to_uint(x, x_min, x_max, bits):
 # Class to obtain the data from the sensors and store it in a structured format
 class SensorData():
 
-    def __init__(self, logger: Logger, use_can: bool = True, use_teleplot: bool = True):
+    def __init__(self, logger: Logger, use_can: bool = True):
 
         # Logger for logging the sensor data
         self.logger = logger
-        self.use_teleplot = use_teleplot
 
         # Heel and toe sensor data
         self.heel_fsr = 0.0
@@ -140,8 +139,7 @@ class SensorData():
         self.readEncoder()
 
         # Publish all sensor data to telemetry
-        if self.use_teleplot:
-            self.publishTelemetry()
+        self.publishTelemetry()
 
     # Function to filter the data using a low-pass filter (for FSR data)
     def lowPassFilter(self):
@@ -250,7 +248,7 @@ class SensorData():
         raw = struct.unpack(">h", bytes(data))[0]
         return raw
     
-    def readEncoder(self) -> None:
+    def readEncoder(self) -> bool | None:
         """Read 12-bit filtered angle from AS5600, return degrees 0–360."""
         try:
             # Get encoder angle
@@ -277,6 +275,7 @@ class SensorData():
             self.filtered_encoder_velocity = self.alpha_enc * (delta / dt) + (1 - self.alpha_enc) * self.filtered_encoder_velocity
             self._prev_encoder_time = now
             self._prev_encoder_data = self.encoder_data
+            return True
 
         except OSError:
             return None

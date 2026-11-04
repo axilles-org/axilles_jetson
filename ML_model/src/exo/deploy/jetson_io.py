@@ -93,7 +93,7 @@ class TimedADS1115:
 
 
 class JetsonSensors:
-    """Exo sensors, read continuously in a background thread.
+    """One exo raw-frame dict per read, from the team's hardware modules.
 
     Foot IMU = BNO085 IMU-A (0x4A), shank IMU = IMU-B (0x4B), both on
     ``i2c_bus`` (bus 1 on the exo, same as TBE_controller); FSRs from
@@ -104,17 +104,22 @@ class JetsonSensors:
 
     The IMUs are read with Pawan's lean reader (``pawan/bno085_lean.py``, one I2C
     read per packet) and report accel and gyro every ``imu_interval_ms``; the old
-    reader left the library's 50 ms default, so the model got 20 Hz gyro. An IMU
-    read error ends the run rather than reconnecting. The thread keeps time-stamped values,
-    so the control loop never waits on I2C, and ``frame_at`` gives the model
-    evenly spaced frames. Because a hung sensor no longer stalls the loop,
-    ``read`` and ``frame_at`` raise ``SensorFault`` once any sensor is older than
-    ``stale_s``, or if the thread failed.
+    reader left the library's 50 ms default, so the model got 20 Hz gyro. The
+    thread keeps time-stamped values, so the control loop never waits on I2C, and
+    ``frame_at`` gives the model evenly spaced frames.
+
+    Transient read errors are counted and skipped. A stale accel, gyro, FSR or
+    encoder stream raises SensorFault so the deployment loop zeros and exits.
+    Freshness is based on received report counters, not whether numeric values
+    change: a stationary IMU can legitimately report the same values repeatedly.
     """
 
     HISTORY_S = 0.5             # frames kept for interpolation
     STARTUP_S = 2.0             # grace for the first reading of each sensor
     MAX_POLLS = 4               # packets drained from each IMU per pass
+    # what a bad bus read raises: OSError from I2C, KeyError/RuntimeError/
+    # IndexError from the BNO085 parser on a corrupt packet
+    READ_ERRORS = (OSError, KeyError, RuntimeError, IndexError)
 
     def __init__(self, axilles_root: str, i2c_bus: int = 1,
                  imu_interval_ms: float = 10.0, stale_s: float = 0.1,
@@ -123,7 +128,7 @@ class JetsonSensors:
         if not (root / "TBE_controller" / "data_obtainer.py").is_file():
             raise FileNotFoundError(
                 f"--axilles {root} is not an axilles_jetson checkout "
-                "(expected TBE_controller/ and Sensor_Tests/IMUs/BNO085/)")
+                "(expected TBE_controller/ and pawan/)")
         sys.path.insert(0, str(root / "pawan"))
         sys.path.insert(0, str(root / "TBE_controller"))
 
@@ -131,21 +136,27 @@ class JetsonSensors:
         from data_obtainer import SensorData
         from utilities import Logger
 
+        self._report_ids = {"accel": ACCEL, "gyro": GYRO}
         self._log = Logger()
         report_hz = 1000.0 / imu_interval_ms
         self._imus = [(prefix, LeanBNO085(i2c_bus, address, report_hz, (ACCEL, GYRO),
                                           label=f"IMU-{prefix}"))
                       for prefix, address in (("foot", 0x4A), ("shank", 0x4B))]
-        # encoder only: no CAN, no Teleplot packets on every read
-        self._enc = SensorData(self._log, use_can=False, use_teleplot=False)
+        # encoder only, no CAN. SensorData opens a Teleplot socket but only sends
+        # from publishTelemetry(), which is never called here.
+        self._enc = SensorData(self._log, use_can=False)
         self._fsr = TimedADS1115(self._enc.bus, fsr_hz)
 
         self.stale_s = stale_s
         self._frame = {k: 0.0 for k in FRAME_KEYS}
-        self._updated = {"foot IMU": None, "shank IMU": None, "FSR": None, "encoder": None}
+        self._updated = {f"{prefix}_{kind}": None
+                         for prefix in ("foot", "shank") for kind in ("accel", "gyro")}
+        self._updated.update({"FSR": None, "encoder": None})
         self._history: deque[tuple[float, dict[str, float]]] = deque()
         self._lock = threading.Lock()
         self._error: BaseException | None = None
+        self.read_errors: dict[str, int] = {}
+        self._error_printed: dict[str, float] = {}
         self._stop = threading.Event()
         self._started = time.monotonic()
         self._thread = threading.Thread(target=self._run, name="exo-sensors", daemon=True)
@@ -155,53 +166,79 @@ class JetsonSensors:
         try:
             while not self._stop.is_set():
                 fresh = []
-                fsr = self._fsr.step(time.perf_counter())
+                fsr = self._step_fsr()
                 for prefix, imu in self._imus:
-                    got = 0
+                    before = dict(imu.counts)
                     for _ in range(self.MAX_POLLS):
-                        n = imu.poll()
-                        fsr = self._fsr.step(time.perf_counter()) or fsr
+                        try:
+                            n = imu.poll()
+                        except self.READ_ERRORS as exc:
+                            self._read_error(f"{prefix} IMU", exc)
+                            n = 0
+                        fsr = self._step_fsr() or fsr
                         if not n:
                             break
-                        got += n
-                    if got and imu.accel is not None and imu.gyro is not None:
-                        fresh.append((prefix, imu.accel, imu.gyro))
-                self._enc.readEncoder()
+                    for kind, report_id in self._report_ids.items():
+                        value = getattr(imu, kind)
+                        if imu.counts.get(report_id, 0) > before.get(report_id, 0) and value is not None:
+                            fresh.append((prefix, kind, value))
+                encoder_fresh = self._enc.readEncoder()
                 now = time.monotonic()
                 with self._lock:
                     f = self._frame
-                    for prefix, accel, gyro in fresh:
-                        f[f"{prefix}_ax"], f[f"{prefix}_ay"], f[f"{prefix}_az"] = accel
-                        f[f"{prefix}_gx"], f[f"{prefix}_gy"], f[f"{prefix}_gz"] = gyro
-                        self._updated[f"{prefix} IMU"] = now
+                    for prefix, kind, values in fresh:
+                        letter = "a" if kind == "accel" else "g"
+                        for axis, value in zip("xyz", values):
+                            f[f"{prefix}_{letter}{axis}"] = value
+                        self._updated[f"{prefix}_{kind}"] = now
                     if fsr is not None:
                         f["toe_fsr_raw"], f["heel_fsr_raw"] = float(fsr[0]), float(fsr[1])
                         self._updated["FSR"] = now
-                    f["ankle_encoder_deg"] = float(self._enc.encoder_data)
-                    self._updated["encoder"] = now
+                    if encoder_fresh:
+                        f["ankle_encoder_deg"] = float(self._enc.encoder_data)
+                        self._updated["encoder"] = now
                     self._history.append((now, dict(f)))
                     while now - self._history[0][0] > self.HISTORY_S:
                         self._history.popleft()
         except Exception as exc:                           # noqa: BLE001
             self._error = exc
 
+    def _step_fsr(self) -> tuple[int, int] | None:
+        try:
+            return self._fsr.step(time.perf_counter())
+        except OSError as exc:
+            self._read_error("FSR", exc)
+            return None
+
+    def _read_error(self, name: str, exc: BaseException) -> None:
+        """Count a failed read and carry on; printed at most once a second per sensor."""
+        self.read_errors[name] = self.read_errors.get(name, 0) + 1
+        now = time.monotonic()
+        if now - self._error_printed.get(name, float("-inf")) >= 1.0:
+            self._error_printed[name] = now
+            print(f"!! {name} read error #{self.read_errors[name]}: {exc!r} (run continues)")
+
     def _check(self) -> None:
         if self._error is not None:
             raise SensorFault(f"sensor thread stopped: {self._error!r}") from self._error
         now = time.monotonic()
-        for name, seen in self._updated.items():
-            if seen is None:
-                if now - self._started > self.STARTUP_S:
-                    raise SensorFault(f"no reading from the {name} after {self.STARTUP_S:.0f} s")
-            elif now - seen > self.stale_s:
-                raise SensorFault(f"{name} has not updated for {now - seen:.2f} s")
+        with self._lock:
+            updated = dict(self._updated)
+        for name, seen in updated.items():
+            age = now - (self._started if seen is None else seen)
+            limit = self.STARTUP_S if seen is None else self.stale_s
+            if age > limit:
+                raise SensorFault(f"{name} has not updated for {age:.3f} s")
 
-    def age_ms(self) -> float:
-        """Age of the oldest sensor's latest reading."""
+    def ages_ms(self) -> dict[str, float]:
+        """Age of each received stream, including startup time for missing streams."""
         now = time.monotonic()
         with self._lock:
-            return max((now - seen) * 1000.0 if seen is not None else 0.0
-                       for seen in self._updated.values())
+            return {name: (now - (self._started if seen is None else seen)) * 1000.0
+                    for name, seen in self._updated.items()}
+
+    def age_ms(self) -> float:
+        return max(self.ages_ms().values())
 
     def read(self) -> dict[str, float]:
         """The latest reading of every sensor."""

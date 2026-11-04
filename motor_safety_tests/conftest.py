@@ -19,7 +19,7 @@ if _visible:
 
 class _NoCanSocket(socket.socket):
     def __init__(self, family=socket.AF_INET, *args, **kwargs):
-        if family == socket.AF_CAN:
+        if family == getattr(socket, "AF_CAN", 29):
             raise RuntimeError("a test tried to open a CAN socket")
         super().__init__(family, *args, **kwargs)
 

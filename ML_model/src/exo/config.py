@@ -14,6 +14,7 @@ Usage::
 """
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -70,13 +71,14 @@ class SubjectSplit:
 @dataclass(frozen=True)
 class IngestConfig:
     """Raw-CSV -> aligned, decimated, z-scored per-trial arrays."""
-    terrain: str = "treadmill"
+    terrain: str = "treadmill"                        # comma-separated: treadmill,levelground,ramp
     target_rate_hz: int = 100
     # native sensor rates in the GaTech dataset (verified from Header timestamps)
     native_rates_hz: dict[str, int] = field(default_factory=lambda: {
         "imu": 200, "id": 200, "fp": 1000, "gon": 1000,
     })
     target_column: str = "ankle_angle_r_moment"      # from the 'id' (inverse dynamics) sensor
+    causal_inputs: bool = False  # one-pass input filtering; targets retain offline filtering
     antialias: bool = True                            # scipy.signal.decimate on downsampling
     gon_to_radians: bool = True
     drop_imu_segments: tuple[str, ...] = ("trunk",)   # IMU mount points to drop
@@ -91,12 +93,29 @@ class DataConfig:
     feature_sets: dict[str, list[str]]
     split: SubjectSplit
     window_length: int = 300             # samples fed to the model (== 3.0 s at 100 Hz)
+    prediction_horizon_ms: float = 0.0  # x through t -> moment at t + horizon
     stride: int = 10                     # sliding-window hop
     min_segment_length: int = 300        # shortest contiguous valid region to window
+    # >0: a window only needs a valid target on its last ``valid_tail`` samples (the
+    # ones the loss sees) instead of the whole window. Overground inverse dynamics
+    # exists only on force-plate steps, so those trials need this.
+    valid_tail: int = 0
+    drop_modes: list[str] = field(default_factory=lambda: ["idle"])  # skip windows ending here
     ingest: IngestConfig = field(default_factory=IngestConfig)
     num_workers: int = 4
     prefetch_factor: int = 4
     cache_window_index: bool = True
+
+    @property
+    def prediction_horizon_samples(self) -> int:
+        rate = self.ingest.target_rate_hz
+        ms = self.prediction_horizon_ms
+        if not math.isfinite(rate) or rate <= 0 or not math.isfinite(ms) or ms < 0:
+            raise ValueError("prediction_horizon_ms must be finite and nonnegative; rate must be positive")
+        samples = ms * rate / 1000.0
+        if not math.isclose(samples, round(samples), abs_tol=1e-9):
+            raise ValueError("prediction_horizon_ms must be an integer number of samples at target_rate_hz")
+        return int(round(samples))
 
     def feature_names(self) -> list[str]:
         if self.feature_set not in self.feature_sets:
@@ -123,12 +142,54 @@ class ModelConfig:
     l2_reg: float = 0.0
     use_subject_embedding: bool = True
     emb_dim: int = 4
+    # tcn: plain trunk + 1x1 head (subject embedding, if on, is concatenated to the input)
+    # film: every trunk block is modulated, h * (1 + gamma) + beta, with (gamma, beta) from
+    #   film_source "subject": the subject embedding (instead of concatenating it), or
+    #   film_source "context": a causal encoder over the whole input window
+    # moe: the trunk feeds K expert heads mixed by a per-timestep softmax gate
+    arch: str = "tcn"
+    film_source: str = "subject"
+    film_channels: int = 32
+    moe_experts: int = 4
+    moe_hidden: int = 32
+    moe_balance: float = 0.01            # weight of the gate load-balancing loss
 
     def receptive_field(self) -> int:
         rf = 1
         for i in range(len(self.num_channels)):
             rf += 2 * (self.kernel_size - 1) * (2 ** i)
         return rf
+
+
+@dataclass(frozen=True)
+class TimingAugmentConfig:
+    """Causal acquisition perturbations; target timestamps never change."""
+    enabled: bool = False
+    probability: float = 0.75  # remaining windows are clean
+    rate_min_hz: float = 50.0
+    rate_max_hz: float = 100.0
+    interval_jitter_fraction: float = 0.2
+    delay_max_ms: float = 20.0
+    packet_drop_probability: float = 0.02
+    burst_probability: float = 0.25  # at most one burst per stream/window
+    burst_min_ms: float = 20.0
+    burst_max_ms: float = 80.0
+
+    def validate(self, input_rate_hz: float) -> None:
+        for name, value in asdict(self).items():
+            if name != "enabled" and not math.isfinite(value):
+                raise ValueError(f"augment.timing.{name} must be finite")
+        for name in ("probability", "packet_drop_probability", "burst_probability"):
+            if not 0 <= getattr(self, name) <= 1:
+                raise ValueError(f"augment.timing.{name} must be within [0, 1]")
+        if not 0 < self.rate_min_hz <= self.rate_max_hz:
+            raise ValueError("augment.timing rates must satisfy 0 < min <= max")
+        if self.enabled and self.rate_max_hz > input_rate_hz:
+            raise ValueError("augment.timing cannot create acquisitions above the cached input rate")
+        if not 0 <= self.interval_jitter_fraction < 1:
+            raise ValueError("augment.timing.interval_jitter_fraction must be within [0, 1)")
+        if self.delay_max_ms < 0 or not 0 <= self.burst_min_ms <= self.burst_max_ms:
+            raise ValueError("augment.timing delay/burst durations must be nonnegative and ordered")
 
 
 @dataclass(frozen=True)
@@ -145,6 +206,7 @@ class AugmentConfig:
     encoder_offset_rad: float = 0.0    # random ankle-angle bias            (try 0.05)
     stance_jitter_samples: int = 0     # shift stance 0/1 edges +/- k        (try 3)
     assist_perturb: float = 0.0        # simulate kinematics under assist   (try 0.3)
+    timing: TimingAugmentConfig = field(default_factory=TimingAugmentConfig)
 
 
 @dataclass(frozen=True)
@@ -199,11 +261,15 @@ class SensorAdapterConfig:
     ankle_encoder_sign: float = 1.0
     heel_fsr_threshold: float = 2000.0  # raw ADC counts -> stance
     toe_fsr_threshold: float = 2000.0
-    fsr_debounce_s: float = 0.10       # min stance/swing dwell time
+    fsr_debounce_s: float = 0.00       # min stance/swing dwell time (0 = off)
+    fsr_filter_cutoff_hz: float = 20.0  # low-pass on the FSRs before thresholding, as TBE does
 
 
 @dataclass(frozen=True)
 class DeployConfig:
+    assistance_mode: str = "plantarflexion"  # plantarflexion | bidirectional; stance only
+    dorsiflexion_scale_ratio: float = 1.0    # multiplied by assistance_scale
+    dorsiflexion_limit_nm: float = 2.0
     assistance_scale: float = 0.2       # fraction of predicted human moment
     torque_limit_nm: float = 30.0       # hard saturation on the exo command magnitude
     rate_limit_nm_per_s: float = 200.0  # slew-rate limit
@@ -232,9 +298,7 @@ class Config:
     # -- (de)serialization --------------------------------------------------
     @classmethod
     def load(cls, path: str | Path) -> Config:
-        with open(resolve(path)) as f:
-            raw = yaml.safe_load(f)
-        return cls.from_dict(raw)
+        return cls.from_dict(_load_yaml(resolve(path)))
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> Config:
@@ -253,7 +317,10 @@ class Config:
 
         td = dict(d.get("train", {}))
         if "augment" in td:
-            td["augment"] = AugmentConfig(**td["augment"])
+            aug = dict(td["augment"])
+            if "timing" in aug:
+                aug["timing"] = TimingAugmentConfig(**aug["timing"])
+            td["augment"] = AugmentConfig(**aug)
         if "perf" in td:
             td["perf"] = PerfConfig(**td["perf"])
         train = TrainConfig(**td)
@@ -281,6 +348,21 @@ class Config:
     # -- validation -------------------------------------------------------
     def validate(self) -> None:
         self.data.split.validate()
+        horizon = self.data.prediction_horizon_samples
+        rate = self.data.ingest.target_rate_hz
+        self.train.augment.timing.validate(rate)
+        if self.train.augment.timing.enabled and (
+            self.train.augment.latency_samples or self.train.augment.time_warp
+        ):
+            raise ValueError("Timing acquisition augmentation cannot be mixed with latency_samples/time_warp")
+        if any(native < rate or native % rate for native in self.data.ingest.native_rates_hz.values()):
+            raise ValueError("target_rate_hz must divide every native sensor rate exactly")
+        if self.data.valid_tail < 0 or self.data.valid_tail > self.data.window_length:
+            raise ValueError("data.valid_tail must be within [0, window_length]")
+        if self.data.valid_tail and (self.train.loss_last_n == 0 or self.train.loss_last_n > self.data.valid_tail):
+            raise ValueError("loss_last_n must be positive and <= valid_tail when partial targets are used")
+        if horizon and self.train.augment.enabled and self.train.augment.latency_samples:
+            raise ValueError("Fixed-horizon training requires augment.latency_samples=0")
         _ = self.data.feature_names()  # raises if feature_set unknown
         if self.data.window_length < self.model.receptive_field():
             # not fatal, but the early part of every window will be under-contextualised
@@ -314,3 +396,30 @@ def replace(cfg: Config, **overrides: Any) -> Config:
             node = node[p]
         node[leaf] = val
     return Config.from_dict(d)
+
+
+def _load_yaml(path: Path, ancestors: tuple[Path, ...] = ()) -> dict:
+    """An optional `extends` path is relative to the declaring YAML file.
+
+    Nested mappings merge; lists and scalar values replace. Saved run configs
+    contain the resolved values and have no dependency on the original YAML.
+    """
+    path = path.resolve()
+    if path in ancestors:
+        raise ValueError(f"Config inheritance cycle: {path}")
+    with path.open() as stream:
+        child = yaml.safe_load(stream)
+    if not isinstance(child, dict):
+        raise ValueError(f"Expected a config mapping: {path}")
+    parent = child.pop("extends", None)
+    if parent is None:
+        return child
+    if not isinstance(parent, str):
+        raise ValueError("extends must be a single YAML path")
+    base = _load_yaml(path.parent / parent, (*ancestors, path))
+    def merge(a, b):
+        result = dict(a)
+        for key, value in b.items():
+            result[key] = merge(a[key], value) if isinstance(a.get(key), dict) and isinstance(value, dict) else value
+        return result
+    return merge(base, child)

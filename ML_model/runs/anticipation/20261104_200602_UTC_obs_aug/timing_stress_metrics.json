@@ -1,0 +1,226 @@
+{
+  "model_subject_embedding_future_action_100": {
+    "model": "model_subject_embedding_future_action_100",
+    "prediction_horizon_ms": 100,
+    "windows": 5915,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.17796044184946877,
+      "mae_nm_per_kg": 0.1187350158628658,
+      "normalized_mae": 0.053125713697290355,
+      "r2": 0.8819610405208809
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.20188477317932127,
+      "mae_nm_per_kg": 0.13240365589311215,
+      "normalized_mae": 0.0592414854567928,
+      "r2": 0.8480902845389412
+    }
+  },
+  "model_subject_embedding_future_action_150": {
+    "model": "model_subject_embedding_future_action_150",
+    "prediction_horizon_ms": 150,
+    "windows": 5913,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.18077548131769072,
+      "mae_nm_per_kg": 0.12112199781319953,
+      "normalized_mae": 0.05364008286947417,
+      "r2": 0.880737135076181
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.2032429220543748,
+      "mae_nm_per_kg": 0.13401623975240465,
+      "normalized_mae": 0.05935042631364942,
+      "r2": 0.8492500957107305
+    }
+  },
+  "model_subject_embedding_future_action_50": {
+    "model": "model_subject_embedding_future_action_50",
+    "prediction_horizon_ms": 50,
+    "windows": 5917,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.1844071439972082,
+      "mae_nm_per_kg": 0.12590683469371033,
+      "normalized_mae": 0.05672430120342499,
+      "r2": 0.8749972636134302
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.21053483112814236,
+      "mae_nm_per_kg": 0.14296617003361203,
+      "normalized_mae": 0.06440997512656713,
+      "r2": 0.8370659138357485
+    }
+  },
+  "model_obs_aug_subject_embedding_current_action": {
+    "model": "model_obs_aug_subject_embedding_current_action",
+    "prediction_horizon_ms": 0,
+    "windows": 5919,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.16319481733594787,
+      "mae_nm_per_kg": 0.11056731596541602,
+      "normalized_mae": 0.047706961719393794,
+      "r2": 0.901064775569847
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.16493333564509885,
+      "mae_nm_per_kg": 0.11098095607319935,
+      "normalized_mae": 0.0478854368195201,
+      "r2": 0.8989456290711524
+    }
+  },
+  "model_obs_aug_subject_embedding_future_action_100": {
+    "model": "model_obs_aug_subject_embedding_future_action_100",
+    "prediction_horizon_ms": 100,
+    "windows": 5915,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.16957532861783967,
+      "mae_nm_per_kg": 0.11699598795074223,
+      "normalized_mae": 0.052347618892656,
+      "r2": 0.892822466950841
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.17197890127949275,
+      "mae_nm_per_kg": 0.11779621908883661,
+      "normalized_mae": 0.0527056670221409,
+      "r2": 0.8897626507089927
+    }
+  },
+  "model_obs_aug_subject_embedding_future_action_150": {
+    "model": "model_obs_aug_subject_embedding_future_action_150",
+    "prediction_horizon_ms": 150,
+    "windows": 5913,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.17976567780637545,
+      "mae_nm_per_kg": 0.12133793284721418,
+      "normalized_mae": 0.05373571184957762,
+      "r2": 0.8820658074705243
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.18467978242975136,
+      "mae_nm_per_kg": 0.12280395636119644,
+      "normalized_mae": 0.05438495496146788,
+      "r2": 0.8755299416453013
+    }
+  },
+  "model_obs_aug_subject_embedding_future_action_50": {
+    "model": "model_obs_aug_subject_embedding_future_action_50",
+    "prediction_horizon_ms": 50,
+    "windows": 5917,
+    "split": "test",
+    "every_nth_window": 10,
+    "seed": 17,
+    "timing_profile": {
+      "enabled": true,
+      "probability": 1.0,
+      "rate_min_hz": 50.0,
+      "rate_max_hz": 100.0,
+      "interval_jitter_fraction": 0.2,
+      "delay_max_ms": 20.0,
+      "packet_drop_probability": 0.02,
+      "burst_probability": 0.25,
+      "burst_min_ms": 20.0,
+      "burst_max_ms": 80.0
+    },
+    "clean": {
+      "rmse_nm_per_kg": 0.17538011617050098,
+      "mae_nm_per_kg": 0.12181318572430723,
+      "normalized_mae": 0.054880005953477674,
+      "r2": 0.8869358965313847
+    },
+    "timing_corrupted": {
+      "rmse_nm_per_kg": 0.18242443298654593,
+      "mae_nm_per_kg": 0.1259438664692658,
+      "normalized_mae": 0.05674098498072601,
+      "r2": 0.8776708250464538
+    }
+  }
+}

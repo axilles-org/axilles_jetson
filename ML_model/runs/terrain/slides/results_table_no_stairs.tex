@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l c cccccc c r}
+\toprule
+ & & \multicolumn{6}{c}{$R^2$ by locomotion mode} & & \\
+\cmidrule(lr){3-8}
+Model & $R^2$ & Treadmill & Level & Turn & Ramp $\uparrow$ & Ramp $\downarrow$ & Transition & RMSE & Params \\
+\midrule
+Plain TCN & 0.820 & 0.868 & 0.829 & 0.827 & \textbf{0.851} & 0.802 & 0.626 & 0.214 & 296k \\
+TCN + Subject Embedding & 0.849 & 0.902 & 0.868 & 0.814 & 0.842 & 0.831 & 0.660 & 0.196 & 298k \\
+TCN + FiLM (Subject Embedding) & \textbf{0.860} & \textbf{0.908} & \textbf{0.872} & \textbf{0.844} & 0.828 & \textbf{0.862} & \textbf{0.666} & \textbf{0.189} & 301k \\
+TCN + Mixture of Experts & 0.834 & 0.879 & 0.843 & 0.833 & 0.835 & 0.833 & 0.658 & 0.205 & 307k \\
+\bottomrule
+\end{tabular}
+\caption{Ankle moment estimation on six held-out subjects (treadmill, level ground, ramps). $R^2$ of the causal last-timestep prediction; RMSE in N$\cdot$m/kg. Best per column in bold.}
+\label{tab:terrain_results}
+\end{table}

@@ -1,4 +1,4 @@
-"""Sensor thread, Pawan's lean IMU reader and the 100 Hz model input, with fake sensors."""
+"""Sensor thread, Pawan's lean IMU reader and the measured-timestep model input, with fake sensors."""
 import csv
 import importlib
 import runpy
@@ -28,6 +28,7 @@ class FakeLean:
         self.address, self.report_hz, self.features = address, report_hz, tuple(features)
         self.mode, self.count = "ok", 0
         self.accel = self.gyro = None
+        self.counts = {ACC: 0, GYRO: 0}
         FakeLean.made[address] = self
 
     def poll(self):
@@ -39,6 +40,8 @@ class FakeLean:
             return 0
         self.count += 1
         self.accel, self.gyro = (float(self.count), 0.0, 9.8), (0.0, 0.1, 0.0)
+        self.counts[ACC] += 1
+        self.counts[GYRO] += 1
         return 1
 
     def close(self):
@@ -100,16 +103,12 @@ def test_imu_that_stops_ends_the_run(sensors, mode, address):
         s.frame_at(time.monotonic())
 
 
-def test_adc_i2c_error_ends_the_run(sensors, monkeypatch):
+def test_missing_fsr_conversions_end_the_run(sensors, monkeypatch):
     from exo.deploy.jetson_io import SensorFault
     s = sensors()
-
-    def unplugged(self, addr, reg, data):
-        raise OSError("ADC unplugged")
-
-    monkeypatch.setattr(FakeSMBus, "write_i2c_block_data", unplugged)
-    assert wait_for(lambda: s._error is not None) is not None
-    with pytest.raises(SensorFault, match="ADC unplugged"):
+    monkeypatch.setattr(s._fsr, "step", lambda now: None)
+    assert wait_for(lambda: s.ages_ms()["FSR"] > 150) is not None
+    with pytest.raises(SensorFault, match="FSR"):
         s.read()
 
 
@@ -155,6 +154,7 @@ def test_frame_at_interpolates_between_readings(sensors):
 def lean(monkeypatch):
     """Pawan's real bno085_lean module: the installed Adafruit packet parser, with
     the setup driver and the /dev/i2c device file faked."""
+    pytest.importorskip("adafruit_bno08x", reason="real parser dependency is installed on Jetson")
     log = {"enabled": [], "reports": [], "reads": []}
 
     class FakeBNO:
@@ -215,24 +215,6 @@ def test_lean_reader_parses_one_report_in_one_read(lean):
     assert imu.packets == 1 and imu.continuations == 0
 
 
-@pytest.mark.skipif(not (RUN_DIR / "best.onnx").exists(), reason="no deploy model")
-def test_push_then_update_matches_step():
-    from exo.config import Config
-    from exo.deploy.jetson_io import FRAME_KEYS
-    from exo.deploy.runtime import ExoController
-
-    cfg = Config.load(RUN_DIR / "config.yaml")
-    a = ExoController(RUN_DIR, cfg.deploy, subject_mass_kg=72.0)
-    b = ExoController(RUN_DIR, cfg.deploy, subject_mass_kg=72.0)
-    rng = np.random.default_rng(0)
-    for i in range(320):
-        frame = {k: float(v) for k, v in zip(FRAME_KEYS, rng.normal(size=len(FRAME_KEYS)))}
-        frame["heel_fsr_raw"] = frame["toe_fsr_raw"] = 30000.0 if i % 100 < 60 else 0.0
-        out_a = a.step(frame, 0.01)
-        b.push(frame, 0.01)
-        assert b.update(frame, 0.01) == out_a
-
-
 class _NoRunLogger:
     run_id = "test"
 
@@ -250,13 +232,15 @@ class _NoRunLogger:
 
 
 @pytest.mark.skipif(not (RUN_DIR / "best.onnx").exists(), reason="no deploy model")
-def test_live_loop_feeds_the_model_at_100hz(fake_lean_module, monkeypatch, tmp_path):
+def test_live_loop_uses_one_observation_per_recorded_tick(fake_lean_module, monkeypatch, tmp_path):
     from exo.deploy.runtime import ExoController
 
     pushes = []
-    real_push = ExoController.push
-    monkeypatch.setattr(ExoController, "push",
-                        lambda self, frame, dt: (pushes.append(dt), real_push(self, frame, dt)))
+    real_step = ExoController.step
+    def step(self, frame, dt):
+        pushes.append(dt)
+        return real_step(self, frame, dt)
+    monkeypatch.setattr(ExoController, "step", step)
     monkeypatch.setattr(run_logger, "RunLogger", _NoRunLogger)
     out = tmp_path / "live.csv"
     monkeypatch.setattr(sys, "argv", [str(SCRIPT), "--run", str(RUN_DIR), "--mass", "72",
@@ -267,6 +251,8 @@ def test_live_loop_feeds_the_model_at_100hz(fake_lean_module, monkeypatch, tmp_p
 
     rows = list(csv.DictReader(out.open()))
     assert fake_can.opened == []
-    assert set(pushes) == {0.01}
-    assert 270 <= len(pushes) <= 310                    # 100 Hz over 3 s, whatever the loop rate
+    assert len(pushes) == len(rows) > 100
+    assert all(0 < dt <= .05 for dt in pushes)
+    assert np.allclose(np.array(pushes)*1000,
+                       [float(r["tick_ms"]) for r in rows], atol=.001)
     assert all(float(r["sensor_age_ms"]) < 100 for r in rows[5:])

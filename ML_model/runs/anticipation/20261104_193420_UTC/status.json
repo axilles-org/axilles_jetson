@@ -1,0 +1,20 @@
+{
+  "started_at_utc": "2026-11-04T19:34:21.609881+00:00",
+  "state": "completed",
+  "horizons_ms": [
+    50,
+    100,
+    150
+  ],
+  "completed": [
+    "tcn_150ms",
+    "tcn_100ms",
+    "tcn_50ms"
+  ],
+  "current": null,
+  "target": "future biological ankle moment (not a learned motor action)",
+  "input_preprocessing": "causal IIR decimation; offline target filtering unchanged",
+  "processed_manifest_sha256": "eabd6ef0923159b4b5f31d2914c38d781a4491d388eead8367d6f43752dc6d05",
+  "execution": "parallel",
+  "finished_at_utc": "2026-11-04T19:46:40.790618+00:00"
+}

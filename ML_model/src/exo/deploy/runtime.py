@@ -18,6 +18,7 @@ from __future__ import annotations
 import dataclasses
 import collections
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -144,26 +145,20 @@ class ExoController:
 
     def step(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
         """Process one sensor frame; returns the command and diagnostics."""
-        self.push(raw_frame, dt)
-        return self.update(raw_frame, dt)
-
-    def push(self, raw_frame: dict[str, float], dt: float) -> None:
-        """Add one frame to the model window without predicting. ``dt`` must be
-        the model's sample period (the window is in samples, not seconds)."""
+        start = time.perf_counter()
         adapted = self.adapter.transform_frame(raw_frame, dt)
         self.buffer.push(self.pipeline.transform_row(adapted))
 
-    def update(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
-        """Predict from the current window and run assistance. ``raw_frame``
-        supplies the FSRs for the stance gate; ``dt`` is the real time since the
-        last update, for the ramps and slew limit."""
+        inference_start = time.perf_counter()
         predicted = 0.0
         if self.buffer.ready:
             predicted = self.backend.predict(self.buffer.window())
 
+        inference_end = time.perf_counter()
         cmd = self.assistance.update(
             predicted, self.subject_mass_kg,
             raw_frame.get("heel_fsr_raw", 0.0), raw_frame.get("toe_fsr_raw", 0.0), dt,
+            stance=bool(adapted["stance"]),
         )
         return {
             "command_nm": cmd.torque_nm,
@@ -172,4 +167,6 @@ class ExoController:
             "ramp": cmd.ramp,
             "buffer_ready": float(self.buffer.ready),
             "model_fault": float(self.assistance.faulted),
+            "preprocess_ms": (inference_start - start) * 1000.0,
+            "inference_ms": (inference_end - inference_start) * 1000.0,
         }

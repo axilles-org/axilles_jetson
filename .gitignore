@@ -15,3 +15,9 @@ Data collection/.hf_uploaded.json
 ML_model/logs/
 ML_model/runs/ablation/
 ML_model/runs/transform_verification/
+
+# TensorRT engines are built and validated locally for each Jetson/model export.
+ML_model/runs/**/best.engine
+ML_model/runs/**/best.engine.json
+ML_model/runs/**/.trt-build-*/
+ML_model/runs/.staging/

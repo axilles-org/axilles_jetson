@@ -52,7 +52,8 @@ def test_dry_run_stays_inside_the_cap_and_opens_no_can(monkeypatch, tmp_path):
     assert len(rows) > 300
     sent = [float(r["sent_torque_nm"]) for r in rows]
     assert max(abs(s) for s in sent) <= 2.0
-    assert max(sent) > 0.1 and min(sent) >= 0.0     # plantarflexion is positive torque
+    assert max(sent) > 0.1 and min(sent) < 0.0      # both configured directions
+    assert all(float(r["sent_torque_nm"]) == 0 for r in rows if r["stance"] == "0")
     assert all(r["model_fault"] == "0" for r in rows)
 
 

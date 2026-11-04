@@ -1,0 +1,7 @@
+{
+  "state": "completed",
+  "horizon_ms": 150,
+  "checkpoint": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/anticipation/20261104_193420_UTC/tcn_150ms/best.pt",
+  "device": "mps",
+  "finished_at_utc": "2026-11-04T19:46:38.663191+00:00"
+}

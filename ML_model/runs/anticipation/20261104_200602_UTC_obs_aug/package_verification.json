@@ -1,0 +1,93 @@
+{
+  "model_obs_aug_subject_embedding_current_action": {
+    "horizon_ms": 0,
+    "timing_augmented": true,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": -0.1550990492105484,
+    "onnx_prediction_nm_per_kg": -0.1550990790128708,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  },
+  "model_obs_aug_subject_embedding_future_action_100": {
+    "horizon_ms": 100,
+    "timing_augmented": true,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": -0.06739815324544907,
+    "onnx_prediction_nm_per_kg": -0.06739825755357742,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  },
+  "model_obs_aug_subject_embedding_future_action_150": {
+    "horizon_ms": 150,
+    "timing_augmented": true,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": 0.12250672280788422,
+    "onnx_prediction_nm_per_kg": 0.12250661849975586,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  },
+  "model_obs_aug_subject_embedding_future_action_50": {
+    "horizon_ms": 50,
+    "timing_augmented": true,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": -0.07702188938856125,
+    "onnx_prediction_nm_per_kg": -0.07702183723449707,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  },
+  "model_subject_embedding_future_action_100": {
+    "horizon_ms": 100,
+    "timing_augmented": false,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": -0.05341180041432381,
+    "onnx_prediction_nm_per_kg": -0.05341180041432381,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  },
+  "model_subject_embedding_future_action_150": {
+    "horizon_ms": 150,
+    "timing_augmented": false,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": 0.14211750030517578,
+    "onnx_prediction_nm_per_kg": 0.14211750030517578,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  },
+  "model_subject_embedding_future_action_50": {
+    "horizon_ms": 50,
+    "timing_augmented": false,
+    "backends_verified": [
+      "jit",
+      "onnx"
+    ],
+    "replay_samples": 320,
+    "jit_prediction_nm_per_kg": -0.2419281005859375,
+    "onnx_prediction_nm_per_kg": -0.2419281005859375,
+    "checksum_verified": true,
+    "physical_hardware_tested": false
+  }
+}

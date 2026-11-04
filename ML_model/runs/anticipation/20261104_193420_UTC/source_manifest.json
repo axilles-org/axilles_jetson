@@ -1,0 +1,19 @@
+{
+  "git_head": "301d12a9a0f43296858f172534fb1a984b117195",
+  "working_tree_changes": true,
+  "files": {
+    "ML_model/configs/anticipation/tcn_150ms.yaml": "e2ab6f98a147094b4809b770a9c2268322df30b2c45d3f7474c742fe3bb2e4eb",
+    "ML_model/configs/anticipation/tcn_50ms.yaml": "489d7fba8e83ba205846abcfcb1edad3708dcf7a556746ce5dea27f74817cf7a",
+    "ML_model/configs/anticipation/tcn_100ms.yaml": "d0d69735a4cfacc443ccd72d869d6353390a8ee143de8124cd04c63ac999dd6f",
+    "ML_model/configs/anticipation/base.yaml": "4d50e88dcd238423d71bc9f870beba3d27f5472f1329fcd7b8789928c059b3e1",
+    "ML_model/scripts/train_anticipation.py": "83fb845ce138ccd7b1514ffb3701d37b9c680c607441fe053dc830e54108efe1",
+    "ML_model/src/exo/config.py": "252064c7a156e04af21c083c1931c98891b3680122c57e08383f105788d9b3ef",
+    "ML_model/src/exo/data/raw_ingest.py": "30952c9e3f0b49ef0c6e721ac2c9de5adf36f5c28c89262204e35925dca4f7cc",
+    "ML_model/src/exo/data/window_index.py": "ebf788d625c178de5c7574c97d3de7685f7698ce61b51fdd73420a7d5b0059c7",
+    "ML_model/src/exo/data/dataset.py": "31c44b76f3eb577d18ea670971586b4b149146217be78a555b862453129f1381",
+    "ML_model/src/exo/training/trainer.py": "a0b7bc496bc7704f4eb1d30293d7f924af487fe006c16df0093082979dc7e6ce",
+    "ML_model/src/exo/training/evaluate.py": "b2a8312090e858cdb6dfbd70d86593e9847b11152a7ef512536903fa9df3b023",
+    "ML_model/src/exo/models/model.py": "6ae09fd55805a2e71f2e21879b0725c81399d3548327e130bdd748cf0b2f82dc",
+    "ML_model/src/exo/models/layers.py": "aeacb18e05327154d8f20341937e515f1f6b7f3a1fdde06c16d796889b9d363b"
+  }
+}

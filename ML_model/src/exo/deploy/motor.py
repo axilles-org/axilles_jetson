@@ -136,6 +136,9 @@ class MotorInterface:
         self.disable_on_shutdown = disable_on_shutdown
         self.last_torque_nm = 0.0
         self.iq_limit_a = max(2.0, 1.5 * self.torque_limit_nm / KT_NM_PER_A)
+        self.last_tx_at: float | None = None
+        self.last_tx_torque_nm = 0.0
+        self.last_status_at: float | None = None
         self.status: dict | None = None     # latest status frame (sender thread)
         self._bus = None
         self._fault: str | None = None
@@ -173,7 +176,7 @@ class MotorInterface:
         """Zero torque immediately — the e-stop action. Works after a fault."""
         self._target_nm = 0.0
         self.last_torque_nm = 0.0
-        self._raw(_pack_mit(0.0, 0.0, 0.0, 0.0, 0.0))
+        self._transmit_target()
 
     def disable(self) -> None:
         """Motor disable command (V3 manual 2.1.8); the motor answers with 0x77
@@ -197,9 +200,14 @@ class MotorInterface:
         self._sender.start()
 
     # -- command --------------------------------------------------
-    def send_torque(self, torque_nm: float, dt: float | None = None) -> float:
+    def send_torque(self, torque_nm: float, dt: float | None = None,
+                    *, immediate_zero: bool = False) -> float:
         """Command a feed-forward torque (N·m). Returns the value actually sent
-        after sign, clamp and (with ``dt``) slew limit."""
+        after sign, clamp and (with ``dt``) slew limit. With a sender thread this
+        is the queued target, not measured torque or a CAN transmission timestamp.
+        ``immediate_zero`` bypasses slew only for a zero target."""
+        if immediate_zero and torque_nm != 0.0:
+            raise ValueError("immediate_zero is only valid for a zero command")
         if self._fault is None and not math.isfinite(torque_nm):
             self._latch(f"non-finite torque command {torque_nm!r}")
             self.stop()
@@ -207,7 +215,7 @@ class MotorInterface:
             raise MotorFault(self._fault)
         t = _clamp(self.command_sign * torque_nm,
                    -self.torque_limit_nm, self.torque_limit_nm)
-        if self.slew_nm_per_s and dt:
+        if self.slew_nm_per_s and dt and not immediate_zero:
             step = self.slew_nm_per_s * dt
             t = _clamp(t, self.last_torque_nm - step, self.last_torque_nm + step)
         self.last_torque_nm = t
@@ -215,7 +223,7 @@ class MotorInterface:
         if self._sender is not None:
             self._new_target.set()
         else:
-            self._raw(_pack_mit(0.0, 0.0, t, 0.0, 0.0))
+            self._transmit_target()
         return t
 
     def read_feedback(self) -> dict | None:
@@ -270,6 +278,7 @@ class MotorInterface:
             if status is None:
                 continue
             self.status, last_seen = status, now
+            self.last_status_at = time.perf_counter()
             if status["error"]:
                 self._latch(f"motor error code {status['error']}")
             if abs(status["current_a"]) > self.iq_limit_a:
@@ -291,9 +300,26 @@ class MotorInterface:
             try:
                 if not self.dry_run and self._bus is not None:
                     last_status = self._check_status(status_timeout_s, last_status)
-                self._raw(_pack_mit(0.0, 0.0, self._target_nm, 0.0, 0.0))
+                self._transmit_target()
             except Exception as exc:                       # noqa: BLE001
                 self._latch(f"CAN failure: {exc!r}")
+
+    def _transmit_target(self) -> None:
+        # Read the latest target under the transmit lock. A queued nonzero frame
+        # must not be sent after stop() has already transmitted zero.
+        if self.dry_run or self._bus is None:
+            return
+        with self._tx_lock:
+            torque = self._target_nm
+            self._bus.send(self._can.Message(
+                arbitration_id=(MODE_MIT << 8) | self.motor_id,
+                data=_pack_mit(0.0, 0.0, torque, 0.0, 0.0), is_extended_id=True))
+            self.last_tx_at = time.perf_counter()
+            self.last_tx_torque_nm = torque
+
+    def transmission_snapshot(self) -> tuple[float | None, float]:
+        with self._tx_lock:
+            return self.last_tx_at, self.last_tx_torque_nm
 
     def _raw(self, data: list[int], mode: int = MODE_MIT) -> None:
         if self.dry_run or self._bus is None:

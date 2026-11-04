@@ -138,7 +138,7 @@ python3 ML_model/scripts/package_anticipation.py --experiment ML_model/runs/anti
 ```
 
 This creates named folders directly under `ML_model/runs`, which the dashboard
-Model selector discovers. Each contains weights, scalers, training-subject
+Model selector lists for the selected subject-embedding family. Each contains weights, scalers, training-subject
 metadata for embedding selection, ONNX and TorchScript, evaluation results,
 resolved configs, and checksums. Packaging preserves the original training run.
 `training_config.yaml` records original settings; `config.yaml` uses the current
@@ -217,3 +217,22 @@ Full records: `runs/anticipation/20261104_200602_UTC_obs_aug/`, including
 All seven named packages passed checksum, dashboard discovery and CPU
 ONNX/TorchScript replay checks. Actual TensorRT execution remains to be checked
 on the Jetson; local tests verified its preparation and engine-cache logic.
+
+## Dashboard catalog scope
+
+The ML launch catalog is explicitly limited to eight subject-embedding TCNs:
+`model_subject_embedding_current_action` (the existing `runs/deploy` baseline),
+the three `model_subject_embedding_future_action_50/100/150` packages, and the
+four `model_obs_aug_subject_embedding_current_action/future_action_50/100/150`
+packages. TBE remains a separate controller choice.
+
+FiLM, MoE, plain TCN, terrain models, older duplicate exports and sensor ablations
+are excluded from the menu. Adding an unrelated export does not expose it for
+hardware launch; the explicit list is in `dashboard/backend/model_catalog.py`.
+The seven new variants are labelled "Awaiting hardware testing". Only the
+baseline is labelled "Previously deployed baseline"; that does not claim its
+hardware issues have been resolved. ONNX CPU and TensorRT GPU selection remain
+available for this family.
+
+After pulling the branch on the Jetson, rebuild `dashboard/frontend` with
+`npm ci && npm run build` and restart the dashboard backend.

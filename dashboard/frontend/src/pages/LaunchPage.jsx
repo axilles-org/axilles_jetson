@@ -144,6 +144,7 @@ export default function LaunchPage() {
 
           {selectedModel && selectedModel.kind === "tcn" && (
             <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+              <div>{selectedModel.hardware_test_status}</div>
               <div>Prediction: {selectedModel.prediction_horizon_ms > 0
                 ? `${selectedModel.prediction_horizon_ms} ms ahead`
                 : "current time (0 ms)"}</div>

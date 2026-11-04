@@ -30,6 +30,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import process_manager
+from .model_catalog import MODEL_NAMES
 from .experiments import router as experiments_router
 from .health import router as health_router
 
@@ -417,7 +418,8 @@ def list_models() -> list[dict[str, Any]]:
     ]
 
     if ML_MODEL_RUNS.exists():
-        for run_dir in sorted(ML_MODEL_RUNS.iterdir()):
+        for checkpoint in MODEL_NAMES:
+            run_dir = ML_MODEL_RUNS / checkpoint
             if not run_dir.is_dir():
                 continue
             deploy_meta_path = run_dir / "deploy_metadata.json"
@@ -462,21 +464,12 @@ def list_models() -> list[dict[str, Any]]:
                 {"id": "jit", "label": "TorchScript", "available": "jit" in backends},
             ]
 
-            # Optional one-line friendly name, e.g. "Ankle Assist v1" — falls
-            # back to the raw checkpoint folder name (a training timestamp
-            # stamp) if a team hasn't set one. Add/edit it any time with:
-            #   echo "My Model Name" > ML_model/runs/<checkpoint>/display_name.txt
-            display_name_path = run_dir / "display_name.txt"
-            display_name = (
-                display_name_path.read_text().strip()
-                if display_name_path.exists()
-                else run_dir.name
-            )
-
             models.append({
                 "id": run_dir.name,
                 "controller": "ml",
-                "name": display_name,
+                "name": MODEL_NAMES[run_dir.name],
+                "hardware_test_status": ("Previously deployed baseline" if run_dir.name == "deploy"
+                                         else "Awaiting hardware testing"),
                 "checkpoint_id": run_dir.name,
                 "kind": "tcn",
                 "run_dir": str(run_dir.relative_to(REPO_ROOT / "ML_model")),

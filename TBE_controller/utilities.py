@@ -49,7 +49,7 @@ NUM_STRIDES = 5
 ADAPTIVE_STRIDE_WINDOW = 0
 
 # THresholds for heel strike and toe off detection
-HEEL_STRIKE_THRESHOLD = 25000 
+HEEL_STRIKE_THRESHOLD = 26100 
 TOE_OFF_THRESHOLD = 17000
 
 # ── Hardware ──────────────────────────────────────────────────────────────────
@@ -103,7 +103,7 @@ TAU_PHASE_ARRAY = np.array([0.0, 0.6, 0.7, 0.8, 0.9, 1.0])
 TAU_VAL_ARRAY = np.array([0.0, 0.0, 0.2,  1.0,  0.2,  0.0])
 
 # Assistance percentage for torque profile during activation
-ASSISTANCE_LEVEL = 0.1
+ASSISTANCE_LEVEL = 0.5
 
 # Teleplot UDP configuration
 TELEPLOT_HOST = "127.0.0.1"

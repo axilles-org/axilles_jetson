@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import json
 import signal
 import sys
 import time
@@ -33,6 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from exo.config import Config, replace
 from exo.deploy.assist_switch import AssistSwitch
+from exo.deploy.ankle_reference import load_ankle_reference
 from exo.deploy.dashboard_info import build_model_info
 from exo.deploy.prepare_backend import prepare_backend
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
@@ -133,6 +133,8 @@ def main() -> None:
     if overrides:
         cfg = replace(cfg, **overrides)
 
+    # Validate calibration before exports, sensors, logging or motor engagement.
+    reference_deg = load_ankle_reference(run_dir) if args.ankle_zero == "auto" else None
     prepare_backend(run_dir, cfg, args.mass, args.height, args.gender)
 
     rate = args.rate or float(cfg.deploy.control_rate_hz)
@@ -192,10 +194,6 @@ def main() -> None:
     switch = (AssistSwitch(cfg.deploy.assistance_scale, args.max_scale)
               if args.start_passive else None)
     sign = cfg.deploy.sensor_adapter.ankle_encoder_sign
-    reference_deg = None
-    if args.ankle_zero == "auto":
-        reference_deg = json.loads((run_dir / "ankle_reference.json").read_text())[
-            "gatech_walking_median_deg"]
     calib_samples: list[float] = []
     calibrated = reference_deg is None
 

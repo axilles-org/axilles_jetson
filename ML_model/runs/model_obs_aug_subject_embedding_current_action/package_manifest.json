@@ -23,6 +23,7 @@
     "model_meta.json": "5bf6e309819834441b7cbedb3b8700f1f12895bd2e62b32f48c2d6e15421db34",
     "scaler_bundle.pkl": "83a9c347dad9e23056c5b47b2bc43b3f180e23e6ddff975ccc4bb7cc56816f3e",
     "test_metrics.json": "a77d26b138f64331e5562c14a4e8e63f06b28213876c06c6d229236695ffc164",
-    "training_config.yaml": "a491ed7cde8766b0ade610d1a0af7247317e6d29f78f345649b77ab7af717fb9"
+    "training_config.yaml": "a491ed7cde8766b0ade610d1a0af7247317e6d29f78f345649b77ab7af717fb9",
+    "ankle_reference.json": "a1320dc9515fc1f878359ec1293fafb545f50e97f6a92579b58f1903cbcd864b"
   }
 }

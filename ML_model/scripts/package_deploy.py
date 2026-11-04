@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from exo.config import Config, replace
 from exo.deploy.export import export
+from exo.deploy.ankle_reference import gatech_ankle_median_deg
 
 COPIED = ("scaler_bundle.pkl", "model_meta.json", "test_metrics.json")
 EXO_FRAME_IMU = {
@@ -31,15 +32,6 @@ EXO_FRAME_IMU = {
     "shank_accel_scale": 1.0, "shank_gyro_scale": 1.0,
     "foot_lever_arm_m": [0.0, 0.0, 0.0], "shank_lever_arm_m": [0.0, 0.0, 0.0],
 }
-
-
-def gatech_ankle_median_deg(cfg: Config) -> float:
-    angles = []
-    for subject in cfg.data.split.train:
-        for f in sorted(cfg.paths.processed().glob(f"{subject}_*.npz")):
-            d = np.load(f, allow_pickle=True)
-            angles.append(d["features"][:, list(d["feature_columns"]).index("gon_ankle_sagittal")])
-    return float(np.degrees(np.nanmedian(np.concatenate(angles))))
 
 
 def main() -> None:

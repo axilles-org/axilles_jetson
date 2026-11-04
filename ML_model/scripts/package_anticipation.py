@@ -19,11 +19,32 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from exo.config import Config
 from exo.deploy.export import export
+from exo.deploy.ankle_reference import gatech_ankle_median_deg, load_ankle_reference
 from train_anticipation import model_name
 
 
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ensure_ankle_reference(target: Path, cfg: Config, source: Path) -> None:
+    """Add the missing calibration artifact without replacing model weights."""
+    path = target / 'ankle_reference.json'
+    if path.exists():
+        load_ankle_reference(target)
+    else:
+        reference = {
+            'gatech_walking_median_deg': gatech_ankle_median_deg(cfg),
+            'source_run': str(source.relative_to(ROOT.resolve())),
+            'training_subjects': cfg.data.split.train,
+            'method': 'median finite processed training ankle angles, radians converted to degrees',
+        }
+        path.write_text(json.dumps(reference, indent=2) + '\n')
+    manifest_path = target / 'package_manifest.json'
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+        manifest['files_sha256'][path.name] = digest(path)
+        manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
 
 
 def package(source: Path, destination: Path, template: Config) -> Path:
@@ -44,6 +65,7 @@ def package(source: Path, destination: Path, template: Config) -> Path:
         if (digest(target / 'best.pt') == training_hash
                 and Config.load(target / 'config.yaml') == packaged_cfg
                 and (target / 'package_manifest.json').exists()):
+            ensure_ankle_reference(target, cfg, source)
             return target
         raise FileExistsError(f'Refusing to replace a different model package: {target}')
     destination.mkdir(parents=True, exist_ok=True)
@@ -57,6 +79,7 @@ def package(source: Path, destination: Path, template: Config) -> Path:
             shutil.copy2(source / filename, run / filename)
         shutil.copy2(source / 'config.yaml', run / 'training_config.yaml')
         packaged_cfg.save(run)
+        ensure_ankle_reference(run, cfg, source)
         # Only training-subject demographics are needed for unseen-user selection.
         demographics = pd.read_parquet(cfg.paths.demographics())
         demographics[demographics.subject.isin(cfg.data.split.train)].to_parquet(

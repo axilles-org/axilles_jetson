@@ -1,0 +1,24 @@
+[   3.963s] SEQ    foot IMU: 1 packet(s) missing
+[   4.590s] SEQ    shank IMU: 1 packet(s) missing
+[   5.211s] SEQ    shank IMU: 1 packet(s) missing
+[   5.830s] SEQ    shank IMU: 1 packet(s) missing
+[   6.442s] SEQ    shank IMU: 1 packet(s) missing
+[   7.062s] SEQ    shank IMU: 1 packet(s) missing
+[   7.069s] SEQ    foot IMU: 1 packet(s) missing
+[   7.688s] SEQ    foot IMU: 1 packet(s) missing
+[   7.689s] SEQ    shank IMU: 1 packet(s) missing
+[   8.311s] SEQ    foot IMU: 1 packet(s) missing
+
+Summary over 11.7 s (1166 frames of 10 ms)
+  stream      readings    frames missed  longest gap
+  foot_acc        1445       62 ( 5.3%)        20 ms
+  foot_gyro       1162       77 ( 6.6%)        10 ms
+  shank_acc       1469       49 ( 4.2%)        20 ms
+  shank_gyro      1160       90 ( 7.7%)        10 ms
+  encoder         2352       42 ( 3.6%)        20 ms
+  fsr             2174        0 ( 0.0%)         0 ms
+  events: SEQ 10
+  foot IMU: 2589 packets, 4 missing by sequence number, 29 continuation reads
+  shank IMU: 2604 packets, 6 missing by sequence number, 37 continuation reads
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/dropout_20261104_145622.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/dropout_20261104_145622_events.log

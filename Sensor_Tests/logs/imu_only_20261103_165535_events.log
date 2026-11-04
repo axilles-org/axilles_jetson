@@ -1,0 +1,13 @@
+# imu_only_dropout_monitor: imus=['foot', 'shank'] reconnect=True idle_us=0; encoder/ADC not addressed
+
+Summary over 24.4 s (2435 frames of 10 ms) - IMU only (foot,shank), encoder/ADC not addressed
+  stream      readings    frames missed  longest gap
+  foot_acc        3037       18 ( 0.7%)        10 ms
+  foot_gyro       2431      126 ( 5.2%)        10 ms
+  shank_acc       3089       28 ( 1.1%)        10 ms
+  shank_gyro      2430      131 ( 5.4%)        10 ms
+  events: none
+  foot IMU: 5476 packets, 0 missing by sequence number, 1 continuation reads
+  shank IMU: 5527 packets, 0 missing by sequence number, 0 continuation reads
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/imu_only_20261103_165535.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/imu_only_20261103_165535_events.log

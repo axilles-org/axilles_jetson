@@ -1,0 +1,1 @@
+# imu_only_dropout_monitor: imus=['foot', 'shank'] reconnect=True idle_us=0; encoder/ADC not addressed

@@ -92,24 +92,23 @@ def test_read_returns_fresh_values_and_opens_no_can(sensors):
 
 @pytest.mark.parametrize("mode", ["frozen", "fail"])
 @pytest.mark.parametrize("address", [0x4A, 0x4B])
-def test_imu_that_stops_ends_the_run(sensors, mode, address):
-    from exo.deploy.jetson_io import SensorFault
+def test_imu_dropout_keeps_last_values_and_run_alive(sensors, mode, address):
     s = sensors(stale_s=0.1)
     FakeLean.made[address].mode = mode
     time.sleep(0.25)
-    with pytest.raises(SensorFault):
-        s.read()
-    with pytest.raises(SensorFault):
-        s.frame_at(time.monotonic())
+    prefix = 'foot' if address == 0x4A else 'shank'
+    first = s.read()[f'{prefix}_ax']
+    assert s.frame_at(time.monotonic())[f'{prefix}_ax'] == first
+    assert s.ages_ms()[f'{prefix}_accel'] > 100
+    time.sleep(.02)
+    assert s.read()[f'{prefix}_ax'] == first
 
 
-def test_missing_fsr_conversions_end_the_run(sensors, monkeypatch):
-    from exo.deploy.jetson_io import SensorFault
+def test_missing_fsr_conversions_keep_run_alive(sensors, monkeypatch):
     s = sensors()
     monkeypatch.setattr(s._fsr, "step", lambda now: None)
     assert wait_for(lambda: s.ages_ms()["FSR"] > 150) is not None
-    with pytest.raises(SensorFault, match="FSR"):
-        s.read()
+    assert 'heel_fsr_raw' in s.read()
 
 
 def test_fsrs_are_raw_counts_read_after_timed_conversions(sensors, monkeypatch):

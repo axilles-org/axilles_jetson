@@ -476,6 +476,7 @@ def list_models() -> list[dict[str, Any]]:
                 "backends": backends,
                 "backend_options": backend_options,
                 "model_arch": model_meta.get("model", {}),
+                "input_features": deploy_meta.get("feature_names", model_meta.get("feature_names", [])),
                 "prediction_horizon_ms": deploy_meta.get("prediction_horizon_ms", 0),
                 "observation_augmentation": model_meta.get("observation_augmentation", False),
                 "input_rate_hz": deploy_meta.get("input_rate_hz"),

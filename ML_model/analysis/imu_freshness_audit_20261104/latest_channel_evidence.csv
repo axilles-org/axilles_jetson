@@ -1,0 +1,13 @@
+channel,last_numeric_change_s,unique_values_during_assistance,constant_value_during_assistance
+foot_ax,6.1677,1,8.62891
+foot_ay,6.1677,1,-3.92969
+foot_az,6.1677,1,-1.0625
+foot_gx,6.1777,1,-0.03516
+foot_gy,6.1777,1,-0.02148
+foot_gz,6.1777,1,-0.02734
+shank_ax,6.1677,1,9.66797
+shank_ay,6.1677,1,0.75
+shank_az,6.1677,1,-2.14844
+shank_gx,6.107,1,-0.31445
+shank_gy,6.107,1,-0.06641
+shank_gz,6.107,1,-0.48438

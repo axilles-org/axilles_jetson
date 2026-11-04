@@ -1,0 +1,72 @@
+{
+  "checkpoint": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/deploy/deploy.pt",
+  "split": "test",
+  "subjects": [
+    "AB10",
+    "AB24",
+    "AB25",
+    "AB27",
+    "AB28",
+    "AB30"
+  ],
+  "windows": 5919,
+  "sampling": "Every tenth test window; last timestep only; clean offline inputs; no retraining",
+  "threshold_nm_per_kg": 0.05,
+  "groups": {
+    "all": {
+      "n": 5919,
+      "rmse_nm_per_kg": 0.15312090857534374,
+      "mae_nm_per_kg": 0.1007162060272564,
+      "normalized_mae": 0.04345646037901287,
+      "r2": 0.9129021944306851,
+      "positive_prediction_fraction": 0.3897617840851495,
+      "negative_prediction_fraction": 0.6102382159148505,
+      "mean_truth": -0.35267899202786585,
+      "mean_prediction": -0.38016186676168884
+    },
+    "dorsi_y_gt_005": {
+      "n": 1182,
+      "rmse_nm_per_kg": 0.09077098464090931,
+      "mae_nm_per_kg": 0.07442707920339368,
+      "normalized_mae": 0.2715147729491061,
+      "r2": -2.820130237886812,
+      "positive_prediction_fraction": 0.8730964467005076,
+      "negative_prediction_fraction": 0.12690355329949238,
+      "mean_truth": 0.11018990621160563,
+      "mean_prediction": 0.039347333551799236
+    },
+    "plantar_y_lt_minus005": {
+      "n": 3042,
+      "rmse_nm_per_kg": 0.20083932861556647,
+      "mae_nm_per_kg": 0.15341317647964484,
+      "normalized_mae": 0.07895412150642604,
+      "r2": 0.8131802120333577,
+      "positive_prediction_fraction": 0.014792899408284023,
+      "negative_prediction_fraction": 0.985207100591716,
+      "mean_truth": -0.7375646020099588,
+      "mean_prediction": -0.7538957268202284
+    },
+    "dorsi_in_stance": {
+      "n": 409,
+      "rmse_nm_per_kg": 0.09344786492718722,
+      "mae_nm_per_kg": 0.07535220506787253,
+      "normalized_mae": 0.30773404542574423,
+      "r2": -2.0138294884568504,
+      "positive_prediction_fraction": 0.8557457212713936,
+      "negative_prediction_fraction": 0.14425427872860636,
+      "mean_truth": 0.1325541630521893,
+      "mean_prediction": 0.06632781577728546
+    },
+    "dorsi_in_swing": {
+      "n": 773,
+      "rmse_nm_per_kg": 0.08932218076955753,
+      "mae_nm_per_kg": 0.07393758828674189,
+      "normalized_mae": 0.26972907859541306,
+      "r2": -4.865268768586132,
+      "positive_prediction_fraction": 0.8822768434670116,
+      "negative_prediction_fraction": 0.11772315653298836,
+      "mean_truth": 0.0983568130061739,
+      "mean_prediction": 0.025071761455778708
+    }
+  }
+}

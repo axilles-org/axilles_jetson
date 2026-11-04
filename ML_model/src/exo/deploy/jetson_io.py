@@ -43,7 +43,7 @@ class Teleplot:
 
 
 class SensorFault(RuntimeError):
-    """A sensor stopped updating, or the sensor thread failed."""
+    """The sensor acquisition thread failed."""
 
 
 class TimedADS1115:
@@ -108,14 +108,13 @@ class JetsonSensors:
     thread keeps time-stamped values, so the control loop never waits on I2C, and
     ``frame_at`` gives the model evenly spaced frames.
 
-    Transient read errors are counted and skipped. A stale accel, gyro, FSR or
-    encoder stream raises SensorFault so the deployment loop zeros and exits.
-    Freshness is based on received report counters, not whether numeric values
-    change: a stationary IMU can legitimately report the same values repeatedly.
+    Transient read errors are counted and skipped. Missing or late reports retain
+    the last received values without stopping the run. Report ages are logged
+    for diagnosis, not used as a run-stop or assistance gate. A failure of the
+    acquisition thread itself still raises SensorFault.
     """
 
     HISTORY_S = 0.5             # frames kept for interpolation
-    STARTUP_S = 2.0             # grace for the first reading of each sensor
     MAX_POLLS = 4               # packets drained from each IMU per pass
     # what a bad bus read raises: OSError from I2C, KeyError/RuntimeError/
     # IndexError from the BNO085 parser on a corrupt packet
@@ -147,7 +146,8 @@ class JetsonSensors:
         self._enc = SensorData(self._log, use_can=False)
         self._fsr = TimedADS1115(self._enc.bus, fsr_hz)
 
-        self.stale_s = stale_s
+        # Retained for compatibility with existing sensor-test callers. Report
+        # age no longer triggers a timeout; stale_s is not an enforced limit.
         self._frame = {k: 0.0 for k in FRAME_KEYS}
         self._updated = {f"{prefix}_{kind}": None
                          for prefix in ("foot", "shank") for kind in ("accel", "gyro")}
@@ -221,14 +221,6 @@ class JetsonSensors:
     def _check(self) -> None:
         if self._error is not None:
             raise SensorFault(f"sensor thread stopped: {self._error!r}") from self._error
-        now = time.monotonic()
-        with self._lock:
-            updated = dict(self._updated)
-        for name, seen in updated.items():
-            age = now - (self._started if seen is None else seen)
-            limit = self.STARTUP_S if seen is None else self.stale_s
-            if age > limit:
-                raise SensorFault(f"{name} has not updated for {age:.3f} s")
 
     def ages_ms(self) -> dict[str, float]:
         """Age of each received stream, including startup time for missing streams."""

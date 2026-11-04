@@ -1,0 +1,12 @@
+# Encoder and stance only; no acceleration or gyroscope inputs.
+# Timing augmentation affects the encoder; stance remains unchanged.
+extends: ../obs_aug_base.yaml
+data:
+  feature_set: no_imu
+  feature_sets:
+    no_imu:
+      - stance
+      - gon_ankle_sagittal
+  prediction_horizon_ms: 0
+train:
+  wandb_run_name: model_obs_aug_subject_embedding_no_imu_current_action

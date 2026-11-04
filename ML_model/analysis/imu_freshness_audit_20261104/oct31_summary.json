@@ -1,0 +1,97 @@
+{
+  "source_csv": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/logs/powered_run.csv",
+  "sha256": "8a2e7f747f46dd693b192e4c60c8f46430071213a775c4c43936968d9bad1179",
+  "associated_run_id": "20261031_211823_1ef069",
+  "association": "Inferred from unique sample-count match to source database; CSV has no run ID.",
+  "duration_s": 350.1202,
+  "rows": 24831,
+  "channels": [
+    {
+      "channel": "foot_ax",
+      "unique_values_during_assistance": 1440,
+      "last_numeric_change_s": 350.1072
+    },
+    {
+      "channel": "foot_ay",
+      "unique_values_during_assistance": 1201,
+      "last_numeric_change_s": 350.1072
+    },
+    {
+      "channel": "foot_az",
+      "unique_values_during_assistance": 492,
+      "last_numeric_change_s": 350.1072
+    },
+    {
+      "channel": "foot_gx",
+      "unique_values_during_assistance": 1367,
+      "last_numeric_change_s": 350.1072
+    },
+    {
+      "channel": "foot_gy",
+      "unique_values_during_assistance": 1493,
+      "last_numeric_change_s": 350.1072
+    },
+    {
+      "channel": "foot_gz",
+      "unique_values_during_assistance": 2855,
+      "last_numeric_change_s": 350.1072
+    },
+    {
+      "channel": "shank_ax",
+      "unique_values_during_assistance": 1222,
+      "last_numeric_change_s": 350.1202
+    },
+    {
+      "channel": "shank_ay",
+      "unique_values_during_assistance": 1056,
+      "last_numeric_change_s": 350.1202
+    },
+    {
+      "channel": "shank_az",
+      "unique_values_during_assistance": 405,
+      "last_numeric_change_s": 350.1202
+    },
+    {
+      "channel": "shank_gx",
+      "unique_values_during_assistance": 1589,
+      "last_numeric_change_s": 350.1202
+    },
+    {
+      "channel": "shank_gy",
+      "unique_values_during_assistance": 1367,
+      "last_numeric_change_s": 350.1202
+    },
+    {
+      "channel": "shank_gz",
+      "unique_values_during_assistance": 2797,
+      "last_numeric_change_s": 350.1202
+    }
+  ],
+  "longest_constant_vectors": [
+    {
+      "group": "foot_a",
+      "longest_constant_vector_s": 0.31100000000000705,
+      "start_s": 98.109,
+      "end_s": 98.42
+    },
+    {
+      "group": "foot_g",
+      "longest_constant_vector_s": 0.09329999999999927,
+      "start_s": 266.1528,
+      "end_s": 266.2461
+    },
+    {
+      "group": "shank_a",
+      "longest_constant_vector_s": 0.3458000000000112,
+      "start_s": 98.7481,
+      "end_s": 99.0939
+    },
+    {
+      "group": "shank_g",
+      "longest_constant_vector_s": 0.09860000000000468,
+      "start_s": 99.7404,
+      "end_s": 99.839
+    }
+  ],
+  "limitation": "Changing numeric values rule out the sustained full-run freeze seen on Nov 2, but do not establish packet age or exclude shorter holds."
+}

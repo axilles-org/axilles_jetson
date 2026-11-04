@@ -1,0 +1,47 @@
+{
+  "models": [
+    {
+      "model": "model_obs_aug_subject_embedding_no_gyro_current_action",
+      "input_channels": 8,
+      "ankle_reference_deg": -3.169137477874756,
+      "ready_predictions": 31,
+      "max_abs_onnx_jit_difference": 2.123415470123291e-07,
+      "package_hashes_valid": true
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_no_gyro_future_action_100",
+      "input_channels": 8,
+      "ankle_reference_deg": -3.169137477874756,
+      "ready_predictions": 31,
+      "max_abs_onnx_jit_difference": 1.8533319234848022e-07,
+      "package_hashes_valid": true
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_no_gyro_future_action_150",
+      "input_channels": 8,
+      "ankle_reference_deg": -3.169137477874756,
+      "ready_predictions": 31,
+      "max_abs_onnx_jit_difference": 1.1920928955078125e-07,
+      "package_hashes_valid": true
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_no_gyro_future_action_50",
+      "input_channels": 8,
+      "ankle_reference_deg": -3.169137477874756,
+      "ready_predictions": 31,
+      "max_abs_onnx_jit_difference": 1.30385160446167e-07,
+      "package_hashes_valid": true
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_no_imu_current_action",
+      "input_channels": 2,
+      "ankle_reference_deg": -3.169137477874756,
+      "ready_predictions": 31,
+      "max_abs_onnx_jit_difference": 2.086162567138672e-07,
+      "package_hashes_valid": true
+    }
+  ],
+  "dashboard_ml_models": 13,
+  "hardware_connected": false,
+  "tensorrt_tested": false
+}

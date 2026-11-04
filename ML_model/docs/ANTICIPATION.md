@@ -126,8 +126,9 @@ in this suite. Validation/test sets remain clean and use the original subject
 split. The simulator models acquisition variability at a fixed decision rate;
 it does not establish robustness to a control loop whose entire time base drifts.
 An 80 ms blackout can yield older observations once acquisition and transport
-delay are included. Live freshness checks remain unchanged and must still reject
-stale inputs. Training success does not establish hardware safety or benefit.
+delay are included. Live report ages are diagnostic only: late or missing reports
+retain their last values without ending the run. Training success does not
+establish hardware safety or benefit.
 
 ## Dashboard packages and GitHub
 
@@ -190,7 +191,7 @@ the configured timing corruption on every sampled window. Each trial/endpoint
 receives the same corruption across models. Results include both RMSE and
 prediction R-squared, sample counts and the exact profile. Labels remain unchanged.
 This is an offline window stress test, not continuous replay, and does not test
-the live freshness fallback. These results are separate from the full clean
+live sensor availability. These results are separate from the full clean
 `forecast_metrics.json` and must not be substituted for its scores.
 
 ## Completed November 4 experiment

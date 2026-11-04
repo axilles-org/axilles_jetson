@@ -58,19 +58,27 @@ def test_final_gate_bypasses_motor_slew(disabled, target):
     assert m.last_torque_nm == 0
 
 
-def test_stale_gyro_not_hidden_by_fresh_accel():
+@pytest.mark.parametrize('stream', ['foot_accel', 'foot_gyro', 'shank_accel',
+                                  'shank_gyro', 'FSR', 'encoder'])
+@pytest.mark.parametrize('seen', [None, -0.106, -10.0])
+def test_missing_or_stale_reports_do_not_stop_run(stream, seen):
     # Instantiate without opening any bus. Numeric frame values are irrelevant:
     # report receipt times determine freshness even for a stationary wearer.
     s = JetsonSensors.__new__(JetsonSensors)
     s._lock = threading.Lock()
     s._error = None
     s._started = time.monotonic() - 10
-    s.stale_s = .1
-    s._updated = dict(foot_accel=time.monotonic(), foot_gyro=time.monotonic() - .5)
-    with pytest.raises(SensorFault, match="foot_gyro"):
-        s._check()
-    s._updated["foot_gyro"] = time.monotonic()
-    s._check()
+    s._updated = {stream: None if seen is None else time.monotonic() + seen}
+    s._frame = {'foot_ax': 1.25}
+    assert s.read() == {'foot_ax': 1.25}
+    assert s.ages_ms()[stream] >= 100
+
+
+def test_sensor_thread_failure_still_reported():
+    s = JetsonSensors.__new__(JetsonSensors)
+    s._error = RuntimeError('acquisition thread failed')
+    with pytest.raises(SensorFault, match='sensor thread stopped'):
+        s.read()
 
 
 def test_transmission_timestamp_only_on_bus_send():

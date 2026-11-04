@@ -224,11 +224,12 @@ flag as the model input. Swing, disabled assistance, warm-up, model faults and
 watchdog overruns zero the final target without a slew tail. This does not enable
 swing dorsiflexion or guarantee instantaneous cessation of physical torque.
 
-The sensor reader now raises a fault if any accel, gyro, FSR or encoder stream
-exceeds its freshness limit (100 ms, with a 2 s startup grace for unseen streams).
-Receipt counters distinguish fresh identical readings from missing IMU reports.
-A sensor exception zeros the motor before the recording is flushed. Repeated
-read errors are not evidence that fresh data is still arriving.
+Sensor report ages are diagnostic only. The previous 100 ms stale-report stop
+and 2 s missing-report startup stop have been removed. Late or missing accel,
+gyro, FSR or encoder reports retain their last values (zero before the first
+report) without stopping the run or introducing an assistance gate. Acquisition
+thread failures still stop the run. Receipt counters distinguish identical new
+readings from missing reports; continued operation does not establish freshness.
 
 New log fields separate sensor-read, preprocessing and inference time; include
 per-IMU stream ages, raw and model-input stance, watchdog state, prediction and
@@ -251,6 +252,5 @@ python3 analysis/analyze_assistance_delay.py
 
 Results are in `runs/hw_analysis/20261102_delay/`. The command counterfactual
 reuses recorded predictions to test routing; it intentionally bypasses sensor
-freshness offline and is not a validation of assistance on a wearer. The live
-freshness guard stops missing reports; the old CSV cannot establish whether
-identical values were accompanied by fresh reports.
+freshness offline and is not a validation of assistance on a wearer. The old CSV
+cannot establish whether identical values were accompanied by fresh reports.

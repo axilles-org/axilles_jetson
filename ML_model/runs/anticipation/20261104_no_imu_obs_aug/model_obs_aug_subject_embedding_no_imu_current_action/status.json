@@ -1,0 +1,8 @@
+{
+  "state": "completed",
+  "model_name": "model_obs_aug_subject_embedding_no_imu_current_action",
+  "horizon_ms": 0,
+  "checkpoint": "runs/anticipation/20261104_no_imu_obs_aug/model_obs_aug_subject_embedding_no_imu_current_action/best.pt",
+  "device": "mps",
+  "finished_at_utc": "2026-11-04T23:38:40.252009+00:00"
+}

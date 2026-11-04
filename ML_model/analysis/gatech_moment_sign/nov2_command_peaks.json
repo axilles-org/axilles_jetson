@@ -1,0 +1,43 @@
+{
+  "source": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/imported/backup_ml_control_model_4745a55/ML_model/logs/powered_run.csv",
+  "mass_kg": 72,
+  "simulation": "Recorded predictions and scales; current bidirectional controller, motor cap 2 Nm, slew 20 Nm/s. No sensor freshness enforcement or new inference. NOT hardware measurements.",
+  "peaks": {
+    "sent_torque_nm": {
+      "idxmin": {
+        "t_s": 0.0,
+        "predicted_nm_per_kg": 0.0,
+        "stance": 0.0,
+        "assist_on": 0.0,
+        "assist_scale": 0.02,
+        "sent_torque_nm": -0.0
+      },
+      "idxmax": {
+        "t_s": 58.212,
+        "predicted_nm_per_kg": -1.22241,
+        "stance": 1.0,
+        "assist_on": 1.0,
+        "assist_scale": 0.03,
+        "sent_torque_nm": 2.6404
+      }
+    },
+    "simulated_current_command_nm": {
+      "idxmin": {
+        "t_s": 72.4559,
+        "predicted_nm_per_kg": 0.19815,
+        "stance": 1.0,
+        "assist_on": 1.0,
+        "assist_scale": 0.03,
+        "simulated_current_command_nm": -0.08645680799995055
+      },
+      "idxmax": {
+        "t_s": 53.0107,
+        "predicted_nm_per_kg": -0.94194,
+        "stance": 1.0,
+        "assist_on": 1.0,
+        "assist_scale": 0.03,
+        "simulated_current_command_nm": 2.0
+      }
+    }
+  }
+}

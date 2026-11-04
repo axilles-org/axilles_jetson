@@ -1,0 +1,21 @@
+{
+  "feature_names": [
+    "stance",
+    "gon_ankle_sagittal"
+  ],
+  "window_length": 300,
+  "prediction_horizon_ms": 0,
+  "prediction_horizon_samples": 0,
+  "target_semantics": "biological ankle moment at input_end + prediction_horizon",
+  "input_rate_hz": 100,
+  "causal_input_filtering": true,
+  "num_input_channels": 2,
+  "output_units": "Nm/kg",
+  "subject_mass_kg": 72.0,
+  "subject_idx": 2,
+  "applies_input_scaler": true,
+  "applies_output_scaler": true,
+  "control_rate_hz": 100,
+  "trace_max_error": 0.0,
+  "onnx_max_error": 1.1920928955078125e-07
+}

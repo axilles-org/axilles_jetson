@@ -1,0 +1,103 @@
+{
+  "mass_kg": 72,
+  "motor_command_sign": 1,
+  "mode": "dry run; no bus or hardware opened",
+  "results": [
+    {
+      "model": "deploy",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "deploy",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_subject_embedding_future_action_50",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_subject_embedding_future_action_50",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_subject_embedding_future_action_100",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_subject_embedding_future_action_100",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_subject_embedding_future_action_150",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_subject_embedding_future_action_150",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_current_action",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_current_action",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_future_action_50",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_future_action_50",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_future_action_100",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_future_action_100",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_future_action_150",
+      "prediction_nm_per_kg": -0.3,
+      "stance_command_nm": 0.432,
+      "swing_command_nm": 0
+    },
+    {
+      "model": "model_obs_aug_subject_embedding_future_action_150",
+      "prediction_nm_per_kg": 0.3,
+      "stance_command_nm": -0.432,
+      "swing_command_nm": 0
+    }
+  ]
+}

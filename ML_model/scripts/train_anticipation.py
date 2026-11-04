@@ -32,9 +32,10 @@ DEFAULT_CONFIGS = [ROOT / f'configs/anticipation/tcn_{h}ms.yaml' for h in (50, 1
 def model_name(cfg: Config) -> str:
     prefix = 'model_obs_aug' if cfg.train.augment.enabled and cfg.train.augment.timing.enabled else 'model'
     subject = '_subject_embedding' if cfg.model.use_subject_embedding else ''
+    sensors = f'_{cfg.data.feature_set}' if cfg.data.feature_set in ('no_gyro', 'no_imu') else ''
     h = cfg.data.prediction_horizon_ms
     target = f'future_action_{h:g}' if h else 'current_action'
-    return f'{prefix}{subject}_{target}'
+    return f'{prefix}{subject}{sensors}_{target}'
 
 
 def save_json(path: Path, value) -> None:

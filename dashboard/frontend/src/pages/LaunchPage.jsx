@@ -149,7 +149,11 @@ export default function LaunchPage() {
                 ? `${selectedModel.prediction_horizon_ms} ms ahead`
                 : "current time (0 ms)"}</div>
               <div>Observation timing augmentation: {selectedModel.observation_augmentation ? "yes" : "no"}</div>
-              <div>channels: {JSON.stringify(selectedModel.model_arch?.num_channels)}</div>
+              {selectedModel.input_features?.length > 0 && <div>
+                Sensor channels: {selectedModel.input_features.length}
+                {" · "}acceleration: {selectedModel.input_features.some((f) => f.includes("_Accel_")) ? "included" : "excluded"}
+                {" · "}gyroscope: {selectedModel.input_features.some((f) => f.includes("_Gyro_")) ? "included" : "excluded"}
+              </div>}
               <div>{selectedModel.forecast_metrics?.rmse_nm_per_kg != null ? "Streaming test RMSE" : "Test RMSE"}: {(selectedModel.forecast_metrics?.rmse_nm_per_kg ?? selectedModel.test_metrics?.rmse_nm_per_kg)?.toFixed(4)} Nm/kg</div>
               <div>
                 backends available: {selectedModel.backends?.join(", ") || "none found"}

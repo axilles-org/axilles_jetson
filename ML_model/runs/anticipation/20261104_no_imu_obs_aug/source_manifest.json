@@ -1,0 +1,321 @@
+{
+  "sources_sha256": {
+    "scripts/train_anticipation.py": "d43aca5e2a6703d9e3c9280c09cc205d99ace20b4150b6ead1034d08f32aed0b",
+    "src/exo/__init__.py": "b73fc03ca6f86d626d3c21d01a2795f659af6f0957aaa8617f370ba1ca9247e1",
+    "src/exo/config.py": "14214b4a3cb738dcdf2e55898372a97f95734069799f14962bac2e27aa5d9c3b",
+    "src/exo/data/__init__.py": "869e6960920a1889d8d926b3aef84149923cd87356e49f92f6d7b9ccd571c60e",
+    "src/exo/data/ablation.py": "4f18361f3c03e6d425a323223ec9e4988a24598710c14bdb90fcd46f900a5225",
+    "src/exo/data/augment.py": "c4b5b8acabf4942a7c354351a72d1c770a3361da0cd376bd9f5b5154e4c1f807",
+    "src/exo/data/dataset.py": "5a3dc3c291650cc0d1bc832efbc71ee3884b1114c0c210119d4f7f2ad6d673fd",
+    "src/exo/data/demographics.py": "691d16dc99860fc33041808afb7bd24badf574bb54efd3445e4b60fe23612ae7",
+    "src/exo/data/feature_pipeline.py": "499af9094218d37c231f5ef7387ed35b84e7f8d3ce7322d46a02d76bd5273b64",
+    "src/exo/data/gait_cycles.py": "c5f4a9701aabadb0cc791eef5a4156bb8455306b8c782547215e795eb5d62823",
+    "src/exo/data/hub.py": "6d2ae457ded1158c849c9889477976ca281a7b5c7e88647fd9f870f853c6c41e",
+    "src/exo/data/ingest.py": "139e41793159dfe815306d41992205002eb5fe3b87b291a346f8c030c017ea32",
+    "src/exo/data/raw_ingest.py": "30952c9e3f0b49ef0c6e721ac2c9de5adf36f5c28c89262204e35925dca4f7cc",
+    "src/exo/data/scalers.py": "fffa99057fa54893a63f14b54605dbce544431dc0bb2bbe0b5f20c5976f4bd19",
+    "src/exo/data/timing_augment.py": "9ee06a0f7d40ef32fd683ed53a94a31562fbccdeedd4a0e061287bff62ee693d",
+    "src/exo/data/window_index.py": "ebf788d625c178de5c7574c97d3de7685f7698ce61b51fdd73420a7d5b0059c7",
+    "src/exo/deploy/__init__.py": "ca0b845ca1b119e3a12e652d60de075a004becdb0efcf7aadd84b9b2135f3e7a",
+    "src/exo/deploy/adapter_fit.py": "041a762501f0fbf6b7cbb5edf50bab27013d6818850dde1da335b8a0ba2d7b3a",
+    "src/exo/deploy/assist_switch.py": "1117d58e5d7b09b84e04ad10eae449544f4b70636255136db6cf2d1060e0d7f7",
+    "src/exo/deploy/assistance.py": "c0a44e4a5d481c6bbec47d6cee984eb274b589a0e3f2b943cfee13240cab3445",
+    "src/exo/deploy/dashboard_info.py": "7ac13dd06e2886b27434eaad65ea2a95cb3cd83817c28596c6e95cba4740ee78",
+    "src/exo/deploy/export.py": "30a81aee86fff1d11341065fd8ff39b94c18e6e6db79e3b02aaeddbdc0a4a82e",
+    "src/exo/deploy/jetson_io.py": "338ce8cfeeb0503bfae14b75bef78012cfc29e4b595e313a774b72fa40e72129",
+    "src/exo/deploy/motor.py": "dd9baae1bb4e8271ac7e6b5ff40492756e7b9439d226064536394306e51d46ad",
+    "src/exo/deploy/prepare_backend.py": "0cc05eee304b72a0ae5e7fe8385af6db710e8c7df2f38cfc9fc32ba514d98f2a",
+    "src/exo/deploy/runtime.py": "022040d919e2564318742aaf7e8ba822a42c155bf9ab7d01d12989089da2572b",
+    "src/exo/deploy/sensor_adapter.py": "fcff42347d40bdf22e99f943c42502a55fa1285a72ee1c615ca2d68a84929ccc",
+    "src/exo/deploy/tensorrt.py": "d46d00418fa5fa2ee0567fab375f84dd85e53b6a8681b04878ddb051f540a447",
+    "src/exo/models/__init__.py": "61fb9093edb9dfdfe447f0ed13d0d87d7b85435c36b6110ebce2fcc3f49e50d6",
+    "src/exo/models/layers.py": "aeacb18e05327154d8f20341937e515f1f6b7f3a1fdde06c16d796889b9d363b",
+    "src/exo/models/model.py": "6ae09fd55805a2e71f2e21879b0725c81399d3548327e130bdd748cf0b2f82dc",
+    "src/exo/paths.py": "4cea5d203b96b99ec422900fe95bad6ecf21de91ef1f5db2ac27eff49bd4967c",
+    "src/exo/training/__init__.py": "c68038be9964d076fe548213db6bf608461a03f2f09f35a754712f70efb4d6d8",
+    "src/exo/training/evaluate.py": "b2a8312090e858cdb6dfbd70d86593e9847b11152a7ef512536903fa9df3b023",
+    "src/exo/training/metrics.py": "a71d9e092179e0a5617758c5e9dbbd26c2d2247d760c92b7098d58e3c30c6428",
+    "src/exo/training/runtime_utils.py": "1c326bbf6316d27f58b076d8ece031c18a2d904da3727c6e9e4425267198c4df",
+    "src/exo/training/subject_embedding.py": "257693e54833784bc0b5c282212d0f32d5801672b1236b23ce0556e9a658d6f7",
+    "src/exo/training/trainer.py": "a0b7bc496bc7704f4eb1d30293d7f924af487fe006c16df0093082979dc7e6ce",
+    "src/exo/viz/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/exo/viz/plots.py": "8487755ab011da2e8115a870d84143abff637565597b9d99ac288ac3731fd8d8"
+  },
+  "resolved_configs": {
+    "model_obs_aug_subject_embedding_no_imu_current_action": {
+      "paths": {
+        "dataset_dir": "../../exo-data/hf_dataset_tx_mujoco",
+        "processed_dir": "runs/anticipation/processed_causal_tx_all",
+        "runs_dir": "runs/anticipation",
+        "hub": {
+          "repo_id": "",
+          "revision": "tx_mujoco_causal_v1"
+        }
+      },
+      "data": {
+        "feature_set": "no_imu",
+        "feature_sets": {
+          "full": [
+            "imu_foot_Accel_X",
+            "imu_foot_Accel_Y",
+            "imu_foot_Accel_Z",
+            "imu_foot_Gyro_X",
+            "imu_foot_Gyro_Y",
+            "imu_foot_Gyro_Z",
+            "imu_shank_Accel_X",
+            "imu_shank_Accel_Y",
+            "imu_shank_Accel_Z",
+            "imu_shank_Gyro_X",
+            "imu_shank_Gyro_Y",
+            "imu_shank_Gyro_Z",
+            "imu_thigh_Accel_X",
+            "imu_thigh_Accel_Y",
+            "imu_thigh_Accel_Z",
+            "imu_thigh_Gyro_X",
+            "imu_thigh_Gyro_Y",
+            "imu_thigh_Gyro_Z",
+            "fp_Treadmill_R_vy",
+            "stance",
+            "gon_ankle_sagittal"
+          ],
+          "mid": [
+            "imu_foot_Accel_X",
+            "imu_foot_Accel_Y",
+            "imu_foot_Accel_Z",
+            "imu_foot_Gyro_X",
+            "imu_foot_Gyro_Y",
+            "imu_foot_Gyro_Z",
+            "imu_shank_Accel_X",
+            "imu_shank_Accel_Y",
+            "imu_shank_Accel_Z",
+            "imu_shank_Gyro_X",
+            "imu_shank_Gyro_Y",
+            "imu_shank_Gyro_Z",
+            "stance",
+            "gon_ankle_sagittal"
+          ],
+          "minimal": [
+            "imu_foot_Accel_X",
+            "imu_foot_Accel_Y",
+            "imu_foot_Accel_Z",
+            "imu_foot_Gyro_X",
+            "imu_foot_Gyro_Y",
+            "imu_foot_Gyro_Z",
+            "stance",
+            "gon_ankle_sagittal"
+          ],
+          "no_imu": [
+            "stance",
+            "gon_ankle_sagittal"
+          ]
+        },
+        "split": {
+          "train": [
+            "AB06",
+            "AB07",
+            "AB08",
+            "AB11",
+            "AB12",
+            "AB13",
+            "AB14",
+            "AB15",
+            "AB16",
+            "AB17",
+            "AB18",
+            "AB19",
+            "AB20"
+          ],
+          "val": [
+            "AB09",
+            "AB21",
+            "AB23"
+          ],
+          "test": [
+            "AB10",
+            "AB24",
+            "AB25",
+            "AB27",
+            "AB28",
+            "AB30"
+          ]
+        },
+        "window_length": 300,
+        "prediction_horizon_ms": 0,
+        "stride": 10,
+        "min_segment_length": 300,
+        "valid_tail": 0,
+        "drop_modes": [
+          "idle"
+        ],
+        "ingest": {
+          "terrain": "treadmill",
+          "target_rate_hz": 100,
+          "native_rates_hz": {
+            "imu": 200,
+            "id": 200,
+            "fp": 1000,
+            "gon": 1000
+          },
+          "target_column": "ankle_angle_r_moment",
+          "causal_inputs": true,
+          "antialias": true,
+          "gon_to_radians": true,
+          "drop_imu_segments": [
+            "trunk"
+          ],
+          "stance_source": "gcRight",
+          "force_threshold_n": 50.0,
+          "output_format": "npy"
+        },
+        "num_workers": 2,
+        "prefetch_factor": 4,
+        "cache_window_index": true
+      },
+      "model": {
+        "num_channels": [
+          80,
+          80,
+          80,
+          80,
+          80
+        ],
+        "kernel_size": 5,
+        "activation": "ReLU",
+        "norm_type": "WeightNorm",
+        "dropout_type": "Spatial",
+        "dropout": 0.15,
+        "l1_reg": 0.0,
+        "l2_reg": 0.0,
+        "use_subject_embedding": true,
+        "emb_dim": 4,
+        "arch": "tcn",
+        "film_source": "subject",
+        "film_channels": 32,
+        "moe_experts": 4,
+        "moe_hidden": 32,
+        "moe_balance": 0.01
+      },
+      "train": {
+        "batch_size": 32,
+        "epochs": 5,
+        "lr": 5e-05,
+        "weight_decay": 0.0001,
+        "grad_clip": 1.0,
+        "loss_last_n": 50,
+        "scheduler": "cosine",
+        "early_stop_patience": 8,
+        "seed": 0,
+        "max_steps_per_epoch": 0,
+        "log_every": 50,
+        "augment": {
+          "enabled": true,
+          "noise_std": 0.0,
+          "imu_gain_jitter": 0.0,
+          "time_warp": 0.0,
+          "channel_dropout": 0.0,
+          "latency_samples": 0,
+          "imu_rotation_deg": 0.0,
+          "encoder_offset_rad": 0.0,
+          "stance_jitter_samples": 0,
+          "assist_perturb": 0.0,
+          "timing": {
+            "enabled": true,
+            "probability": 0.75,
+            "rate_min_hz": 50.0,
+            "rate_max_hz": 100.0,
+            "interval_jitter_fraction": 0.2,
+            "delay_max_ms": 20.0,
+            "packet_drop_probability": 0.02,
+            "burst_probability": 0.25,
+            "burst_min_ms": 20.0,
+            "burst_max_ms": 80.0
+          }
+        },
+        "perf": {
+          "amp": "auto",
+          "compile": false,
+          "compile_mode": "max-autotune",
+          "tf32": true,
+          "cudnn_benchmark": true,
+          "fused_optimizer": true,
+          "grad_accum_steps": 1
+        },
+        "wandb_project": "Exoskeleton_MRSD",
+        "wandb_run_name": "model_obs_aug_subject_embedding_no_imu_current_action",
+        "device": "mps"
+      },
+      "deploy": {
+        "assistance_mode": "plantarflexion",
+        "dorsiflexion_scale_ratio": 1.0,
+        "dorsiflexion_limit_nm": 2.0,
+        "assistance_scale": 0.2,
+        "torque_limit_nm": 30.0,
+        "rate_limit_nm_per_s": 200.0,
+        "ramp_in_s": 0.05,
+        "ramp_out_s": 0.05,
+        "control_rate_hz": 100,
+        "plantarflexion_sign": -1.0,
+        "exo_command_sign": 1.0,
+        "backend": "jit",
+        "device": "cpu",
+        "sensor_adapter": {
+          "foot_rotation": [
+            [
+              -0.836255,
+              -0.539143,
+              0.100011
+            ],
+            [
+              -0.002741,
+              -0.178276,
+              -0.983977
+            ],
+            [
+              0.548334,
+              -0.82313,
+              0.147606
+            ]
+          ],
+          "shank_rotation": [
+            [
+              -0.990856,
+              0.128955,
+              0.039681
+            ],
+            [
+              -0.046757,
+              -0.052317,
+              -0.997535
+            ],
+            [
+              -0.126561,
+              -0.990269,
+              0.057868
+            ]
+          ],
+          "foot_accel_scale": 0.11052,
+          "foot_gyro_scale": 1.02725,
+          "shank_accel_scale": 0.119507,
+          "shank_gyro_scale": 0.811746,
+          "foot_lever_arm_m": [
+            0.00335,
+            -0.00154,
+            0.0027
+          ],
+          "shank_lever_arm_m": [
+            -0.01086,
+            -0.00269,
+            -0.01167
+          ],
+          "ankle_encoder_neutral_deg": 85.001,
+          "ankle_encoder_sign": 1.0,
+          "heel_fsr_threshold": 22446.0,
+          "toe_fsr_threshold": 8737.2,
+          "fsr_debounce_s": 0.1,
+          "fsr_filter_cutoff_hz": 20.0
+        }
+      }
+    }
+  },
+  "target_semantics": "biological ankle moment; action in the name is shorthand, not motor torque"
+}

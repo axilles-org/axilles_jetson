@@ -221,19 +221,92 @@ on the Jetson; local tests verified its preparation and engine-cache logic.
 
 ## Dashboard catalog scope
 
-The ML launch catalog is explicitly limited to eight subject-embedding TCNs:
+The ML launch catalog is explicitly limited to the subject-embedding TCN family:
 `model_subject_embedding_current_action` (the existing `runs/deploy` baseline),
 the three `model_subject_embedding_future_action_50/100/150` packages, and the
 four `model_obs_aug_subject_embedding_current_action/future_action_50/100/150`
-packages. TBE remains a separate controller choice.
+packages, four no-gyro variants and one current-time angle-and-stance-only variant.
+Only exported packages appear. TBE remains a separate controller choice.
 
-FiLM, MoE, plain TCN, terrain models, older duplicate exports and sensor ablations
+FiLM, MoE, plain TCN, terrain models, older duplicate exports and older sensor ablations
 are excluded from the menu. Adding an unrelated export does not expose it for
 hardware launch; the explicit list is in `dashboard/backend/model_catalog.py`.
-The seven new variants are labelled "Awaiting hardware testing". Only the
+The experimental variants are labelled "Awaiting hardware testing". Only the
 baseline is labelled "Previously deployed baseline"; that does not claim its
 hardware issues have been resolved. ONNX CPU and TensorRT GPU selection remain
 available for this family.
 
 After pulling the branch on the Jetson, rebuild `dashboard/frontend` with
 `npm ci && npm run build` and restart the dashboard backend.
+
+## No-gyro comparison
+
+The four configs in `configs/anticipation/no_gyro/` inherit the timing-augmented
+suite and remove all six gyroscope inputs. Their eight channels are foot/shank
+acceleration XYZ, stance and ankle angle. They retain the transformed
+`hf_dataset_tx_mujoco` dataset, identical causal preprocessing cache, subject split,
+five training epochs, seed, embedding architecture and timing-augmentation ranges.
+Only input feature selection and model names change relative to the matched
+14-channel configs. The model's first layer consequently has eight sensor inputs.
+
+From `ML_model`, train all four horizons in parallel:
+
+```sh
+python3 scripts/train_anticipation.py --parallel --device mps --configs configs/anticipation/no_gyro/model_*.yaml
+```
+
+Names are `model_obs_aug_subject_embedding_no_gyro_current_action` and
+`model_obs_aug_subject_embedding_no_gyro_future_action_50`, `_100`, `_150`.
+No gyroscope channel is fed to the network or included in its timing augmentation.
+Targets remain signed biological moments at 0/50/100/150 ms, without rescaling
+either torque direction. These runs test the effect of removing gyro, separately
+from any future changes to the dorsiflexion loss.
+
+The November 2 recording had constant numeric values in both acceleration and
+gyroscope streams; it does not identify a gyro-only failure. A no-gyro predictor
+still depends on acceleration, encoder and contact data. Live report ages are
+logged but no longer stop the run. Removing a channel from the model does not
+remove it from sensor acquisition; offline no-gyro accuracy cannot establish
+hardware reliability.
+
+An additional current-time experiment in
+`configs/anticipation/no_imu/model_obs_aug_subject_embedding_no_imu_current_action.yaml`
+removes acceleration as well as gyro. It uses only two sensor channels: stance
+and ankle angle. The subject embedding is still present. Timing augmentation
+affects the encoder while leaving stance unchanged. Train it with:
+
+```sh
+python3 scripts/train_anticipation.py --device mps --configs configs/anticipation/no_imu/model_obs_aug_subject_embedding_no_imu_current_action.yaml
+```
+
+Its name is `model_obs_aug_subject_embedding_no_imu_current_action`. All five
+sensor-ablation variants use the same clean held-out last-timestep evaluation as
+their full-input counterparts. Compare `metrics.overall_streaming.r2` in
+`forecast_metrics.json`: this is prediction R-squared, not squared correlation,
+training R-squared, or performance on an averaged stride.
+
+### Completed sensor comparisons (November 4)
+
+All five runs completed five epochs, seed 0, with timing augmentation enabled.
+Scores below are clean held-out last-timestep prediction scores from the best
+validation-loss checkpoint; RMSE is in N·m/kg.
+
+| Inputs | Horizon | Test prediction R² | Test RMSE | Matched full-input R² |
+|---|---:|---:|---:|---:|
+| Acceleration + angle + stance (no gyro) | 0 ms | 0.8913 | 0.1700 | 0.9026 |
+| Acceleration + angle + stance (no gyro) | 50 ms | 0.8636 | 0.1904 | 0.8910 |
+| Acceleration + angle + stance (no gyro) | 100 ms | 0.8720 | 0.1845 | 0.8892 |
+| Acceleration + angle + stance (no gyro) | 150 ms | 0.8624 | 0.1913 | 0.8772 |
+| Angle + stance (no acceleration or gyro) | 0 ms | 0.8623 | 0.1913 | 0.9026 |
+
+These are single-seed comparisons, not hardware validation. The 50 ms result is
+worse than the 100 ms result in this experiment; performance need not be monotonic
+across separately trained models. Source runs are
+`runs/anticipation/20261104_no_gyro_obs_aug` and
+`runs/anticipation/20261104_no_imu_obs_aug`. The full comparison is saved in
+`runs/anticipation/sensor_ablation_comparison_20261104.csv`.
+
+The five named packages include training weights, scalers, training-subject
+demographics, ONNX/TorchScript exports, calibration reference and hash manifests.
+The dashboard shows 13 subject-embedding models plus TBE, with sensor inputs and
+forecast horizon displayed. TensorRT compilation still requires the Jetson.

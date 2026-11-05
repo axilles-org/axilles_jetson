@@ -34,7 +34,7 @@ TBE_DIR = REPO_ROOT / "TBE_controller"
 ALLOWED_MODES = ("mock", "dry-run", "live")
 
 MAX_LOG_LINES = 2000
-MAX_TORQUE_CAP_NM = 5.0  # SAFE_T_MAX in ML_model/src/exo/deploy/motor.py
+MAX_TORQUE_CAP_NM = 10.0  # SAFE_T_MAX in ML_model/src/exo/deploy/motor.py
 
 
 def _checked_torque_cap(torque_cap: Any) -> float:

@@ -45,7 +45,8 @@ def test_jetson_sensors_never_opens_can(monkeypatch):
     # the path used by mock, dry-run and live runs with real sensors
     imu = types.ModuleType("bno085_lean")
     imu.LeanBNO085 = lambda *args, **kwargs: types.SimpleNamespace(
-        poll=lambda: 0, counts={}, accel=None, gyro=None, close=lambda: None)
+        poll=lambda: 0, counts={}, accel=None, gyro=None, close=lambda: None,
+        needs_enable=False, reenable=lambda: None, reconnect=lambda: None)
     imu.ACCEL, imu.GYRO = 0x01, 0x02
     monkeypatch.setitem(sys.modules, "bno085_lean", imu)
     from exo.deploy.jetson_io import JetsonSensors

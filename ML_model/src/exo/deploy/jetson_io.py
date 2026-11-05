@@ -112,6 +112,13 @@ class JetsonSensors:
     the last received values without stopping the run. Report ages are logged
     for diagnosis, not used as a run-stop or assistance gate. A failure of the
     acquisition thread itself still raises SensorFault.
+
+    An IMU that goes quiet is brought back instead of left frozen. A BNO085 that
+    reboots mid-run comes back with its reports switched off. So after a reset
+    notice, or ``IMU_STALE_S`` without a report, Set Feature is re-sent (a few
+    writes, no wait). If that doesn't help within ``IMU_RECONNECT_S``, the IMU is
+    soft-reset and set up again on a background thread. The FSRs, encoder and
+    other IMU keep streaming meanwhile.
     """
 
     HISTORY_S = 0.5             # frames kept for interpolation
@@ -119,6 +126,9 @@ class JetsonSensors:
     # what a bad bus read raises: OSError from I2C, KeyError/RuntimeError/
     # IndexError from the BNO085 parser on a corrupt packet
     READ_ERRORS = (OSError, KeyError, RuntimeError, IndexError)
+    IMU_STALE_S = 0.2           # 20 report periods without accel or gyro: re-send Set Feature
+    IMU_REENABLE_EVERY_S = 0.5  # at most this often
+    IMU_RECONNECT_S = 2.0       # still silent: soft-reset and set up again
 
     def __init__(self, axilles_root: str, i2c_bus: int = 1,
                  imu_interval_ms: float = 10.0, stale_s: float = 0.1,
@@ -159,6 +169,13 @@ class JetsonSensors:
         self._error_printed: dict[str, float] = {}
         self._stop = threading.Event()
         self._started = time.monotonic()
+        # per IMU: last report time of each kind, last recovery attempts
+        self._imu_state = {prefix: {"seen": {kind: self._started for kind in self._report_ids},
+                                    "reenabled": float("-inf"), "reconnected": self._started,
+                                    "reconnecting": False}
+                           for prefix, _ in self._imus}
+        self.imu_recoveries: dict[str, dict[str, int]] = {
+            prefix: {"reenable": 0, "reconnect": 0} for prefix, _ in self._imus}
         self._thread = threading.Thread(target=self._run, name="exo-sensors", daemon=True)
         self._thread.start()
 
@@ -168,6 +185,8 @@ class JetsonSensors:
                 fresh = []
                 fsr = self._step_fsr()
                 for prefix, imu in self._imus:
+                    if self._imu_state[prefix]["reconnecting"]:
+                        continue            # owned by the reconnect thread for now
                     before = dict(imu.counts)
                     for _ in range(self.MAX_POLLS):
                         try:
@@ -182,6 +201,8 @@ class JetsonSensors:
                         value = getattr(imu, kind)
                         if imu.counts.get(report_id, 0) > before.get(report_id, 0) and value is not None:
                             fresh.append((prefix, kind, value))
+                            self._imu_state[prefix]["seen"][kind] = time.monotonic()
+                    self._watch_imu(prefix, imu)
                 encoder_fresh = self._enc.readEncoder()
                 now = time.monotonic()
                 with self._lock:
@@ -202,6 +223,49 @@ class JetsonSensors:
                         self._history.popleft()
         except Exception as exc:                           # noqa: BLE001
             self._error = exc
+
+    def _watch_imu(self, prefix: str, imu) -> None:
+        """Turn a silent IMU's reports back on, or reconnect it if that fails."""
+        st = self._imu_state[prefix]
+        now = time.monotonic()
+        quiet = now - min(st["seen"].values())
+        if (imu.needs_enable or quiet > self.IMU_STALE_S) \
+                and now - st["reenabled"] >= self.IMU_REENABLE_EVERY_S:
+            st["reenabled"] = now
+            why = "reset itself" if imu.needs_enable else f"silent {quiet:.1f} s"
+            try:
+                imu.reenable()
+                self.imu_recoveries[prefix]["reenable"] += 1
+                self._note(f"{prefix} IMU reenable", f"{prefix} IMU {why} -> re-enabled reports "
+                           f"(#{self.imu_recoveries[prefix]['reenable']})")
+            except self.READ_ERRORS as exc:
+                self._read_error(f"{prefix} IMU reenable", exc)
+        if quiet > self.IMU_RECONNECT_S and now - st["reconnected"] > self.IMU_RECONNECT_S:
+            st["reconnecting"] = True
+            self.imu_recoveries[prefix]["reconnect"] += 1
+            self._note(f"{prefix} IMU reconnect", f"{prefix} IMU silent {quiet:.1f} s -> reconnecting "
+                       f"(#{self.imu_recoveries[prefix]['reconnect']})")
+            threading.Thread(target=self._reconnect_imu, args=(prefix, imu),
+                             name=f"exo-{prefix}-imu-reconnect", daemon=True).start()
+
+    def _reconnect_imu(self, prefix: str, imu) -> None:
+        st = self._imu_state[prefix]
+        try:
+            imu.reconnect()
+        except Exception as exc:                       # noqa: BLE001
+            self._read_error(f"{prefix} IMU reconnect", exc)
+        finally:
+            now = time.monotonic()
+            st["reconnected"] = now
+            st["seen"] = {kind: now for kind in st["seen"]}     # give it time to report
+            st["reconnecting"] = False
+
+    def _note(self, name: str, text: str) -> None:
+        """Print at most once a second per name."""
+        now = time.monotonic()
+        if now - self._error_printed.get(name, float("-inf")) >= 1.0:
+            self._error_printed[name] = now
+            print(f"!! {text} (run continues)")
 
     def _step_fsr(self) -> tuple[int, int] | None:
         try:

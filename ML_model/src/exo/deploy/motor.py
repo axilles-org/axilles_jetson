@@ -32,7 +32,7 @@ MIT_KD_MIN, MIT_KD_MAX = 0.0, 5.0
 
 # Safety ceiling on any commanded torque, independent of the encoding range
 # (TBE_controller/data_obtainer.py uses the same SAFE_T_MAX).
-SAFE_T_MAX = 5.0
+SAFE_T_MAX = 10.0
 
 MODE_MIT = 8
 MODE_SET_ORIGIN = 5     # servo-mode "set origin" (same as Cubemars_AK80-9/ak_80_test.py zero)

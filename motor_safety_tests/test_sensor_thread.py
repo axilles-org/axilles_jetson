@@ -29,7 +29,15 @@ class FakeLean:
         self.mode, self.count = "ok", 0
         self.accel = self.gyro = None
         self.counts = {ACC: 0, GYRO: 0}
+        self.needs_enable, self.reenables, self.reconnects = False, 0, 0
         FakeLean.made[address] = self
+
+    def reenable(self):
+        self.needs_enable = False
+        self.reenables += 1
+
+    def reconnect(self):
+        self.reconnects += 1
 
     def poll(self):
         time.sleep(0.001)
@@ -255,3 +263,48 @@ def test_live_loop_uses_one_observation_per_recorded_tick(fake_lean_module, monk
     assert np.allclose(np.array(pushes)*1000,
                        [float(r["tick_ms"]) for r in rows], atol=.001)
     assert all(float(r["sensor_age_ms"]) < 100 for r in rows[5:])
+
+
+def test_lean_reader_drops_corrupt_header_instead_of_crashing(lean):
+    mod, log, pending = lean
+    imu = mod.LeanBNO085(bus=1, address=0x4A, report_hz=100.0, features=(mod.ACCEL, mod.GYRO))
+    pending.append(struct.pack("<HBB", 19, 9, 0) + bytes(15))       # channel 9 does not exist
+    pending.append(struct.pack("<HBB", 30000, 3, 0) + bytes(15))    # absurd length
+    assert imu.poll() == 0 and imu.poll() == 0
+    assert imu.corrupt == 2 and log["reports"] == []
+    pending.append(_accel_packet(1))
+    assert imu.poll() == 1                                          # next good packet still parses
+
+
+def test_lean_reader_flags_reset_and_reenable_sends_set_feature(lean):
+    mod, log, pending = lean
+    imu = mod.LeanBNO085(bus=1, address=0x4A, report_hz=100.0, features=(mod.ACCEL, mod.GYRO))
+    sent = []
+    imu._bno._send_packet = lambda channel, data: sent.append((channel, bytes(data)))
+    imu._bno._get_feature_enable_report = lambda feat, us: bytes([0xFD, feat]) + struct.pack("<I", us)
+    pending.append(struct.pack("<HBB", 5, 1, 0) + b"\x01")          # EXE channel: reset complete
+    assert imu.poll() == 0
+    assert imu.needs_enable and imu.resets == 1
+    imu.reenable()
+    assert not imu.needs_enable and imu.reenables == 1
+    assert [(c, d[1], struct.unpack("<I", d[2:6])[0]) for c, d in sent] == [(2, ACC, 10_000), (2, GYRO, 10_000)]
+
+
+@pytest.mark.parametrize("address", [0x4A, 0x4B])
+def test_silent_imu_gets_reports_reenabled_and_recovers(sensors, address):
+    s = sensors()
+    imu = FakeLean.made[address]
+    prefix = "foot" if address == 0x4A else "shank"
+    imu.mode = "frozen"
+    assert wait_for(lambda: imu.reenables > 0, timeout=1.0) is not None
+    assert s.imu_recoveries[prefix]["reenable"] >= 1
+    imu.mode = "ok"
+    first = s.read()[f"{prefix}_ax"]
+    assert wait_for(lambda: s.read()[f"{prefix}_ax"] > first) is not None
+
+
+def test_reset_notice_reenables_without_waiting_for_silence(sensors):
+    s = sensors()
+    imu = FakeLean.made[0x4A]
+    imu.needs_enable = True
+    assert wait_for(lambda: imu.reenables == 1, timeout=0.1) is not None

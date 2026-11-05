@@ -77,6 +77,8 @@ def main() -> None:
                     help="MotorInterface without a CAN bus (bench check)")
     ap.add_argument("--assist-scale", type=float, default=None,
                     help="override deploy.assistance_scale")
+    ap.add_argument("--assistance-delay-ms", type=float, default=None,
+                    help="delay model outputs by 0..1000 ms before assistance scaling")
     ap.add_argument("--assistance-mode", choices=["plantarflexion", "bidirectional"],
                     default=None, help="override deploy.assistance_mode; both modes are stance-only")
     ap.add_argument("--dorsi-scale-ratio", type=float, default=None,
@@ -125,6 +127,8 @@ def main() -> None:
         overrides["deploy.backend"] = args.backend
     if args.assist_scale is not None:
         overrides["deploy.assistance_scale"] = args.assist_scale
+    if args.assistance_delay_ms is not None:
+        overrides["deploy.assistance_delay_ms"] = args.assistance_delay_ms
     for arg, key in ((args.assistance_mode, "assistance_mode"),
                      (args.dorsi_scale_ratio, "dorsiflexion_scale_ratio"),
                      (args.dorsi_cap, "dorsiflexion_limit_nm")):
@@ -134,6 +138,8 @@ def main() -> None:
         cfg = replace(cfg, **overrides)
 
     # Validate calibration before exports, sensors, logging or motor engagement.
+    from exo.deploy.delay import PredictionDelay
+    PredictionDelay(cfg.deploy.assistance_delay_ms)
     reference_deg = load_ankle_reference(run_dir) if args.ankle_zero == "auto" else None
     prepare_backend(run_dir, cfg, args.mass, args.height, args.gender)
 
@@ -154,6 +160,7 @@ def main() -> None:
             "run_dir": str(run_dir),
             "subject_mass_kg": args.mass,
             "assistance_scale": cfg.deploy.assistance_scale,
+            "assistance_delay_ms": cfg.deploy.assistance_delay_ms,
             "assistance_mode": cfg.deploy.assistance_mode,
             "dorsiflexion_scale_ratio": cfg.deploy.dorsiflexion_scale_ratio,
             "dorsiflexion_limit_nm": cfg.deploy.dorsiflexion_limit_nm,
@@ -201,6 +208,8 @@ def main() -> None:
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fields = ["t_s", *FRAME_KEYS, "predicted_nm_per_kg", "predicted_nm",
+              "delayed_predicted_nm_per_kg", "assistance_delay_ms", "delay_ready",
+              "delayed_prediction_age_ms",
               "assist_cmd_nm", "sent_torque_nm", "session_ramp", "stance",
               "ramp", "buffer_ready", "ankle_angle_deg", "calibrated",
               "assist_on", "assist_scale", "loop_ms", "motor_iq_a", "model_fault",
@@ -218,6 +227,7 @@ def main() -> None:
             "compute + log only, NO torque")
     print(f"powered ML deploy | {rate:.0f} Hz | backend={cfg.deploy.backend} | "
           f"mass={args.mass} kg | scale={cfg.deploy.assistance_scale} | "
+          f"assistance delay={cfg.deploy.assistance_delay_ms:g} ms | "
           f"cap={torque_cap} N.m | sign={args.command_sign:+.0f} | "
           f"slew={args.slew} N.m/s | assistance={cfg.deploy.assistance_mode} | {mode}")
     if switch:
@@ -255,7 +265,8 @@ def main() -> None:
                     controller.set_ankle_neutral(neutral)
                     calibrated = True
                     print(f"ankle zero set: encoder {neutral:.1f} deg = GaTech 0")
-            out = controller.step(raw, tick_dt)
+            out = controller.step(raw, tick_dt,
+                                  assistance_enabled=switch_enabled and calibrated)
             prediction_t = time.perf_counter()
             pred_kg = out["predicted_nm_per_kg"]
             assist_cmd = out["command_nm"]                 # N.m from AssistanceController
@@ -282,6 +293,10 @@ def main() -> None:
                    **{k: round(raw[k], 5) for k in FRAME_KEYS},
                    "predicted_nm_per_kg": round(pred_kg, 5),
                    "predicted_nm": round(pred_kg * args.mass, 4),
+                   "delayed_predicted_nm_per_kg": out["delayed_predicted_nm_per_kg"],
+                   "assistance_delay_ms": out["assistance_delay_ms"],
+                   "delay_ready": int(out["delay_ready"]),
+                   "delayed_prediction_age_ms": out["delayed_prediction_age_ms"],
                    "assist_cmd_nm": round(assist_cmd, 4),
                    "sent_torque_nm": round(sent, 4),
                    "session_ramp": round(session_ramp, 3),

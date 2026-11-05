@@ -267,6 +267,7 @@ class SensorAdapterConfig:
 
 @dataclass(frozen=True)
 class DeployConfig:
+    assistance_delay_ms: float = 0.0   # output delay before scaling/current stance gate
     assistance_mode: str = "plantarflexion"  # plantarflexion | bidirectional; stance only
     dorsiflexion_scale_ratio: float = 1.0    # multiplied by assistance_scale
     dorsiflexion_limit_nm: float = 2.0

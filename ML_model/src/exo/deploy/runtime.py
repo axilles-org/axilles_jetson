@@ -143,7 +143,8 @@ class ExoController:
                                                ankle_encoder_neutral_deg=float(encoder_deg))
         self.reset()
 
-    def step(self, raw_frame: dict[str, float], dt: float) -> dict[str, float]:
+    def step(self, raw_frame: dict[str, float], dt: float, *,
+             assistance_enabled: bool = True) -> dict[str, float]:
         """Process one sensor frame; returns the command and diagnostics."""
         start = time.perf_counter()
         adapted = self.adapter.transform_frame(raw_frame, dt)
@@ -159,10 +160,15 @@ class ExoController:
             predicted, self.subject_mass_kg,
             raw_frame.get("heel_fsr_raw", 0.0), raw_frame.get("toe_fsr_raw", 0.0), dt,
             stance=bool(adapted["stance"]),
+            enabled=assistance_enabled, ready=self.buffer.ready, now=inference_end,
         )
         return {
             "command_nm": cmd.torque_nm,
             "predicted_nm_per_kg": predicted,
+            "delayed_predicted_nm_per_kg": self.assistance.delayed_moment,
+            "assistance_delay_ms": self.assistance.delay.delay_ms,
+            "delay_ready": float(self.assistance.delay.ready),
+            "delayed_prediction_age_ms": self.assistance.delay.age_ms,
             "stance": float(cmd.stance),
             "ramp": cmd.ramp,
             "buffer_ready": float(self.buffer.ready),

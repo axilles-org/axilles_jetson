@@ -7,9 +7,11 @@ slew-rate limits.
 from __future__ import annotations
 
 import math
+import time
 from dataclasses import dataclass
 
 from ..config import DeployConfig, SensorAdapterConfig
+from .delay import PredictionDelay
 
 
 class StanceDetector:
@@ -32,6 +34,8 @@ class AssistCommand:
 
 class AssistanceController:
     def __init__(self, cfg: DeployConfig):
+        self.delay = PredictionDelay(cfg.assistance_delay_ms)
+        self.delayed_moment = 0.0
         if cfg.assistance_mode not in ("plantarflexion", "bidirectional"):
             raise ValueError("assistance_mode must be plantarflexion or bidirectional")
         for name in ("dorsiflexion_scale_ratio", "dorsiflexion_limit_nm"):
@@ -55,6 +59,8 @@ class AssistanceController:
         self._last_command = 0.0
 
     def reset(self) -> None:
+        self.delay.reset()
+        self.delayed_moment = 0.0
         self.faulted = False
         self._ramp = 0.0
         self._last_command = 0.0
@@ -66,7 +72,8 @@ class AssistanceController:
         heel_fsr: float,
         toe_fsr: float,
         dt: float,
-        *, stance: bool | None = None,
+        *, stance: bool | None = None, enabled: bool = True,
+        ready: bool = True, now: float | None = None,
     ) -> AssistCommand:
         stance = self.stance_detector(heel_fsr, toe_fsr) if stance is None else bool(stance)
 
@@ -75,19 +82,30 @@ class AssistanceController:
         if self.faulted or not math.isfinite(
                 predicted_moment_nm_per_kg * self.scale * subject_mass_kg):
             self.faulted = True
+            self.delay.reset()
+            self.delayed_moment = 0.0
             self._ramp = 0.0
             self._last_command = 0.0
             return AssistCommand(torque_nm=0.0, stance=stance, ramp=0.0)
 
         # A swing sample must not inherit torque from the previous stance.
-        if not stance:
+        if not stance or not enabled or not ready:
+            self.delay.reset()
+            self.delayed_moment = 0.0
             self._ramp = 0.0
             self._last_command = 0.0
-            return AssistCommand(torque_nm=0.0, stance=False, ramp=0.0)
+            return AssistCommand(torque_nm=0.0, stance=stance, ramp=0.0)
+
+        self.delayed_moment = self.delay.update(
+            predicted_moment_nm_per_kg, time.perf_counter() if now is None else now)
+        if not self.delay.ready:
+            self._ramp = 0.0
+            self._last_command = 0.0
+            return AssistCommand(torque_nm=0.0, stance=stance, ramp=0.0)
 
         self._ramp = min(1.0, self._ramp + dt / self.ramp_in_s)
         # Positive here means plantarflexion, negative means dorsiflexion.
-        signed_moment = predicted_moment_nm_per_kg * self.plantarflexion_sign
+        signed_moment = self.delayed_moment * self.plantarflexion_sign
         if signed_moment >= 0.0:
             desired = min(self.scale * signed_moment * subject_mass_kg * self._ramp,
                           self.torque_limit)

@@ -188,6 +188,7 @@ def build_argv(
     height: float | None = None,
     gender: str | None = None,
     torque_cap: float | None = None,
+    assistance_delay_ms: float | None = None,
 ) -> tuple[list[str], Path]:
     """
     Build a safe argv for one of the two controller entrypoints. `controller`
@@ -204,6 +205,16 @@ def build_argv(
 
     if backend not in (None, "onnx", "trt", "jit"):
         raise ValueError("backend must be onnx (CPU), trt (GPU), or jit")
+
+    delay_args = []
+    if assistance_delay_ms is not None:
+        try:
+            delay = float(assistance_delay_ms)
+        except (ValueError, TypeError):
+            raise ValueError("assistance delay must be a number between 0 and 1000 ms") from None
+        if not 0 <= delay <= 1000:
+            raise ValueError("assistance delay must be between 0 and 1000 ms")
+        delay_args = ["--assistance-delay-ms", str(delay)]
 
     if controller == "ml-live":
         if not run_dir or not mass or not height or gender not in ("M", "F"):
@@ -223,7 +234,7 @@ def build_argv(
             argv += ["--backend", backend]
         if replay_path:
             argv += ["--replay", replay_path, "--dry-run"]
-        return argv, ML_MODEL_DIR
+        return argv + delay_args, ML_MODEL_DIR
 
     if controller in ("ml-mock", "ml-dry-run"):
         if not run_dir:
@@ -261,6 +272,6 @@ def build_argv(
         # would_command_nm for review) and errors out if it's passed.
         if controller == "ml-dry-run" and assist_scale is not None:
             argv += ["--assist-scale", str(assist_scale)]
-        return argv, ML_MODEL_DIR
+        return argv + delay_args, ML_MODEL_DIR
 
     raise ValueError(f"unknown controller {controller!r}")

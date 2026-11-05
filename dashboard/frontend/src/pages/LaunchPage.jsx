@@ -28,6 +28,7 @@ export default function LaunchPage() {
   const [duration, setDuration] = useState(600);
   const [backend, setBackend] = useState("onnx");
   const [assistScale, setAssistScale] = useState(0.02);
+  const [assistanceDelayMs, setAssistanceDelayMs] = useState(50);
   const [replayFile, setReplayFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -106,6 +107,7 @@ export default function LaunchPage() {
         duration: Number(duration),
         backend: isMl ? backend : null,
         assist_scale: isMl ? Number(assistScale) : null,
+        assistance_delay_ms: isMl ? Number(assistanceDelayMs) : null,
       };
       const result = await launchJob(body);
       setJob(result);
@@ -286,6 +288,29 @@ export default function LaunchPage() {
                 {selectedModel?.backend_options?.find((b) => b.id === "trt" && !b.available)?.reason && (
                   <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
                     TensorRT: {selectedModel.backend_options.find((b) => b.id === "trt").reason}.
+                  </div>
+                )}
+              </label>
+              <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
+                Assistance delay (ms)
+                <input
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="1"
+                  value={assistanceDelayMs}
+                  onChange={(e) => setAssistanceDelayMs(e.target.value)}
+                  disabled={isRunning}
+                  style={{ width: "100%", padding: 6, marginTop: 4 }}
+                />
+                <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                  Adds delay after prediction. 0 disables it. Set before launching;
+                  swing still stops assistance immediately.
+                </div>
+                {selectedModel?.prediction_horizon_ms > 0 && (
+                  <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                    This model predicts {selectedModel.prediction_horizon_ms} ms ahead;
+                    the output delay is separate from that prediction horizon.
                   </div>
                 )}
               </label>

@@ -544,6 +544,7 @@ def launch(body: dict[str, Any]) -> dict[str, Any]:
       duration: float,
       backend: "jit" | "onnx" | "trt" | null,
       assist_scale: float | null,
+      assistance_delay_ms: float | null,                # ml-*, 0..1000 ms
       height: float | null, gender: "M" | "F" | null,   # ml-live
       torque_cap: float | null,                         # ml-live
     }
@@ -557,6 +558,7 @@ def launch(body: dict[str, Any]) -> dict[str, Any]:
             duration=body.get("duration", 60.0),
             backend=body.get("backend"),
             assist_scale=body.get("assist_scale"),
+            assistance_delay_ms=body.get("assistance_delay_ms"),
             height=body.get("height"),
             gender=body.get("gender"),
             torque_cap=body.get("torque_cap"),

@@ -89,6 +89,8 @@ def test_step_output_keys_and_no_nan(tiny_run):
     for i in range(cfg.data.window_length + 50):
         out = ctrl.step(_gait_frame(i * dt), dt)
     assert set(out) == {"command_nm", "predicted_nm_per_kg", "stance", "ramp", "buffer_ready",
+                        "delayed_predicted_nm_per_kg", "assistance_delay_ms", "delay_ready",
+                        "delayed_prediction_age_ms",
                         "model_fault", "preprocess_ms", "inference_ms"}
     assert all(np.isfinite(v) for v in out.values())
 

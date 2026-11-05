@@ -56,6 +56,8 @@ def main() -> None:
     ap.add_argument("--replay", default=None,
                     help="replay a data_collection CSV instead of live sensors")
     ap.add_argument("--backend", choices=["jit", "onnx", "trt"], default=None)
+    ap.add_argument("--assistance-delay-ms", type=float, default=None,
+                    help="delay model outputs by 0..1000 ms before assistance scaling")
     ap.add_argument("--rate", type=float, default=None)
     ap.add_argument("--duration", type=float, default=120.0)
     ap.add_argument("--out", default="logs/mock_run.csv")
@@ -67,6 +69,10 @@ def main() -> None:
     cfg = Config.load(run_dir / "config.yaml")
     if args.backend:
         cfg = replace(cfg, **{"deploy.backend": args.backend})
+    if args.assistance_delay_ms is not None:
+        cfg = replace(cfg, **{"deploy.assistance_delay_ms": args.assistance_delay_ms})
+    from exo.deploy.delay import PredictionDelay
+    PredictionDelay(cfg.deploy.assistance_delay_ms)
     rate = args.rate or float(cfg.deploy.control_rate_hz)
     dt = 1.0 / rate
 
@@ -84,6 +90,7 @@ def main() -> None:
             "controller": "ML_control (TCN) — mock, no torque path",
             "run_dir": str(run_dir),
             "subject_mass_kg": args.mass,
+            "assistance_delay_ms": cfg.deploy.assistance_delay_ms,
             "control_rate_hz": rate,
             "replay_source": args.replay,
         },
@@ -102,12 +109,15 @@ def main() -> None:
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fields = ["t_s", *FRAME_KEYS, "predicted_nm_per_kg", "predicted_nm",
-              "would_command_nm", "stance", "ramp", "buffer_ready"]
+              "would_command_nm", "stance", "ramp", "buffer_ready",
+              "delayed_predicted_nm_per_kg", "assistance_delay_ms", "delay_ready",
+              "delayed_prediction_age_ms"]
     csv_file = out_path.open("w", newline="")
     writer = csv.DictWriter(csv_file, fieldnames=fields)
     writer.writeheader()
 
     print(f"mock deploy | {rate:.0f} Hz | backend={cfg.deploy.backend} | "
+          f"assistance delay={cfg.deploy.assistance_delay_ms:g} ms | "
           f"mass={args.mass} kg | NO TORQUE SENT | logging -> {out_path}")
     print("fill the 3 s window by walking, then watch predicted_nm_per_kg / stance\n")
 
@@ -126,6 +136,10 @@ def main() -> None:
                 "t_s": round(t_now, 4), **{k: round(raw[k], 5) for k in FRAME_KEYS},
                 "predicted_nm_per_kg": round(pred_kg, 5), "predicted_nm": round(pred_nm, 4),
                 "would_command_nm": round(out["command_nm"], 4),
+                "delayed_predicted_nm_per_kg": out["delayed_predicted_nm_per_kg"],
+                "assistance_delay_ms": out["assistance_delay_ms"],
+                "delay_ready": int(out["delay_ready"]),
+                "delayed_prediction_age_ms": out["delayed_prediction_age_ms"],
                 "stance": int(out["stance"]), "ramp": round(out["ramp"], 3),
                 "buffer_ready": int(out["buffer_ready"])}
             writer.writerow(row)

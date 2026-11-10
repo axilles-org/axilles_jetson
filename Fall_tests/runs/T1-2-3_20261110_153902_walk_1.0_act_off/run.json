@@ -1,0 +1,48 @@
+{
+  "test": "1,2,3",
+  "run_id": "T1-2-3_20261110_153902_walk_1.0_act_off",
+  "date": "2026-11-10T15:44:09",
+  "condition": "walk_1.0_act_off",
+  "treadmill_speed_mps": 1.0,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "11a405f",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "P02",
+  "notes": "Test 3 redo after IMU cable adjustment; motor power off",
+  "t_start_ns": 3883674899578,
+  "t_end_ns": 4183676713416,
+  "duration_s": 300.001813838,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 0,
+    "shank": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0,
+    "shank": 0
+  },
+  "n_samples": 481183,
+  "n_loops": 29992,
+  "gc_disabled": true,
+  "cpu_pinned": 5
+}

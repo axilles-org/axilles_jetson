@@ -1,0 +1,40 @@
+{
+  "started": "2026-11-10T17:11:44",
+  "duration_s": 29.5,
+  "gait_source": "ADS1115 FSRs (--sensors)",
+  "controller_run_id": null,
+  "strides": 14,
+  "steps_est": 28,
+  "rejected_double_heel_strikes": 0,
+  "walking_strides": 13,
+  "median_stride_s": 1.094857805999709,
+  "cadence_steps_min": 109.60327390681444,
+  "gait_samples": 5894,
+  "motor": {
+    "p_pos_avg_w": 0.0,
+    "p_abs_avg_w": 0.0,
+    "p_net_avg_w": 0.0,
+    "copper_loss_avg_w": null,
+    "energy_pos_j": 0.0,
+    "energy_abs_j": 0.0,
+    "energy_net_j": 0.0,
+    "mean_abs_iq_a": 0.0,
+    "rms_iq_a": 0.0,
+    "peak_iq_a": 0.0,
+    "status_frames": 1476,
+    "command_frames": 0,
+    "status_coverage_s": 29.499499912999454
+  },
+  "settings": {
+    "min_stride_s": 0.5,
+    "max_stride_s": 2.5,
+    "phase_resistance_ohm": null,
+    "can": "can0",
+    "kt_nm_per_a": 0.7044,
+    "pole_pairs": 21,
+    "gear_ratio": 9.0,
+    "heel_fsr_threshold": 22446.0,
+    "toe_fsr_threshold": 8737.2
+  },
+  "notes": "steps_est = 2 x strides of the exo leg. Power is mechanical (Kt*|Iq| x output speed, sign from the last command frame), plus copper loss only if phase_resistance_ohm is set. No bus voltage is available."
+}

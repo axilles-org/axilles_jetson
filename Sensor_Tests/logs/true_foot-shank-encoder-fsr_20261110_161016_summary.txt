@@ -1,0 +1,16 @@
+true_dropout_monitor  2026-11-10 16:10:21  sensors: foot, shank, encoder, fsr  (not addressed: none)
+duration 5.0 s, reconnect on, GAP = interval > 3 x expected spacing
+
+  stream      readings  rate Hz  expected  max gap ms  GAPs  time lost s
+  foot_acc         626    125.1       100        15.2     0        0.000
+  foot_gyro        499     99.7       100        14.0     0        0.000
+  shank_acc        636    127.1       100        16.3     0        0.000
+  shank_gyro       500     99.9       100        13.5     0        0.000
+  encoder         1003    200.4       200        11.1     0        0.000
+  fsr              945    188.8       200         7.2     0        0.000
+  foot IMU: 1128 packets, 0 lost by sequence number, 2 continuation reads
+  shank IMU: 1138 packets, 0 lost by sequence number, 2 continuation reads
+  events: none
+  VERDICT: no true dropouts. Every stream delivered within 3x its spacing, no I2C errors, no lost packets.
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/true_foot-shank-encoder-fsr_20261110_161016_events.csv
+  summary: /home/axilles/exo_ws/Sensor_Tests/logs/true_foot-shank-encoder-fsr_20261110_161016_summary.txt

@@ -1,0 +1,48 @@
+{
+  "test": "1,2,3",
+  "run_id": "T1-2-3_20261110_155413_bench_still_act_on_diagC",
+  "date": "2026-11-10T15:55:18",
+  "condition": "bench_still_act_on_diagC",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "11a405f",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "Diagnosis C: exo still on bench, motor powered, 0 Nm MIT commands at 100 Hz (Kp=Kd=0)",
+  "t_start_ns": 4795094084462,
+  "t_end_ns": 4855094274337,
+  "duration_s": 60.000189875,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro",
+    "imu_shank_accel",
+    "imu_shank_gyro",
+    "encoder",
+    "fsr_toe",
+    "fsr_heel"
+  ],
+  "freeze": null,
+  "actuator": true,
+  "torque_cmd_nm": 0.0,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 6,
+    "shank": 1
+  },
+  "imu_lost_packets": {
+    "foot": 5,
+    "shank": 2
+  },
+  "n_samples": 54446,
+  "n_loops": 3503,
+  "gc_disabled": true,
+  "cpu_pinned": 5
+}

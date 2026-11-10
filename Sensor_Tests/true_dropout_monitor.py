@@ -226,7 +226,15 @@ class Reader(threading.Thread):
         except OSError:
             return 0
         gone = (now - s["down_t"]) * 1e3
-        cause, seen = reset_cause(s["imu"]._fd)
+        try:
+            cause, seen = reset_cause(s["imu"]._fd)
+        except OSError as exc:
+            # answered once, then stopped again (still booting or hit again):
+            # stay down and keep probing instead of killing the reader thread
+            self.event("BACK", f"{p} IMU", f"answered after {gone:.0f} ms, then failed again "
+                       f"while reading the reset cause ({exc}); still probing")
+            s["next_probe"] = time.perf_counter() + PROBE_S
+            return 0
         booted = any(x.startswith(("ch0:", "ch1:")) for x in seen)
         self.event("BACK", f"{p} IMU", f"answering again after {gone:.0f} ms")
         self.event("RESET", f"{p} IMU", f"reset cause {cause} ({CAUSES.get(cause, '?')}); "

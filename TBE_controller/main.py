@@ -73,6 +73,7 @@ def main():
     TBElog.logger.info(f"Starting main loop at {MOTOR_CONTROL_FREQ} Hz...")
 
     # Start the main loop
+    run_status = "crashed"  # anything other than Ctrl+C counts as a crash
     try:
         while True:
 
@@ -111,14 +112,19 @@ def main():
                 time.sleep(sleep_time)
     
     except KeyboardInterrupt:
-        TBElog.logger.info("Shutting down Controller...")
-        sensor_data.shutdown()
-        run_logger.stop(status="completed")
-        TBElog.logger.info("Exiting.")
-
-    except Exception:
-        run_logger.stop(status="crashed")
+        TBElog.logger.info("Keyboard interrupt received.")
+        run_status = "completed"
+    except Exception as e:
+        TBElog.logger.error(f"Controller crashed: {e!r}")
         raise
+    finally:
+        # Always zero the motor torque and release the buses, whatever the exit reason
+        TBElog.logger.info("Shutting down Controller...")
+        try:
+            sensor_data.shutdown()
+        finally:
+            run_logger.stop(status=run_status)
+        TBElog.logger.info("Exiting.")
 
      
 if __name__ == "__main__":

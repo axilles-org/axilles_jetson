@@ -59,9 +59,19 @@ def test_jetson_sensors_never_opens_can(monkeypatch):
 
 
 def test_stuck_adc_raises_instead_of_hanging(monkeypatch):
+    import data_obtainer
     s = _sensor_data(use_can=False)
+    s.filtered_heel_fsr = s.filtered_toe_fsr = 123.0
     monkeypatch.setattr(FakeSMBus, "ready", False)
+    # one channel read times out (after its retries) instead of polling forever
     with pytest.raises(TimeoutError):
+        s.read_channel(s.bus, data_obtainer.CFG_AIN0)
+    # readSensors skips failed samples and keeps the last FSR values...
+    for _ in range(data_obtainer.FSR_MAX_CONSECUTIVE_FAILS - 1):
+        s.readSensors()
+    assert s.filtered_heel_fsr == s.filtered_toe_fsr == 123.0
+    # ...then stops the controller once the FSR data is too stale to trust
+    with pytest.raises(RuntimeError):
         s.readSensors()
 
 

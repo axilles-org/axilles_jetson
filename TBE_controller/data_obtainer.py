@@ -35,8 +35,10 @@ STATUS_ID = (0x29 << 8) | MOTOR_ID
 # No MIT "special" frames (FF FF FF FF FF FF FF FC / FD): this motor's firmware needs
 # no mode switch and runs them as full-scale commands. See ML_model/src/exo/deploy/motor.py.
 
-# Longest wait for one ADS1115 conversion (about 1.2 ms at 860 SPS)
-ADC_TIMEOUT_S = 0.05
+# ── FSR / ADC robustness ────────────────────────────────────────────────────
+ADC_READ_RETRIES          = 2      # attempts per channel before skipping the sample
+ADC_CONV_TIMEOUT          = 0.003  # s; 860 SPS conversion takes ~1.2 ms
+FSR_MAX_CONSECUTIVE_FAILS = 75     # ~0.5 s at 150 Hz, then stop the controller safely
 
 # ── CAN Helpers (from ak_80_test.py) ──────────────────────────────────────── # ADDED
 
@@ -64,6 +66,7 @@ class SensorData():
         # Filtered FSR data for heel and toe
         self.filtered_heel_fsr = 0.0
         self.filtered_toe_fsr = 0.0
+        self._fsr_fail_count = 0  # consecutive cycles with a failed FSR read
         self.alpha = 2 * np.pi * FSR_FILTER_CUTOFF * DT / (2 * np.pi * FSR_FILTER_CUTOFF * DT + 1)
 
         # Torque output (torque sent to the motor)
@@ -125,12 +128,29 @@ class SensorData():
     # Function to read the sensors data
     def readSensors(self):
 
-        # Reading FSR data
-        self.toe_fsr = self.read_channel(self.bus, CFG_AIN0)
-        self.heel_fsr = self.read_channel(self.bus, CFG_AIN1)
+        # Reading FSR data. On an I2C failure, skip this sample: keep the
+        # previous FSR values and don't update the filter this cycle.
+        try:
+            toe = self.read_channel(self.bus, CFG_AIN0)
+            heel = self.read_channel(self.bus, CFG_AIN1)
+        except OSError as e:
+            self._fsr_fail_count += 1
+            self.logger.logger.warning(
+                f"FSR read failed ({self._fsr_fail_count} in a row), skipping sample: {e}")
+            if self._fsr_fail_count >= FSR_MAX_CONSECUTIVE_FAILS:
+                # FSR data is now too stale to trust for gait detection
+                raise RuntimeError(
+                    f"FSR ADC unresponsive for {self._fsr_fail_count} consecutive cycles") from e
+        else:
+            if self._fsr_fail_count:
+                self.logger.logger.info(
+                    f"FSR read recovered after {self._fsr_fail_count} failed cycle(s).")
+            self._fsr_fail_count = 0
+            self.toe_fsr = toe
+            self.heel_fsr = heel
 
-        # Passing the fsr data through a low pass filter
-        self.lowPassFilter()
+            # Passing the fsr data through a low pass filter
+            self.lowPassFilter()
 
         # printing fsr values
         # self.logger.logger.info(f"Printing FSR values: {self.filtered_heel_fsr} and {self.filtered_toe_fsr}")
@@ -228,25 +248,34 @@ class SensorData():
         }
 
     def read_channel(self, bus: smbus2.SMBus, config: list[int]) -> int:
-        """Trigger a single-shot conversion and poll until ready."""
-        # Write config register to start conversion
-        bus.write_i2c_block_data(ADC_ADDR, REG_CONFIG, config)
+        """Trigger a single-shot conversion and poll until ready.
 
-        # Poll the OS bit (bit 15 of config register) until conversion completes.
-        # The deadline stops a stuck ADC from hanging the control loop.
-        deadline = time.perf_counter() + ADC_TIMEOUT_S
-        while True:
-            cfg = bus.read_i2c_block_data(ADC_ADDR, REG_CONFIG, 2)
-            if cfg[0] & 0x80:
-                break
-            if time.perf_counter() > deadline:
-                raise TimeoutError(f"ADC 0x{ADC_ADDR:02X} conversion took over {ADC_TIMEOUT_S} s")
+        Retries up to ADC_READ_RETRIES times on I2C errors (e.g. Errno 121 when
+        the ADC NACKs due to motor noise). Raises OSError if every attempt fails.
+        """
+        last_err = None
+        for _ in range(ADC_READ_RETRIES):
+            try:
+                # Write config register to start conversion
+                bus.write_i2c_block_data(ADC_ADDR, REG_CONFIG, config)
 
-        # Read 2 bytes from conversion register
-        data = bus.read_i2c_block_data(ADC_ADDR, REG_CONVERSION, 2)
-        # Big-endian signed 16-bit
-        raw = struct.unpack(">h", bytes(data))[0]
-        return raw
+                # Poll the OS bit (bit 15 of config register) until conversion
+                # completes, giving up after ADC_CONV_TIMEOUT so we never hang
+                deadline = time.perf_counter() + ADC_CONV_TIMEOUT
+                while True:
+                    cfg = bus.read_i2c_block_data(ADC_ADDR, REG_CONFIG, 2)
+                    if cfg[0] & 0x80:
+                        break
+                    if time.perf_counter() > deadline:
+                        raise TimeoutError(f"ADC 0x{ADC_ADDR:02X} conversion took over {ADC_CONV_TIMEOUT} s")
+
+                # Read 2 bytes from conversion register
+                data = bus.read_i2c_block_data(ADC_ADDR, REG_CONVERSION, 2)
+                # Big-endian signed 16-bit
+                return struct.unpack(">h", bytes(data))[0]
+            except OSError as e:  # TimeoutError is a subclass of OSError
+                last_err = e
+        raise last_err
     
     def readEncoder(self) -> bool | None:
         """Read 12-bit filtered angle from AS5600, return degrees 0–360."""

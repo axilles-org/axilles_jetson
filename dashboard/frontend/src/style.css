@@ -300,3 +300,175 @@ tr.clickable:hover {
     background: rgba(255, 92, 92, 0.4);
   }
 }
+
+/* ── Live page: charts + assistance side panel ──────────────────────────── */
+
+.live-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.live-main {
+  flex: 1;
+  min-width: 0; /* lets the chart grid shrink instead of overflowing */
+}
+
+/* minmax(0, …): a column may shrink below an already-drawn chart's width,
+   and the chart then resizes to fit (LiveChart's ResizeObserver) */
+.live-main .grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.assist-panel {
+  flex: 0 0 230px;
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assist-panel h3 {
+  margin: 0;
+}
+
+.assist-panel button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #1a1f2b;
+  color: var(--text);
+}
+
+.assist-panel button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.assist-indicator {
+  padding: 14px 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #0b0d12;
+}
+
+.assist-indicator.on {
+  background: var(--good);
+}
+
+.assist-indicator.off {
+  background: var(--bad);
+}
+
+.assist-state {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: -4px;
+}
+
+.assist-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.assist-btn {
+  padding: 10px 0;
+  font-weight: 600;
+}
+
+.assist-panel .assist-btn.on {
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.assist-panel .assist-btn.off {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+.assist-panel .assist-btn.set {
+  width: 100%;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.assist-panel .assist-btn.stop {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.assist-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.assist-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.assist-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.assist-scale-value {
+  font-size: 32px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.assist-scale-value.unsaved,
+.assist-unsaved {
+  color: var(--warn);
+}
+
+.assist-arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.assist-arrows button {
+  width: 48px;
+  height: 30px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.assist-dim {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.assist-error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bad);
+}
+
+@media (max-width: 900px) {
+  .live-layout {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .assist-panel {
+    flex: none;
+    position: static;
+  }
+}

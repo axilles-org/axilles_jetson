@@ -1,0 +1,29 @@
+{
+  "model_name": "model_film_subject_embedding_current_action_terrain",
+  "source_run": "runs/terrain/20261029_011205/film",
+  "checkpoint_sha256": "6d2244c4202b0172f80b3b77b7e9f52d3a6e3830713ea016f9018466240e3940",
+  "prediction_horizon_ms": 0,
+  "sensor_adapter_source": "training_config.yaml: deploy.sensor_adapter (unchanged)",
+  "hardware_test_status": "Awaiting hardware testing",
+  "target_semantics": "biological ankle moment, not a learned motor action",
+  "export_default_subject": {
+    "height_m": 1.75,
+    "mass_kg": 72.0,
+    "gender": "M"
+  },
+  "files_sha256": {
+    "ankle_reference.json": "e2c56f05e7486def71d41ae5fe9e9c3c6d4cdd113ad3dabedc745300bcbc168f",
+    "best.onnx": "1cfb4449eb2b4f723b860c50d1b721b445338bab73f84fdefda1bcaaea73585b",
+    "best.pt": "6d2244c4202b0172f80b3b77b7e9f52d3a6e3830713ea016f9018466240e3940",
+    "best.ts": "ae8fcde10d0872934263b6c3441102f8c2946fa6b07901c9de2e0480c845d70f",
+    "config.yaml": "c9ca69990f1088fd43b86161539ef7bff3f81240121608049917562b1fef4489",
+    "demographics.parquet": "739d6f5342476ab8543dee10a5f50c89cbf07bb54dad423106c05c175285a2d5",
+    "deploy_metadata.json": "7899345f9561037f7d9355eac083feefc3ca771389aa32d4d28a75ff291ba30f",
+    "display_name.txt": "997794a88889f67def2b6663ec6fe938465e614886b6508fb393935da8c59b95",
+    "forecast_metrics.json": "735df0f2d968bd257a26742776b48eab421bb0938110df2bb98d065b0d3b7416",
+    "model_meta.json": "4bd94a8f9004bb63515837ca8eca98d98c212f8b89028cac6fadb12138c15072",
+    "scaler_bundle.pkl": "7de9819b89111862f6256d97c96dbc23af9698e69b98b1f233a0f9d4b2ef92cc",
+    "test_metrics.json": "57ea24ed95420d783ae97ecba540e824e323e3cf128cd5c4ddd32e35f3413a2d",
+    "training_config.yaml": "da8b5923379eb77531c30f884c3f47c1a8412ac935df3daaffddd1ea160a0c32"
+  }
+}

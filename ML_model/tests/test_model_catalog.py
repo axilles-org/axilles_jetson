@@ -11,7 +11,7 @@ from dashboard.backend.model_catalog import MODEL_NAMES
 def test_catalog_includes_only_selected_subject_embedding_models(tmp_path, monkeypatch):
     runs = tmp_path / 'ML_model/runs'
     excluded = [
-        'model_film_subject_embedding_current_action_terrain',
+        'model_film_context_current_action_terrain',
         'model_moe_current_action_terrain',
         'model_tcn_current_action_terrain',
         'model_subject_embedding_current_action_terrain',
@@ -24,7 +24,9 @@ def test_catalog_includes_only_selected_subject_embedding_models(tmp_path, monke
         (run/'deploy_metadata.json').write_text('{}')
         (run/'best.onnx').write_bytes(b'export')
         (run/'display_name.txt').write_text('Old ambiguous name')
-        (run/'model_meta.json').write_text(json.dumps({'model': {'arch': 'tcn'}}))
+        arch = 'film' if name.startswith('model_film_') else 'tcn'
+        (run/'model_meta.json').write_text(json.dumps({'model': {'arch': arch},
+                                                     'deployment_notes': 'Sensor frame note'}))
     monkeypatch.setattr(server, 'ML_MODEL_RUNS', runs)
     monkeypatch.setattr(server, 'REPO_ROOT', tmp_path)
     monkeypatch.setattr(server.importlib.util, 'find_spec', lambda _: None)
@@ -36,6 +38,11 @@ def test_catalog_includes_only_selected_subject_embedding_models(tmp_path, monke
     assert all(m['hardware_test_status'] == 'Awaiting hardware testing'
                for m in ml if m['id'] != 'deploy')
     assert next(m for m in ml if m['id'] == 'deploy')['hardware_test_status'] == 'Previously deployed baseline'
+    film = next(m for m in ml if m['id'] == 'model_film_subject_embedding_current_action_terrain')
+    assert film['kind'] == 'film'
+    assert film['controller'] == 'ml'
+    assert film['deployment_notes'] == 'Sensor frame note'
+    assert 'onnx' in film['backends']
 
 
 def test_missing_selected_export_is_not_listed(tmp_path, monkeypatch):

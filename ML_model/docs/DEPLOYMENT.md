@@ -6,6 +6,42 @@ validates the whole inference path on real hardware before any powered test.
 
 ---
 
+## Subject-conditioned FiLM in the dashboard
+
+On **Launch**, select `model_film_subject_embedding_current_action_terrain`.
+This is the five-epoch subject-FiLM checkpoint from
+`runs/terrain/20261029_011205/film`, with a 300-sample, 14-channel history and
+current-time output. It is labelled **Awaiting hardware testing**. Context-FiLM
+and MoE remain outside the dashboard catalog.
+
+The package includes the original weights, scalers, training demographics,
+ankle calibration reference, TorchScript and ONNX exports. Enter the wearer's
+height, mass and gender to select the nearest training embedding and re-export
+before launch. ONNX runs on CPU; TensorRT is built on the Jetson when its
+dependencies are installed. TensorRT has not been validated on this Mac.
+
+This older experiment trained in **GaTech coordinates**, using noncausal offline
+preprocessing, rather than the newer transformed-data timing-augmentation setup.
+Its original exo-to-GaTech sensor adapter is retained. Do not replace it with
+the identity adapter from `runs/deploy`. The package defaults to assistance scale
+0.02 and a 2 N·m cap; dashboard launch settings are explicit overrides.
+
+The recorded pooled last-timestep test scores with nearest-subject embeddings
+are prediction R² **0.859834** and RMSE **0.188815 N·m/kg**. These describe offline
+prediction, not hardware assistance performance. The catalog displays these
+streaming scores rather than the separate trainer test score.
+
+To recreate the package in a fresh destination, run from `ML_model`:
+
+```bash
+python scripts/package_film.py --destination /tmp/film-packages
+```
+
+Repackaging needs the source training data to compute its training-only ankle
+reference. Launching the committed package does not require that dataset.
+
+---
+
 ## 1. How it relates to the existing TBE controller
 
 The Jetson repo `axilles_jetson` runs a **time-based estimator (TBE)**: it detects

@@ -471,7 +471,8 @@ def list_models() -> list[dict[str, Any]]:
                 "hardware_test_status": ("Previously deployed baseline" if run_dir.name == "deploy"
                                          else "Awaiting hardware testing"),
                 "checkpoint_id": run_dir.name,
-                "kind": "tcn",
+                "kind": model_meta.get("model", {}).get("arch", "tcn"),
+                "deployment_notes": model_meta.get("deployment_notes"),
                 "run_dir": str(run_dir.relative_to(REPO_ROOT / "ML_model")),
                 "backends": backends,
                 "backend_options": backend_options,

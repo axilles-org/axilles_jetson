@@ -1,0 +1,20 @@
+{
+  "gatech_walking_median_deg": -1.263674259185791,
+  "source_run": "runs/terrain/20261029_011205/film",
+  "training_subjects": [
+    "AB06",
+    "AB07",
+    "AB08",
+    "AB11",
+    "AB12",
+    "AB13",
+    "AB14",
+    "AB15",
+    "AB16",
+    "AB17",
+    "AB18",
+    "AB19",
+    "AB20"
+  ],
+  "method": "median finite processed training ankle angles, radians converted to degrees"
+}

@@ -10,11 +10,14 @@ from exo.deploy.export import build_deploy_module
 from exo.models import TCN
 
 
-@pytest.fixture(scope="module")
-def trained_run(tmp_path_factory, processed_dir):
+@pytest.fixture(scope="module", params=['tcn', 'film'])
+def trained_run(tmp_path_factory, processed_dir, request):
     """A minimally initialised run directory sufficient for export."""
     run_dir = tmp_path_factory.mktemp("run")
-    cfg = replace(Config.load("configs/default.yaml"), **{"model.num_channels": [16, 16]})
+    cfg = replace(Config.load("configs/default.yaml"), **{
+        "model.num_channels": [16, 16], "model.arch": request.param,
+        "model.film_source": "subject", "model.use_subject_embedding": True,
+    })
     cfg.save(run_dir)
     ScalerBundle.load(processed_dir).save(run_dir)
 

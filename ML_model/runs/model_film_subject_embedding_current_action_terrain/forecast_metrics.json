@@ -1,0 +1,13 @@
+{
+  "source": "runs/terrain/20261029_011205/summary.json",
+  "evaluation": "Pooled held-out last-timestep predictions, nearest demographic embedding",
+  "prediction_horizon_ms": 0,
+  "metrics": {
+    "overall_streaming": {
+      "n": 179981,
+      "r2": 0.8598337273246042,
+      "rmse_nm_per_kg": 0.18881549864765798,
+      "mae_nm_per_kg": 0.1161171966616686
+    }
+  }
+}

@@ -122,9 +122,12 @@ class TBECalibration():
         
         # Record toe off timestamp on falling edge, along with no noise check
         if toe_off_edge and self.heel_strike_times[-1] > 0:
-            self.logger.logger.info("Toe off detected. Entering swing phase.")
-            self.toe_off_times = np.roll(self.toe_off_times, -1)
-            self.toe_off_times[-1] = self.logger.getCurrentTime()
+
+            toe_off_time = self.logger.getCurrentTime()
+            if ((toe_off_time - self.toe_off_times[-1]) > 0.5):
+                self.logger.logger.info("Toe off detected. Entering swing phase.")
+                self.toe_off_times = np.roll(self.toe_off_times, -1)
+                self.toe_off_times[-1] = self.logger.getCurrentTime()
        
         # Once we have NUM_STRIDES worth of timestamps, compute stride time
         if (self.heel_strike_times[0] > 0) and (self.toe_off_times[0] > 0):

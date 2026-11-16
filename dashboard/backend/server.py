@@ -33,6 +33,7 @@ from . import process_manager
 from .model_catalog import MODEL_NAMES
 from .experiments import router as experiments_router
 from .health import router as health_router
+from .ankle_limits import router as ankle_limits_router
 
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
@@ -56,6 +57,7 @@ app.add_middleware(
 )
 app.include_router(experiments_router)
 app.include_router(health_router)
+app.include_router(ankle_limits_router)
 
 
 # ---------------------------------------------------------------------- #

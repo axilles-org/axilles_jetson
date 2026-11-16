@@ -259,8 +259,8 @@ class SensorAdapterConfig:
     shank_lever_arm_m: list[float] = field(default_factory=lambda: [0.0, 0.0, 0.0])
     ankle_encoder_neutral_deg: float = 0.0   # encoder reading at the GaTech zero pose
     ankle_encoder_sign: float = 1.0
-    heel_fsr_threshold: float = 2000.0  # raw ADC counts -> stance
-    toe_fsr_threshold: float = 2000.0
+    heel_fsr_threshold: float = 15000.0  # raw ADC counts -> stance
+    toe_fsr_threshold: float = 17000.0
     fsr_debounce_s: float = 0.00       # min stance/swing dwell time (0 = off)
     fsr_filter_cutoff_hz: float = 20.0  # low-pass on the FSRs before thresholding, as TBE does
 

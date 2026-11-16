@@ -116,6 +116,21 @@ export async function getHealth() {
   return res.json();
 }
 
+export async function getAnkleLimits() {
+  const res = await fetch(`${API_BASE}/ankle-limits`, { signal: AbortSignal.timeout(3000) });
+  if (!res.ok) throw new Error("ankle limits read failed");
+  return res.json();
+}
+
+async function postAnkleLimits(action) {
+  const res = await fetch(`${API_BASE}/ankle-limits/${action}`, { method: "POST" });
+  if (!res.ok) throw new Error((await res.json()).detail || `${action} failed`);
+  return res.json();
+}
+
+export const setAnkleStanding = () => postAnkleLimits("standing");
+export const resetAnkleLimits = () => postAnkleLimits("reset");
+
 export const listTransformVerifications = () => getJson("/experiments/transform");
 export const getTransformVerification = (id) => getJson(`/experiments/transform/${id}`);
 export const getSubjectStrides = (id, subject) =>

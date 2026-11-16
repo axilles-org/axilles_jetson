@@ -301,6 +301,101 @@ tr.clickable:hover {
   }
 }
 
+/* ── Ankle Limits page ──────────────────────────────────────────────────── */
+
+.ankle-limits {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.encoder-box,
+.limit-box {
+  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.encoder-box.fail {
+  border-color: var(--bad);
+}
+
+.encoder-value {
+  margin: 8px 0;
+  font-size: 56px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ankle-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.ankle-controls button {
+  font: inherit;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #1a1f2b;
+  color: var(--text);
+}
+
+.ankle-controls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.swap-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.bad-text {
+  color: var(--bad);
+}
+
+.limit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.limit-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.limit-value {
+  margin: 8px 0;
+  font-size: 44px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.limit-state {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.limit-box.settled {
+  border-color: var(--good);
+  animation: health-flash-ok 0.5s ease-in-out infinite alternate;
+}
+
+.limit-box.settled .limit-state {
+  color: var(--good);
+}
+
 /* ── Live page: charts + assistance side panel ──────────────────────────── */
 
 .live-layout {

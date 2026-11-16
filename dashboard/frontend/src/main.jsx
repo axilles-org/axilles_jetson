@@ -7,6 +7,7 @@ import RunDetailPage from "./pages/RunDetailPage.jsx";
 import LaunchPage from "./pages/LaunchPage.jsx";
 import ExperimentsPage from "./pages/ExperimentsPage.jsx";
 import HealthPage from "./pages/HealthPage.jsx";
+import AnkleLimitsPage from "./pages/AnkleLimitsPage.jsx";
 import "./style.css";
 
 function App() {
@@ -30,6 +31,9 @@ function App() {
           <NavLink to="/health" className={({ isActive }) => (isActive ? "active" : "")}>
             Health Monitor
           </NavLink>
+          <NavLink to="/ankle-limits" className={({ isActive }) => (isActive ? "active" : "")}>
+            Ankle Limits
+          </NavLink>
         </nav>
         <main className="content">
           <Routes>
@@ -39,6 +43,7 @@ function App() {
             <Route path="/runs/:runId" element={<RunDetailPage />} />
             <Route path="/experiments" element={<ExperimentsPage />} />
             <Route path="/health" element={<HealthPage />} />
+            <Route path="/ankle-limits" element={<AnkleLimitsPage />} />
           </Routes>
         </main>
       </div>

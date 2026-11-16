@@ -34,6 +34,8 @@ python dashboard/backend/simulate_run.py --duration 30
 | **Launch** | Pick a model, wearer (mass, height, sex), assistance scale, torque cap and mode; start/stop, watch the console |
 | **Runs** | History table, filter/search, diff two runs' model config, import/export |
 | **Experiments** | GaTech → exo transform verification (metrics + stride overlays) and transform-ablation test results |
+| **Health Monitor** | I2C sensor and motor connection checks (read-only) |
+| **Ankle Limits** | Max dorsi/plantarflexion from a standing reference: Set Standing, flex both ways, each box flashes green once its max has held for 2 s. Read-only encoder reads; nothing saved |
 
 ## Files
 
@@ -42,6 +44,7 @@ backend/
   server.py            FastAPI app — history API, live WebSocket relay, launch/stop, model + sample listing
   run_logger.py         Recorder wired into each controller's loop (non-blocking; writes Parquet + SQLite, relays live over UDP)
   experiments.py        Read-only API over ML_model/runs/{transform_verification,ablation}
+  ankle_limits.py       Ankle Limits page: samples the AS5600 (read-only) while the page is open, tracks max offsets from standing
   process_manager.py    Launches/stops a controller subprocess for the Launch page; blocks any --arm (torque) invocation
   simulate_run.py        Fake-trial generator, for trying the dashboard with no hardware
   sample_data/            Bundled real exo CSVs, usable as a replay source (see below)

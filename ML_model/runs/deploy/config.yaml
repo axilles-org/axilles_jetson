@@ -217,6 +217,6 @@ deploy:
     ankle_encoder_neutral_deg: 85.001
     ankle_encoder_sign: 1.0
     heel_fsr_threshold: 22446.0
-    toe_fsr_threshold: 8737.2
+    toe_fsr_threshold: 16737.2
     fsr_debounce_s: 0.0
     fsr_filter_cutoff_hz: 20.0

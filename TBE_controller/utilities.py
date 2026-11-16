@@ -49,7 +49,7 @@ NUM_STRIDES = 5
 ADAPTIVE_STRIDE_WINDOW = 0
 
 # THresholds for heel strike and toe off detection
-HEEL_STRIKE_THRESHOLD = 26100 
+HEEL_STRIKE_THRESHOLD = 23720 
 TOE_OFF_THRESHOLD = 17000
 
 # ── Hardware ──────────────────────────────────────────────────────────────────
@@ -96,11 +96,11 @@ KD_IMPEDANCE = 0.0
 
 # Peak torque for torque profile during activation (Nm)
 
-PEAK_TORQUE = 7.0 # DO NOT INCREASE ABOVE 10.0 WITHOUT PROPER TESTING
+PEAK_TORQUE = 6.0 # DO NOT INCREASE ABOVE 10.0 WITHOUT PROPER TESTING
 
 # Looks like the assistance is toe in and toe off
-TAU_PHASE_ARRAY = np.array([0.0, 0.6, 0.7, 0.8, 0.9, 1.0])
-TAU_VAL_ARRAY = np.array([0.0, 0.0, 0.2,  1.0,  0.2,  0.0])
+TAU_PHASE_ARRAY = np.array([0.0, 0.7, 0.75, 0.8, 0.85, 0.9, 1.0])
+TAU_VAL_ARRAY = np.array([0.0, 0.2,  0.6,  1.0,  0.6, 0.2, 0.0])
 
 # Assistance percentage for torque profile during activation
 ASSISTANCE_LEVEL = 0.5

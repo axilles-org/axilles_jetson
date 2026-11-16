@@ -16,13 +16,18 @@
     "gon_ankle_sagittal"
   ],
   "window_length": 300,
+  "prediction_horizon_ms": 0.0,
+  "prediction_horizon_samples": 0,
+  "target_semantics": "biological ankle moment at input_end + prediction_horizon",
+  "input_rate_hz": 100,
+  "causal_input_filtering": false,
   "num_input_channels": 14,
   "output_units": "Nm/kg",
-  "subject_mass_kg": 72.0,
-  "subject_idx": 2,
+  "subject_mass_kg": 75.0,
+  "subject_idx": 11,
   "applies_input_scaler": true,
   "applies_output_scaler": true,
   "control_rate_hz": 100,
   "trace_max_error": 0.0,
-  "onnx_max_error": 2.9802322387695312e-08
+  "onnx_max_error": 0.0
 }

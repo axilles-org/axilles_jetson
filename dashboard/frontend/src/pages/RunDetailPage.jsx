@@ -71,9 +71,13 @@ export default function RunDetailPage() {
   }
 
   const rows = data.rows;
-  const t0 = rows[0].t;
-  const t = rows.map((r) => r.t - t0);
-  const col = (name) => rows.map((r) => r[name] ?? null);
+  const timeColumn = data.columns.includes("t") ? "t" : "t_s";
+  const t0 = rows[0][timeColumn];
+  const t = rows.map((r) => r[timeColumn] - t0);
+  const aliases = { ankle_angle: "ankle_angle_deg", heel_fsr: "heel_fsr_raw",
+    toe_fsr: "toe_fsr_raw", torque_cmd: "sent_torque_nm" };
+  const col = (name) => rows.map((r) => r[name] ?? r[aliases[name]] ?? null);
+  const isML = data.columns.includes("sent_torque_nm");
 
   return (
     <div>
@@ -175,11 +179,14 @@ export default function RunDetailPage() {
           series={[{ label: "ankle_velocity", data: col("ankle_velocity") }]}
         />
         <StaticChart
-          title="Torque Command"
+          title={isML ? "Requested / Queued Torque" : "Torque Command"}
           unit="Nm"
           t={t}
-          colors={["#ff5c5c"]}
-          series={[{ label: "torque_cmd", data: col("torque_cmd") }]}
+          colors={["#ff5c5c", "#5b9dff"]}
+          series={isML ? [
+            { label: "queued command", data: col("sent_torque_nm") },
+            { label: "requested command", data: col("assist_cmd_nm") },
+          ] : [{ label: "torque_cmd", data: col("torque_cmd") }]}
         />
         <StaticChart
           title="FSR (Heel / Toe)"

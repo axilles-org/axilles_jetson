@@ -55,7 +55,7 @@ def _clamp(val, lo, hi):
 def _float_to_uint(x, x_min, x_max, bits):
     x = _clamp(x, x_min, x_max)
     span = x_max - x_min
-    return int((x - x_min) * ((1 << bits) / span))
+    return int((x - x_min) * (((1 << bits) - 1) / span))
 
 def send_torque(bus, torque_nm):
     """Send pure torque command via MIT mode (kp=0, kd=0, pos=0, vel=0)."""

@@ -1,0 +1,3 @@
+[monitor] connecting foot IMU (bus 1, 0x4A) at 100 Hz...
+
+Aborted during init.

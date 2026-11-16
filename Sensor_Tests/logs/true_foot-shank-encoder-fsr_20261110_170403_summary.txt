@@ -1,0 +1,16 @@
+true_dropout_monitor  2026-11-10 17:07:03  sensors: foot, shank, encoder, fsr  (not addressed: none)
+duration 180.0 s, reconnect on, GAP = interval > 3 x expected spacing
+
+  stream      readings  rate Hz  expected  max gap ms  GAPs  time lost s
+  foot_acc       22438    124.7       100        53.5     1        0.053
+  foot_gyro      17957     99.8       100        53.2     1        0.053
+  shank_acc      22818    126.8       100        66.8     1        0.067
+  shank_gyro     17946     99.7       100        62.3     1        0.062
+  encoder        35104    195.0       200        62.6    25        0.557
+  fsr            33671    187.1       200        53.1    10        0.215
+  foot IMU: 40375 packets, 0 lost by sequence number, 30 continuation reads
+  shank IMU: 40740 packets, 0 lost by sequence number, 33 continuation reads
+  events: GAP 39  STALL 1
+  VERDICT: TRUE DROPOUTS FOUND (39 events). See GAP causes above and true_foot-shank-encoder-fsr_20261110_170403_events.csv.
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/true_foot-shank-encoder-fsr_20261110_170403_events.csv
+  summary: /home/axilles/exo_ws/Sensor_Tests/logs/true_foot-shank-encoder-fsr_20261110_170403_summary.txt

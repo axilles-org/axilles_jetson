@@ -15,6 +15,7 @@ Run with:
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import json
 import shutil
 import socket
@@ -29,7 +30,10 @@ from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import process_manager
+from .model_catalog import MODEL_NAMES
 from .experiments import router as experiments_router
+from .health import router as health_router
+from .ankle_limits import router as ankle_limits_router
 
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
@@ -52,6 +56,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(experiments_router)
+app.include_router(health_router)
+app.include_router(ankle_limits_router)
 
 
 # ---------------------------------------------------------------------- #
@@ -414,12 +420,14 @@ def list_models() -> list[dict[str, Any]]:
     ]
 
     if ML_MODEL_RUNS.exists():
-        for run_dir in sorted(ML_MODEL_RUNS.iterdir()):
+        for checkpoint in MODEL_NAMES:
+            run_dir = ML_MODEL_RUNS / checkpoint
             if not run_dir.is_dir():
                 continue
             deploy_meta_path = run_dir / "deploy_metadata.json"
             if not deploy_meta_path.exists():
                 continue  # not a valid deployable checkpoint
+            deploy_meta = json.loads(deploy_meta_path.read_text())
 
             model_meta = {}
             meta_path = run_dir / "model_meta.json"
@@ -430,6 +438,10 @@ def list_models() -> list[dict[str, Any]]:
             metrics_path = run_dir / "test_metrics.json"
             if metrics_path.exists():
                 test_metrics = json.loads(metrics_path.read_text())
+            forecast_metrics = {}
+            forecast_path = run_dir / "forecast_metrics.json"
+            if forecast_path.exists():
+                forecast_metrics = json.loads(forecast_path.read_text()).get("metrics", {}).get("overall_streaming", {})
 
             wandb_run = {}
             wandb_path = run_dir / "wandb_run.json"
@@ -441,29 +453,37 @@ def list_models() -> list[dict[str, Any]]:
                 backends.append("jit")
             if (run_dir / "best.onnx").exists():
                 backends.append("onnx")
-            if (run_dir / "best.engine").exists():
+            trt_installed = (importlib.util.find_spec("tensorrt") is not None
+                             and importlib.util.find_spec("pycuda") is not None)
+            if (run_dir / "best.onnx").exists() and trt_installed:
                 backends.append("trt")
-
-            # Optional one-line friendly name, e.g. "Ankle Assist v1" — falls
-            # back to the raw checkpoint folder name (a training timestamp
-            # stamp) if a team hasn't set one. Add/edit it any time with:
-            #   echo "My Model Name" > ML_model/runs/<checkpoint>/display_name.txt
-            display_name_path = run_dir / "display_name.txt"
-            display_name = (
-                display_name_path.read_text().strip()
-                if display_name_path.exists()
-                else run_dir.name
-            )
+            backend_options = [
+                {"id": "onnx", "label": "ONNX Runtime (CPU)", "available": "onnx" in backends},
+                {"id": "trt", "label": "TensorRT (GPU)", "available": "trt" in backends,
+                 "reason": ("Requires TensorRT and PyCUDA on the Jetson" if not trt_installed
+                            else "Requires an ONNX export" if "onnx" not in backends else ""),
+                 "build_on_launch": True},
+                {"id": "jit", "label": "TorchScript", "available": "jit" in backends},
+            ]
 
             models.append({
                 "id": run_dir.name,
                 "controller": "ml",
-                "name": display_name,
+                "name": MODEL_NAMES[run_dir.name],
+                "hardware_test_status": ("Previously deployed baseline" if run_dir.name == "deploy"
+                                         else "Awaiting hardware testing"),
                 "checkpoint_id": run_dir.name,
-                "kind": "tcn",
+                "kind": model_meta.get("model", {}).get("arch", "tcn"),
+                "deployment_notes": model_meta.get("deployment_notes"),
                 "run_dir": str(run_dir.relative_to(REPO_ROOT / "ML_model")),
                 "backends": backends,
+                "backend_options": backend_options,
                 "model_arch": model_meta.get("model", {}),
+                "input_features": deploy_meta.get("feature_names", model_meta.get("feature_names", [])),
+                "prediction_horizon_ms": deploy_meta.get("prediction_horizon_ms", 0),
+                "observation_augmentation": model_meta.get("observation_augmentation", False),
+                "input_rate_hz": deploy_meta.get("input_rate_hz"),
+                "forecast_metrics": forecast_metrics,
                 "test_metrics": test_metrics,
                 "wandb_run_url": wandb_run.get("run_url"),
             })
@@ -527,6 +547,7 @@ def launch(body: dict[str, Any]) -> dict[str, Any]:
       duration: float,
       backend: "jit" | "onnx" | "trt" | null,
       assist_scale: float | null,
+      assistance_delay_ms: float | null,                # ml-*, 0..1000 ms
       height: float | null, gender: "M" | "F" | null,   # ml-live
       torque_cap: float | null,                         # ml-live
     }
@@ -540,6 +561,7 @@ def launch(body: dict[str, Any]) -> dict[str, Any]:
             duration=body.get("duration", 60.0),
             backend=body.get("backend"),
             assist_scale=body.get("assist_scale"),
+            assistance_delay_ms=body.get("assistance_delay_ms"),
             height=body.get("height"),
             gender=body.get("gender"),
             torque_cap=body.get("torque_cap"),

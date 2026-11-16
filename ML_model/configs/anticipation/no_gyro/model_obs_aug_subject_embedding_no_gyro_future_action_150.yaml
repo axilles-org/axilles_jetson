@@ -1,0 +1,5 @@
+extends: base.yaml
+data:
+  prediction_horizon_ms: 150
+train:
+  wandb_run_name: model_obs_aug_subject_embedding_no_gyro_future_action_150

@@ -1,0 +1,10 @@
+t_s,kind,who,detail
+12.5695,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+12.5773,GAP,encoder,no reading for 20 ms (12.558-12.577 s)  cause: no error seen (sensor went quiet)
+12.6739,SILENT,foot_acc,no reading for 118 ms so far
+12.6739,SILENT,foot_gyro,no reading for 115 ms so far
+12.6944,SILENT,shank_acc,no reading for 119 ms so far
+12.6944,SILENT,shank_gyro,no reading for 120 ms so far
+12.6944,SILENT,encoder,no reading for 117 ms so far
+12.6944,SILENT,fsr,no reading for 117 ms so far
+12.7423,CRASH,reader,"reader thread stopped: OSError(121, 'Remote I/O error')"

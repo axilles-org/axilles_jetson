@@ -326,6 +326,7 @@ python scripts/jetson_deploy.py --run runs/<name> --mass 72 --axilles ~/axilles_
 | `--arm` | actually transmit torque (omit → computes only) | off |
 | `--dry-run` | run `MotorInterface` with no CAN bus | off |
 | `--assist-scale` | fraction of predicted human moment applied as assistance | — |
+| `--assistance-delay-ms` | additional output delay before scaling and current stance gating (0–1000 ms) | config, otherwise 0 |
 | `--torque-cap` | hard torque limit, N·m (clamped ≤ 5) | 2.0 |
 | `--arm-ramp` | seconds to fade assistance in at session start | 5.0 |
 | `--command-sign` | actuator sign convention (**verify on the bench**) | 1 |
@@ -333,6 +334,18 @@ python scripts/jetson_deploy.py --run runs/<name> --mass 72 --axilles ~/axilles_
 | `--rate` | control rate in Hz | 100 |
 | `--duration` | seconds to run | until Ctrl-C |
 | `--backend` | `jit` / `onnx` / `trt` | jit |
+
+The dashboard's **Launch → Parameters → Assistance delay (ms)** starts at 50 ms
+and can be changed before each launch; 0 disables the delay. CLI/config defaults
+remain 0 for existing workflows. Both mock and powered runners support the flag.
+The buffer stores signed model predictions using monotonic completion timestamps,
+then applies the current scaling, direction mapping, stance gate and limits.
+It clears on swing, assistance-off, calibration/reset or model fault, and commands
+zero while filling. Irregular sampling can add up to one source sample interval
+beyond the requested delay. This is additional to existing inference/actuation
+latency and is independent of the selected model's future prediction horizon.
+Logs retain the original prediction plus `delayed_predicted_nm_per_kg`,
+`assistance_delay_ms`, `delay_ready` and `delayed_prediction_age_ms`.
 
 **Four independent safety layers:**
 

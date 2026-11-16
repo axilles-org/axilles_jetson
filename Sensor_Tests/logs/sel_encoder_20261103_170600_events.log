@@ -1,0 +1,8 @@
+# imu_only_dropout_monitor: sensors=['encoder'] reconnect=True idle_us=0; sensors not listed are not addressed
+
+Summary over 6.2 s (621 frames of 10 ms) - sensors read: encoder; not addressed: foot, shank, fsr
+  stream      readings    frames missed  longest gap
+  encoder        27309        0 ( 0.0%)         0 ms
+  events: none
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/sel_encoder_20261103_170600.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/sel_encoder_20261103_170600_events.log

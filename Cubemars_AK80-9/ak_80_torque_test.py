@@ -31,7 +31,7 @@ NO_FB_TIMEOUT = 0.10       # s -> zero torque if feedback lost
 # MIT mode limits for AK80-9
 MIT_P_MIN, MIT_P_MAX = -12.56, 12.56
 MIT_V_MIN, MIT_V_MAX = -65.0, 65.0
-MIT_T_MIN, MIT_T_MAX = -18.0, 18.0
+MIT_T_MIN, MIT_T_MAX = -22.0, 22.0
 MIT_KP_MIN, MIT_KP_MAX = 0.0, 500.0
 MIT_KD_MIN, MIT_KD_MAX = 0.0, 5.0
 
@@ -42,7 +42,7 @@ def _clamp(v, lo, hi):
 
 def _float_to_uint(x, x_min, x_max, bits):
     x = _clamp(x, x_min, x_max)
-    return int((x - x_min) * ((1 << bits) / (x_max - x_min)))
+    return int((x - x_min) * (((1 << bits) - 1) / (x_max - x_min)))
 
 def send_torque(bus, torque_nm):
     torque_nm = _clamp(torque_nm, MIT_T_MIN, MIT_T_MAX)

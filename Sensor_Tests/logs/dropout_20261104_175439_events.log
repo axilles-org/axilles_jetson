@@ -1,0 +1,14 @@
+
+Summary over 52.6 s (5259 frames of 10 ms)
+  stream      readings    frames missed  longest gap
+  foot_acc        6311      404 ( 7.7%)        20 ms
+  foot_gyro       5252      402 ( 7.6%)        10 ms
+  shank_acc       6487      343 ( 6.5%)        20 ms
+  shank_gyro      5249      369 ( 7.0%)        10 ms
+  encoder        12366        0 ( 0.0%)         0 ms
+  fsr            10311        0 ( 0.0%)         0 ms
+  events: none
+  foot IMU: 11507 packets, 0 missing by sequence number, 217 continuation reads
+  shank IMU: 11670 packets, 0 missing by sequence number, 188 continuation reads
+  frames: /home/axilles/exo_ws/Sensor_Tests/logs/dropout_20261104_175439.csv
+  events: /home/axilles/exo_ws/Sensor_Tests/logs/dropout_20261104_175439_events.log

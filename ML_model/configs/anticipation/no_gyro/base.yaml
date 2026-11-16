@@ -1,0 +1,15 @@
+# Matched timing-augmented comparison: remove both IMUs' gyroscope channels.
+# Reuse the same transformed, causally prepared data and training-only scalers.
+extends: ../obs_aug_base.yaml
+data:
+  feature_set: no_gyro
+  feature_sets:
+    no_gyro:
+      - imu_foot_Accel_X
+      - imu_foot_Accel_Y
+      - imu_foot_Accel_Z
+      - imu_shank_Accel_X
+      - imu_shank_Accel_Y
+      - imu_shank_Accel_Z
+      - stance
+      - gon_ankle_sagittal

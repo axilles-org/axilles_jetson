@@ -1,0 +1,19 @@
+{
+  "dataset": "/Users/narayanan/PycharmProjects/exo-data/hf_dataset_tx_mujoco",
+  "target": "ankle_angle_r_moment",
+  "units": "Nm/kg (raw Nm divided by each subject mass)",
+  "subjects": 22,
+  "trials": 157,
+  "finite_samples": 4526704,
+  "positive_fraction": 0.4227194886168833,
+  "negative_fraction": 0.5772805113831168,
+  "positive_above_005_fraction": 0.12681787896889216,
+  "negative_below_minus005_fraction": 0.5294021875519141,
+  "trials_with_both_signs": 157,
+  "complete_strides": 20575,
+  "median_stride_min_nm_per_kg": -1.5282286405563354,
+  "median_stride_max_nm_per_kg": 0.12313460558652878,
+  "original_label_files_compared": 157,
+  "original_label_files_identical": 157,
+  "notes": "Raw native-rate labels; stride bounds from HeelStrike wraps, duration 0.5 to 2 seconds. Sample fractions include near-zero values and are not proof of physiological accuracy. 0.05 threshold is descriptive, not a control setting."
+}

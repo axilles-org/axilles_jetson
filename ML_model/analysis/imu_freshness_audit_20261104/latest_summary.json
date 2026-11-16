@@ -1,0 +1,87 @@
+{
+  "source_csv": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/imported/backup_ml_control_model_4745a55/ML_model/logs/powered_run.csv",
+  "sha256": "de2a6aff978e87e828638b2e5a539f32cf0f19b69af47e0c0131128e47457b7e",
+  "associated_run_id": "20261102_182941_1d037a",
+  "association": "Inferred from latest source database record and unique sample-count match; CSV has no run ID.",
+  "rows": 8446,
+  "duration_s": 87.735,
+  "all_imu_channels_constant_after_s": 6.1777,
+  "assistance_start_s": 19.2101,
+  "assistance_end_s": 84.6397,
+  "enabled_samples": 6284,
+  "channels": [
+    {
+      "channel": "foot_ax",
+      "last_numeric_change_s": 6.1677,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": 8.62891
+    },
+    {
+      "channel": "foot_ay",
+      "last_numeric_change_s": 6.1677,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -3.92969
+    },
+    {
+      "channel": "foot_az",
+      "last_numeric_change_s": 6.1677,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -1.0625
+    },
+    {
+      "channel": "foot_gx",
+      "last_numeric_change_s": 6.1777,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -0.03516
+    },
+    {
+      "channel": "foot_gy",
+      "last_numeric_change_s": 6.1777,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -0.02148
+    },
+    {
+      "channel": "foot_gz",
+      "last_numeric_change_s": 6.1777,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -0.02734
+    },
+    {
+      "channel": "shank_ax",
+      "last_numeric_change_s": 6.1677,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": 9.66797
+    },
+    {
+      "channel": "shank_ay",
+      "last_numeric_change_s": 6.1677,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": 0.75
+    },
+    {
+      "channel": "shank_az",
+      "last_numeric_change_s": 6.1677,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -2.14844
+    },
+    {
+      "channel": "shank_gx",
+      "last_numeric_change_s": 6.107,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -0.31445
+    },
+    {
+      "channel": "shank_gy",
+      "last_numeric_change_s": 6.107,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -0.06641
+    },
+    {
+      "channel": "shank_gz",
+      "last_numeric_change_s": 6.107,
+      "unique_values_during_assistance": 1,
+      "constant_value_during_assistance": -0.48438
+    }
+  ],
+  "limitation": "Proves logged raw values stop changing, not whether physical sensor packets continued arriving. No per-report receipt timestamps/counters are present."
+}

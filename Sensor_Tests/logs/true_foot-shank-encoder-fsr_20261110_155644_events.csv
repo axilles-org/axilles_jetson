@@ -1,0 +1,117 @@
+t_s,kind,who,detail
+0.9475,BADPKT,shank IMU,KeyError(253) raw=05800302fd0000000000000000000000000000
+7.8898,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+7.9851,SILENT,foot_acc,no reading for 105 ms so far
+8.0056,SILENT,foot_gyro,no reading for 119 ms so far
+8.0351,BACK,foot IMU,answering again after 98 ms
+8.0351,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+8.0865,SILENT,shank_acc,no reading for 104 ms so far
+8.0865,SILENT,shank_gyro,no reading for 105 ms so far
+8.0865,SILENT,fsr,no reading for 104 ms so far
+8.1068,SILENT,encoder,no reading for 119 ms so far
+8.0351,PAUSE,loop,re-initialising foot IMU paused all reads 1965 ms
+10.0145,GAP,foot_acc,"no reading for 2135 ms (7.880-10.014 s)  cause: BACK, I2CERR, PAUSE, RESET"
+10.0123,GAP,foot_gyro,"no reading for 2126 ms (7.886-10.012 s)  cause: BACK, I2CERR, PAUSE, RESET"
+10.0081,GAP,shank_acc,no reading for 2025 ms (7.983-10.008 s)  cause: PAUSE
+10.0018,GAP,shank_gyro,no reading for 2020 ms (7.982-10.002 s)  cause: PAUSE
+10.0114,GAP,encoder,no reading for 2024 ms (7.987-10.011 s)  cause: PAUSE
+10.0006,GAP,fsr,no reading for 2018 ms (7.983-10.001 s)  cause: PAUSE
+11.2648,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+11.3672,SILENT,foot_acc,no reading for 113 ms so far
+11.3672,SILENT,foot_gyro,no reading for 112 ms so far
+11.4027,BACK,foot IMU,answering again after 93 ms
+11.4027,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+11.4481,SILENT,shank_acc,no reading for 100 ms so far
+11.4684,SILENT,shank_gyro,no reading for 120 ms so far
+11.4684,SILENT,encoder,no reading for 111 ms so far
+11.4684,SILENT,fsr,no reading for 115 ms so far
+11.4027,PAUSE,loop,re-initialising foot IMU paused all reads 1960 ms
+13.3773,GAP,foot_gyro,"no reading for 2122 ms (11.255-13.377 s)  cause: BACK, I2CERR, PAUSE, RESET"
+13.3649,GAP,shank_acc,no reading for 2017 ms (11.348-13.365 s)  cause: PAUSE
+13.3723,GAP,shank_gyro,no reading for 2023 ms (11.349-13.372 s)  cause: PAUSE
+13.3760,GAP,encoder,no reading for 2019 ms (11.357-13.376 s)  cause: PAUSE
+13.3637,GAP,fsr,no reading for 2011 ms (11.353-13.364 s)  cause: PAUSE
+13.3802,GAP,foot_acc,"no reading for 2126 ms (11.254-13.380 s)  cause: BACK, I2CERR, PAUSE, RESET"
+30.1885,BADPKT,foot IMU,KeyError(0) raw=098003dc00e70071fb00000000000000000000
+34.9560,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+35.0604,SILENT,foot_acc,no reading for 118 ms so far
+35.0604,SILENT,foot_gyro,no reading for 112 ms so far
+35.0984,BACK,foot IMU,answering again after 92 ms
+35.0984,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+35.1616,SILENT,shank_acc,no reading for 116 ms so far
+35.1616,SILENT,shank_gyro,no reading for 117 ms so far
+35.1616,SILENT,encoder,no reading for 114 ms so far
+35.1616,SILENT,fsr,no reading for 115 ms so far
+35.0984,PAUSE,loop,re-initialising foot IMU paused all reads 1963 ms
+37.0704,GAP,shank_acc,no reading for 2025 ms (35.046-37.070 s)  cause: PAUSE
+37.0630,GAP,shank_gyro,no reading for 2018 ms (35.045-37.063 s)  cause: PAUSE
+37.0707,GAP,fsr,no reading for 2025 ms (35.046-37.071 s)  cause: PAUSE
+37.0767,GAP,foot_acc,"no reading for 2134 ms (34.943-37.077 s)  cause: BACK, I2CERR, PAUSE, RESET"
+37.0736,GAP,foot_gyro,"no reading for 2125 ms (34.948-37.074 s)  cause: BACK, I2CERR, PAUSE, RESET"
+37.0728,GAP,encoder,no reading for 2025 ms (35.048-37.073 s)  cause: PAUSE
+38.2222,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+38.3216,SILENT,foot_acc,no reading for 110 ms so far
+38.3216,SILENT,foot_gyro,no reading for 104 ms so far
+38.3592,BACK,foot IMU,answering again after 94 ms
+38.3592,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+38.4229,SILENT,shank_acc,no reading for 109 ms so far
+38.4229,SILENT,shank_gyro,no reading for 111 ms so far
+38.4229,SILENT,encoder,no reading for 107 ms so far
+38.4229,SILENT,fsr,no reading for 108 ms so far
+38.3592,PAUSE,loop,re-initialising foot IMU paused all reads 1961 ms
+40.3294,GAP,shank_acc,no reading for 2015 ms (38.314-40.329 s)  cause: PAUSE
+40.3224,GAP,shank_gyro,no reading for 2010 ms (38.312-40.322 s)  cause: PAUSE
+40.3325,GAP,encoder,no reading for 2016 ms (38.316-40.332 s)  cause: PAUSE
+40.3297,GAP,fsr,no reading for 2015 ms (38.315-40.330 s)  cause: PAUSE
+40.3356,GAP,foot_acc,"no reading for 2124 ms (38.211-40.336 s)  cause: BACK, I2CERR, PAUSE, RESET"
+40.3337,GAP,foot_gyro,"no reading for 2116 ms (38.217-40.334 s)  cause: BACK, I2CERR, PAUSE, RESET"
+41.1443,BADPKT,foot IMU,"RuntimeError(('Unprocessable Batch bytes', 8)) raw=0c8003e30200f20834fc0dfe00000000000000"
+41.1473,BADPKT,foot IMU,KeyError(255) raw=130003e4fb19000080ffffffffffffffffffff
+44.2357,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+44.3372,SILENT,foot_acc,no reading for 108 ms so far
+44.3372,SILENT,foot_gyro,no reading for 113 ms so far
+44.3801,BACK,foot IMU,answering again after 92 ms
+44.3801,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+44.4382,SILENT,shank_acc,no reading for 116 ms so far
+44.4382,SILENT,shank_gyro,no reading for 113 ms so far
+44.4382,SILENT,encoder,no reading for 111 ms so far
+44.4382,SILENT,fsr,no reading for 111 ms so far
+44.3801,PAUSE,loop,re-initialising foot IMU paused all reads 1960 ms
+46.3420,GAP,shank_acc,no reading for 2020 ms (44.323-46.342 s)  cause: PAUSE
+46.3490,GAP,shank_gyro,no reading for 2024 ms (44.325-46.349 s)  cause: PAUSE
+46.3539,GAP,foot_acc,"no reading for 2124 ms (44.229-46.354 s)  cause: BACK, I2CERR, PAUSE, RESET"
+46.3522,GAP,foot_gyro,"no reading for 2128 ms (44.225-46.352 s)  cause: BACK, I2CERR, PAUSE, RESET"
+46.3515,GAP,encoder,no reading for 2024 ms (44.328-46.351 s)  cause: PAUSE
+46.3494,GAP,fsr,no reading for 2022 ms (44.327-46.349 s)  cause: PAUSE
+47.6501,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+47.7398,SILENT,foot_acc,no reading for 102 ms so far
+47.7398,SILENT,foot_gyro,no reading for 101 ms so far
+47.7876,BACK,foot IMU,answering again after 97 ms
+47.7877,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+47.8612,SILENT,shank_acc,no reading for 117 ms so far
+47.8612,SILENT,shank_gyro,no reading for 116 ms so far
+47.8612,SILENT,encoder,no reading for 114 ms so far
+47.8612,SILENT,fsr,no reading for 116 ms so far
+47.7877,PAUSE,loop,re-initialising foot IMU paused all reads 1962 ms
+49.7658,GAP,foot_acc,"no reading for 2128 ms (47.638-49.766 s)  cause: BACK, I2CERR, PAUSE, RESET"
+49.7637,GAP,foot_gyro,"no reading for 2125 ms (47.639-49.764 s)  cause: BACK, I2CERR, PAUSE, RESET"
+49.7516,GAP,shank_acc,no reading for 2007 ms (47.745-49.752 s)  cause: PAUSE
+49.7590,GAP,shank_gyro,no reading for 2014 ms (47.745-49.759 s)  cause: PAUSE
+49.7620,GAP,encoder,no reading for 2015 ms (47.747-49.762 s)  cause: PAUSE
+49.7593,GAP,fsr,no reading for 2014 ms (47.746-49.759 s)  cause: PAUSE
+52.5647,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+52.6678,SILENT,foot_acc,no reading for 108 ms so far
+52.6678,SILENT,foot_gyro,no reading for 118 ms so far
+52.7097,BACK,foot IMU,answering again after 94 ms
+52.7097,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+52.7691,SILENT,shank_acc,no reading for 115 ms so far
+52.7691,SILENT,shank_gyro,no reading for 112 ms so far
+52.7691,SILENT,encoder,no reading for 110 ms so far
+52.7691,SILENT,fsr,no reading for 114 ms so far
+52.7097,PAUSE,loop,re-initialising foot IMU paused all reads 1961 ms
+54.6718,GAP,shank_acc,no reading for 2017 ms (52.654-54.672 s)  cause: PAUSE
+54.6782,GAP,shank_gyro,no reading for 2021 ms (52.657-54.678 s)  cause: PAUSE
+54.6710,GAP,fsr,no reading for 2016 ms (52.655-54.671 s)  cause: PAUSE
+54.6824,GAP,foot_acc,"no reading for 2122 ms (52.560-54.682 s)  cause: BACK, I2CERR, PAUSE, RESET"
+54.6810,GAP,foot_gyro,"no reading for 2131 ms (52.550-54.681 s)  cause: BACK, I2CERR, PAUSE, RESET"
+54.6798,GAP,encoder,no reading for 2021 ms (52.659-54.680 s)  cause: PAUSE

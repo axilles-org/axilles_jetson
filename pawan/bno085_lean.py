@@ -68,6 +68,11 @@ READ_LEN = 19               # one timestamped accel/gyro report, exactly
 BOOT_DELAY = 0.8
 CONNECT_RETRIES = 6
 INPUT_REPORT_CHANNEL = 3    # SHTP channel that carries sensor reports
+CONTROL_CHANNEL = 2         # SHTP channel for Set Feature commands
+EXE_CHANNEL = 1             # SHTP executable channel; payload 0x01 = reset complete
+ADVERTISEMENT_CHANNEL = 0   # the BNO085 re-sends its advertisement after every reset
+SHTP_CHANNELS = 6           # channels 0-5; a higher channel means a corrupt header
+MAX_PACKET = 512            # longest real packet is the ~280-byte advertisement
 
 ACCEL = BNO_REPORT_ACCELEROMETER
 GYRO = BNO_REPORT_GYROSCOPE
@@ -98,13 +103,20 @@ class LeanBNO085:
         self.continuations = 0      # extra reads for packets > READ_LEN
         self.seq_gaps = 0           # missing packets on the report channel
         self.busy_s = 0.0           # time spent in reads that returned data
+        self.corrupt = 0            # headers dropped as corrupt (bad channel/length)
+        self.resets = 0             # times the BNO085 rebooted itself mid-run
+        self.reenables = 0          # Set Feature commands re-sent by reenable()
+        self.needs_enable = False   # set after a reset: its reports are now off
         self._last_seq = None
 
         self._connect()
 
     # ── setup ────────────────────────────────────────────────────────────────
+    def _interval_us(self):
+        return max(1000, int(1_000_000 / self.report_hz))
+
     def _connect(self):
-        interval_us = max(1000, int(1_000_000 / self.report_hz))
+        interval_us = self._interval_us()
         for attempt in range(1, CONNECT_RETRIES + 1):
             try:
                 self._close_handles()
@@ -116,6 +128,7 @@ class LeanBNO085:
                 self._fd = os.open(f"/dev/i2c-{self.bus}", os.O_RDWR)
                 fcntl.ioctl(self._fd, I2C_SLAVE, self.address)
                 self._last_seq = None
+                self.needs_enable = False
                 return
             except KeyboardInterrupt:
                 raise
@@ -125,7 +138,24 @@ class LeanBNO085:
         raise RuntimeError(f"[{self.label}] could not connect on bus {self.bus}")
 
     def reconnect(self):
+        """Soft-reset and set up again (blocks about a second)."""
         self._connect()
+
+    def reenable(self):
+        """
+        Send Set Feature for every feature again, without waiting for the reply.
+
+        A BNO085 that reboots (brown-out, watchdog, bus glitch) comes back with
+        every report turned off, so it goes silent and the last values freeze.
+        This turns the reports back on in a few I2C writes; the reports then
+        arrive through poll() as usual.
+        """
+        interval_us = self._interval_us()
+        for feat in self.features:
+            self._bno._send_packet(CONTROL_CHANNEL,
+                                   self._bno._get_feature_enable_report(feat, interval_us))
+        self.needs_enable = False
+        self.reenables += 1
 
     def _close_handles(self):
         if self._fd is not None:
@@ -166,7 +196,7 @@ class LeanBNO085:
     def reset_stats(self):
         self.counts.clear()
         self.packets = self.empty_polls = self.continuations = 0
-        self.seq_gaps = 0
+        self.seq_gaps = self.corrupt = 0
         self.busy_s = 0.0
 
     # ── reading ──────────────────────────────────────────────────────────────
@@ -174,6 +204,11 @@ class LeanBNO085:
         """
         One read. Returns the number of reports processed (0 if the FIFO was
         empty). Raises OSError on bus errors; call reconnect() to recover.
+
+        A header with an impossible channel or length is dropped and counted in
+        ``corrupt`` instead of being parsed (the adafruit parser raised
+        IndexError on those, and a garbage length asked for a huge read).
+        After the sensor reboots, ``needs_enable`` is set; call reenable().
         """
         t0 = time.perf_counter()
         data = os.read(self._fd, READ_LEN)
@@ -182,6 +217,9 @@ class LeanBNO085:
 
         if length == 0 or length == 0x7FFF:
             self.empty_polls += 1
+            return 0
+        if channel >= SHTP_CHANNELS or length < 4 or length > MAX_PACKET:
+            self.corrupt += 1
             return 0
 
         if channel == INPUT_REPORT_CHANNEL:
@@ -197,6 +235,9 @@ class LeanBNO085:
             more = os.read(self._fd, remaining + 4)
             self.continuations += 1
             cont_len = struct.unpack_from("<H", more)[0] & 0x7FFF
+            if cont_len < 4 or cont_len > remaining + 4:
+                self.corrupt += 1           # lost our place in the packet; drop it
+                return 0
             cargo += more[4:min(cont_len, remaining + 4)]
             remaining = cont_len - (remaining + 4)
             if channel == INPUT_REPORT_CHANNEL:
@@ -212,6 +253,14 @@ class LeanBNO085:
         buf += cargo
         packet = Packet(buf)
         self._bno._sequence_number[channel] = seq
+
+        if channel == ADVERTISEMENT_CHANNEL or (channel == EXE_CHANNEL and cargo[:1] == b"\x01"):
+            # The sensor rebooted. Its reports are off until Set Feature is sent
+            # again. (The adafruit parser can't parse these and dumped them as DBG.)
+            if channel == EXE_CHANNEL:
+                self.resets += 1
+            self.needs_enable = True
+            return 0
 
         if channel != INPUT_REPORT_CHANNEL:
             self._bno._handle_packet(packet)      # control / command traffic

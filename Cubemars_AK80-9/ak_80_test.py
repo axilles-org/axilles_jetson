@@ -43,8 +43,8 @@ MIT_P_MIN  = -12.56
 MIT_P_MAX  =  12.56
 MIT_V_MIN  = -65.0
 MIT_V_MAX  =  65.0
-MIT_T_MIN  = -18.0
-MIT_T_MAX  =  18.0
+MIT_T_MIN  = -22.0
+MIT_T_MAX  =  22.0
 MIT_KP_MIN =   0.0
 MIT_KP_MAX = 500.0
 MIT_KD_MIN =   0.0
@@ -80,7 +80,7 @@ def _clamp(val, lo, hi):
 def _float_to_uint(x, x_min, x_max, bits):
     x = _clamp(x, x_min, x_max)
     span = x_max - x_min
-    return int((x - x_min) * ((1 << bits) / span))
+    return int((x - x_min) * (((1 << bits) - 1) / span))
 
 
 # ──────────────────────────────────────────────────────────────────

@@ -1,0 +1,22 @@
+{
+  "started_at_utc": "2026-11-04T23:02:03.415845+00:00",
+  "state": "completed",
+  "horizons_ms": [
+    0,
+    50,
+    100,
+    150
+  ],
+  "completed": [
+    "model_obs_aug_subject_embedding_no_gyro_current_action",
+    "model_obs_aug_subject_embedding_no_gyro_future_action_50",
+    "model_obs_aug_subject_embedding_no_gyro_future_action_100",
+    "model_obs_aug_subject_embedding_no_gyro_future_action_150"
+  ],
+  "current": null,
+  "target": "future biological ankle moment (not a learned motor action)",
+  "input_preprocessing": "causal IIR decimation; offline target filtering unchanged",
+  "processed_manifest_sha256": "eabd6ef0923159b4b5f31d2914c38d781a4491d388eead8367d6f43752dc6d05",
+  "execution": "parallel",
+  "finished_at_utc": "2026-11-04T23:37:38.786671+00:00"
+}

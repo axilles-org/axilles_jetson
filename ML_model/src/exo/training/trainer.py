@@ -252,6 +252,9 @@ class Trainer:
 
     def _log(self, epoch: int, train: EpochResult, val: EpochResult, secs: float) -> None:
         lr = self.optimizer.param_groups[0]["lr"]
+        with (self.run_dir / "history.jsonl").open("a") as stream:
+            stream.write(json.dumps({"epoch": epoch, "lr": lr, "epoch_time_s": secs,
+                                     "train": train.__dict__, "val": val.__dict__}) + "\n")
         print(f"epoch {epoch:3d}/{self.cfg.train.epochs}  "
               f"train_loss={train.loss:.5f}  val_loss={val.loss:.5f}  "
               f"val_rmse={val.rmse_nm_per_kg:.4f}  val_mae={val.mae_nm_per_kg:.4f} Nm/kg  "
@@ -275,6 +278,11 @@ def _write_model_meta(run_dir: Path, cfg: Config, idx: SubjectIndex) -> None:
         "feature_names": cfg.data.feature_names(),
         "num_features": cfg.data.num_features,
         "window_length": cfg.data.window_length,
+        "prediction_horizon_ms": cfg.data.prediction_horizon_ms,
+        "prediction_horizon_samples": cfg.data.prediction_horizon_samples,
+        "target_semantics": "biological ankle moment at input_end + prediction_horizon",
+        "input_rate_hz": cfg.data.ingest.target_rate_hz,
+        "causal_input_filtering": cfg.data.ingest.causal_inputs,
         "num_training_subjects": idx.num_training_subjects,
         "subject_index": idx.mapping,
     }

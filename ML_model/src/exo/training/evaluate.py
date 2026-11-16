@@ -101,11 +101,13 @@ class Evaluator:
             xs = torch.stack([dataset[i][0] for i, _, _ in chunk]).to(self.device)
             out = self.model(xs, sidx.expand(len(chunk))).squeeze(1).cpu().numpy()  # (B, T)
             for row, (_, s, e) in enumerate(chunk):
-                acc[s:e + 1] += out[row]
-                cnt[s:e + 1] += 1.0
-                stream[e] = out[row, -1]
+                h = self.cfg.data.prediction_horizon_samples
+                acc[s+h:e+h+1] += out[row]
+                cnt[s+h:e+h+1] += 1.0
+                stream[e+h] = out[row, -1]
 
-        cnt[cnt == 0] = 1.0
+        covered = cnt > 0
+        cnt[~covered] = 1.0
         mass = self.subject_mass[subject]
 
         def unscale(z: np.ndarray) -> np.ndarray:
@@ -115,7 +117,7 @@ class Evaluator:
         pred_windowed = unscale(acc / cnt)
         pred_streaming = unscale(stream)
         truth = raw_target / mass                  # npz targets are already physical N·m
-        valid = ~np.isnan(raw_target)
+        valid = np.isfinite(raw_target) & covered
 
         return TrialResult(name, subject, pred_windowed, pred_streaming, truth, valid)
 

@@ -1,0 +1,123 @@
+[
+  {
+    "run_id": "20261102_170752_153d2b",
+    "started_at": 1793657272.1973326,
+    "updated_at": 1793657272.1992853,
+    "status": "running",
+    "sample_count": 0,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_171856_7258a1",
+    "started_at": 1793657936.4895205,
+    "updated_at": 1793657936.4914484,
+    "status": "running",
+    "sample_count": 0,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": false, \"dry_run\": true, \"replay_source\": null, \"start_passive\": false, \"ankle_zero\": \"config\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_171920_fa69e0",
+    "started_at": 1793657960.8773618,
+    "updated_at": 1793657960.8834257,
+    "status": "running",
+    "sample_count": 0,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN) \\u2014 mock, no torque path\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"control_rate_hz\": 100.0, \"replay_source\": null}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.2, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"11c05bb515fc\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "11c05bb515fc"
+  },
+  {
+    "run_id": "20261102_171951_bdabd6",
+    "started_at": 1793657991.0999377,
+    "updated_at": 1793657991.1019752,
+    "status": "running",
+    "sample_count": 0,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.0, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.0, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"241e55f30153\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "241e55f30153"
+  },
+  {
+    "run_id": "20261102_172107_b4e0a9",
+    "started_at": 1793658067.389106,
+    "updated_at": 1793658094.9168348,
+    "status": "completed",
+    "sample_count": 2255,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.0, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.0, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"241e55f30153\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "241e55f30153"
+  },
+  {
+    "run_id": "20261102_172207_2403ad",
+    "started_at": 1793658127.2025769,
+    "updated_at": 1793658175.7982554,
+    "status": "completed",
+    "sample_count": 4287,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_172335_c020e1",
+    "started_at": 1793658215.128702,
+    "updated_at": 1793658609.1511414,
+    "status": "completed",
+    "sample_count": 37609,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_173334_60cdcb",
+    "started_at": 1793658814.9918928,
+    "updated_at": 1793659160.9524667,
+    "status": "completed",
+    "sample_count": 32725,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 10.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_182024_a1867d",
+    "started_at": 1793661624.9492724,
+    "updated_at": 1793661739.6981893,
+    "status": "completed",
+    "sample_count": 10590,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 2.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 20.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_182247_ee1e02",
+    "started_at": 1793661767.602147,
+    "updated_at": 1793662052.8016126,
+    "status": "completed",
+    "sample_count": 27135,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 4.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 20.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  },
+  {
+    "run_id": "20261102_182941_1d037a",
+    "started_at": 1793662181.1706493,
+    "updated_at": 1793662273.0864053,
+    "status": "completed",
+    "sample_count": 8446,
+    "notes": "",
+    "meta_json": "{\"controller\": \"ML_control (TCN)\", \"run_dir\": \"runs/deploy\", \"subject_mass_kg\": 72.0, \"assistance_scale\": 0.02, \"torque_cap_nm\": 5.0, \"arm_ramp_s\": 5.0, \"command_sign\": 1.0, \"slew_nm_per_s\": 40.0, \"control_rate_hz\": 100.0, \"armed\": true, \"dry_run\": false, \"replay_source\": null, \"start_passive\": true, \"ankle_zero\": \"auto\"}",
+    "model_json": "{\"name\": \"deploy\", \"wandb_run_url\": null, \"wandb_run_id\": null, \"wandb_project\": null, \"architecture\": {\"num_channels\": [80, 80, 80, 80, 80], \"kernel_size\": 5, \"activation\": \"ReLU\", \"norm_type\": \"WeightNorm\", \"dropout_type\": \"Spatial\", \"dropout\": 0.15, \"l1_reg\": 0.0, \"l2_reg\": 0.0, \"use_subject_embedding\": true, \"emb_dim\": 4, \"feature_names\": [\"imu_foot_Accel_X\", \"imu_foot_Accel_Y\", \"imu_foot_Accel_Z\", \"imu_foot_Gyro_X\", \"imu_foot_Gyro_Y\", \"imu_foot_Gyro_Z\", \"imu_shank_Accel_X\", \"imu_shank_Accel_Y\", \"imu_shank_Accel_Z\", \"imu_shank_Gyro_X\", \"imu_shank_Gyro_Y\", \"imu_shank_Gyro_Z\", \"stance\", \"gon_ankle_sagittal\"], \"num_features\": 14, \"window_length\": 300, \"num_training_subjects\": 13, \"backend\": \"onnx\", \"control_rate_hz\": 100, \"assistance_scale\": 0.02, \"test_rmse_nm_per_kg\": 0.14270060630055137, \"test_mae_nm_per_kg\": 0.10177810763138839}, \"architecture_hash\": \"dbebac61315d\", \"checkpoint_ref\": \"runs/deploy\"}",
+    "architecture_hash": "dbebac61315d"
+  }
+]

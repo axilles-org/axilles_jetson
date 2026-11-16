@@ -47,6 +47,22 @@ export default function LiveChart({ title, seriesData, colors, unit }) {
     return () => {};
   }, [seriesData, colors, unit]);
 
+  // Follow the card's width, e.g. when the assistance panel appears beside
+  // the charts after they were first drawn
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      const plot = plotRef.current;
+      const width = el.clientWidth;
+      if (plot && width > 0 && width !== plot.width) {
+        plot.setSize({ width, height: plot.height });
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     return () => {
       if (plotRef.current) {
@@ -59,7 +75,7 @@ export default function LiveChart({ title, seriesData, colors, unit }) {
   return (
     <div className="card">
       <h3>{title}</h3>
-      <div ref={containerRef} />
+      <div ref={containerRef} style={{ overflow: "hidden" }} />
     </div>
   );
 }

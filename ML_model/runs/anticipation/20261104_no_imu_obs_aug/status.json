@@ -1,0 +1,16 @@
+{
+  "started_at_utc": "2026-11-04T23:05:18.875666+00:00",
+  "state": "completed",
+  "horizons_ms": [
+    0
+  ],
+  "completed": [
+    "model_obs_aug_subject_embedding_no_imu_current_action"
+  ],
+  "current": null,
+  "target": "future biological ankle moment (not a learned motor action)",
+  "input_preprocessing": "causal IIR decimation; offline target filtering unchanged",
+  "processed_manifest_sha256": "eabd6ef0923159b4b5f31d2914c38d781a4491d388eead8367d6f43752dc6d05",
+  "execution": "sequential",
+  "finished_at_utc": "2026-11-04T23:38:40.253340+00:00"
+}

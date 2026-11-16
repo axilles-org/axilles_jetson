@@ -1,0 +1,13 @@
+test,run_id,channel,metric,value,unit,limit,result
+T8,T8_20261102_180049_manifest,all,feature_count,14 vs 14,,equal,PASS
+T8,T8_20261102_180049_manifest,all,name_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,source_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,unit_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,sign_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,scale_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,norm_mean_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,norm_std_differences,0,,0,PASS
+T8,T8_20261102_180049_manifest,all,training_feature_hash,d539c634604e,,,
+T8,T8_20261102_180049_manifest,all,jetson_feature_hash,d539c634604e,,,
+T8,T8_20261102_180049_manifest,all,manifests_identical,yes,,identical,PASS
+T8,T8_20261102_180049_manifest,all,powered_tcn_blocked,no,,plan: block on count/name/order/unit difference,

@@ -1,0 +1,41 @@
+# Same 14-channel embedding TCN and subject split as the deployed tx_all model.
+# Paths are resolved relative to ML_model; override here for another machine.
+extends: ../default.yaml
+paths:
+  dataset_dir: ../../exo-data/hf_dataset_tx_mujoco
+  processed_dir: runs/anticipation/processed_causal_tx_all
+  runs_dir: runs/anticipation
+  hub:
+    repo_id: ""  # use the existing transformed dataset; never fetch over it
+    revision: tx_mujoco_causal_v1
+
+data:
+  feature_set: mid
+  window_length: 300
+  num_workers: 2  # per model; each parallel run has its own data workers
+  stride: 10
+  min_segment_length: 300
+  valid_tail: 0
+  ingest:
+    terrain: treadmill
+    target_rate_hz: 100
+    causal_inputs: true
+    antialias: true
+  split:
+    train: [AB06, AB07, AB08, AB11, AB12, AB13, AB14, AB15, AB16, AB17, AB18, AB19, AB20]
+    val: [AB09, AB21, AB23]
+    test: [AB10, AB24, AB25, AB27, AB28, AB30]
+
+model:
+  arch: tcn
+  use_subject_embedding: true
+  emb_dim: 4
+
+train:
+  epochs: 5
+  seed: 0
+  loss_last_n: 50
+  augment:
+    latency_samples: 0  # fixed horizons; do not mix in random lookahead
+    time_warp: 0.0
+    stance_jitter_samples: 0

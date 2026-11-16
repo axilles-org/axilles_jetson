@@ -1,0 +1,39 @@
+{
+  "test": "1",
+  "run_id": "T1_20261006_180733_bench_imu_foot_alone",
+  "date": "2026-10-06T18:12:36",
+  "condition": "bench_imu_foot_alone",
+  "treadmill_speed_mps": null,
+  "hardware_version": "",
+  "cable_type": "",
+  "software_commit": "4b2d14c",
+  "model_hash": null,
+  "feature_list_hash": null,
+  "subject": "",
+  "notes": "sensor alone, bench",
+  "t_start_ns": 624844519133667,
+  "t_end_ns": 625144519506411,
+  "duration_s": 300.000372744,
+  "stopped_early": false,
+  "channels": [
+    "imu_foot_accel",
+    "imu_foot_gyro"
+  ],
+  "freeze": null,
+  "actuator": false,
+  "torque_cmd_nm": null,
+  "rates_hz": {
+    "imu_report": 200.0,
+    "encoder": 400.0,
+    "fsr": 200.0,
+    "loop": 100.0
+  },
+  "imu_restarts": {
+    "foot": 0
+  },
+  "imu_lost_packets": {
+    "foot": 0
+  },
+  "n_samples": 134677,
+  "n_loops": 29997
+}

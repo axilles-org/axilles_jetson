@@ -1,0 +1,29 @@
+t_s,kind,who,detail
+30.7479,LOSS,foot IMU,1 packet(s) missing by sequence number
+40.2622,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+40.3507,SILENT,foot_acc,no reading for 101 ms so far
+40.3711,SILENT,foot_gyro,no reading for 114 ms so far
+40.3999,BACK,foot IMU,answering again after 93 ms
+40.4000,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+40.4520,SILENT,shank_gyro,no reading for 102 ms so far
+40.4520,SILENT,fsr,no reading for 101 ms so far
+40.4722,SILENT,shank_acc,no reading for 120 ms so far
+40.4722,SILENT,encoder,no reading for 118 ms so far
+40.4000,PAUSE,loop,re-initialising foot IMU paused all reads 7745 ms
+48.1458,GAP,fsr,no reading for 7795 ms (40.351-48.146 s)  cause: PAUSE
+48.1589,GAP,foot_acc,"no reading for 7909 ms (40.250-48.159 s)  cause: BACK, I2CERR, PAUSE, RESET"
+48.1575,GAP,foot_gyro,"no reading for 7901 ms (40.257-48.158 s)  cause: BACK, I2CERR, PAUSE, RESET"
+48.1532,GAP,shank_acc,no reading for 7801 ms (40.352-48.153 s)  cause: PAUSE
+48.1466,GAP,shank_gyro,no reading for 7796 ms (40.350-48.147 s)  cause: PAUSE
+48.1567,GAP,encoder,no reading for 7802 ms (40.354-48.157 s)  cause: PAUSE
+48.6503,LOSS,shank IMU,1 packet(s) missing by sequence number
+51.0083,BADPKT,foot IMU,KeyError(255) raw=130003a9fb19000001ffffffffffffffffffff
+51.0422,I2CERR,foot IMU,errno 121 EREMOTEIO no ACK: device not answering ([Errno 121] Remote I/O error)
+51.1457,SILENT,foot_acc,no reading for 118 ms so far
+51.1457,SILENT,foot_gyro,no reading for 110 ms so far
+51.1758,BACK,foot IMU,answering again after 92 ms
+51.1758,RESET,foot IMU,reset cause 2 (internal); rebooted=yes; waiting packets: ch0:272B
+51.2266,SILENT,shank_gyro,no reading for 100 ms so far
+51.2469,SILENT,shank_acc,no reading for 120 ms so far
+51.2469,SILENT,encoder,no reading for 113 ms so far
+51.2469,SILENT,fsr,no reading for 114 ms so far

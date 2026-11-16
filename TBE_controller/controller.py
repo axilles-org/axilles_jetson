@@ -113,9 +113,12 @@ class TBECalibration():
 
         # Record heel strike timestamp on rising edge, along with no noise check
         if heel_strike_edge:
-            self.logger.logger.info("Heel strike detected. Entering stance phase.")
-            self.heel_strike_times = np.roll(self.heel_strike_times, -1)
-            self.heel_strike_times[-1] = self.logger.getCurrentTime()
+
+            heel_strike_time = self.logger.getCurrentTime()
+            if (heel_strike_time - self.heel_strike_times[-1] > 0.5):
+                self.logger.logger.info("Heel strike detected. Entering stance phase.")
+                self.heel_strike_times = np.roll(self.heel_strike_times, -1)
+                self.heel_strike_times[-1] = heel_strike_time
         
         # Record toe off timestamp on falling edge, along with no noise check
         if toe_off_edge and self.heel_strike_times[-1] > 0:

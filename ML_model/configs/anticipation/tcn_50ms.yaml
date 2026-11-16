@@ -1,0 +1,6 @@
+# Observations through t predict biological ankle moment at t + 50 ms.
+extends: base.yaml
+data:
+  prediction_horizon_ms: 50
+train:
+  wandb_run_name: model_subject_embedding_future_action_50

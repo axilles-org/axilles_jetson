@@ -16,6 +16,7 @@ from __future__ import annotations
 import shlex
 import signal
 import subprocess
+import sys
 import threading
 import time
 from dataclasses import dataclass, field
@@ -33,6 +34,17 @@ TBE_DIR = REPO_ROOT / "TBE_controller"
 ALLOWED_MODES = ("mock", "dry-run", "live")
 
 MAX_LOG_LINES = 2000
+MAX_TORQUE_CAP_NM = 10.0  # SAFE_T_MAX in ML_model/src/exo/deploy/motor.py
+
+
+def _checked_torque_cap(torque_cap: Any) -> float:
+    try:
+        cap = float(torque_cap)
+    except (TypeError, ValueError):
+        raise ValueError(f"torque cap must be a number, got {torque_cap!r}") from None
+    if not 0.0 < cap <= MAX_TORQUE_CAP_NM:
+        raise ValueError(f"torque cap must be above 0 and at most {MAX_TORQUE_CAP_NM} N·m")
+    return cap
 
 
 @dataclass
@@ -176,6 +188,7 @@ def build_argv(
     height: float | None = None,
     gender: str | None = None,
     torque_cap: float | None = None,
+    assistance_delay_ms: float | None = None,
 ) -> tuple[list[str], Path]:
     """
     Build a safe argv for one of the two controller entrypoints. `controller`
@@ -188,18 +201,31 @@ def build_argv(
         # they're printed instead of only appearing in a burst at exit
         # (Python fully buffers stdout by default when it isn't a TTY, which
         # a subprocess pipe never is).
-        return ["python3", "-u", str(TBE_DIR / "main.py")], TBE_DIR
+        return [sys.executable, "-u", str(TBE_DIR / "main.py")], TBE_DIR
+
+    if backend not in (None, "onnx", "trt", "jit"):
+        raise ValueError("backend must be onnx (CPU), trt (GPU), or jit")
+
+    delay_args = []
+    if assistance_delay_ms is not None:
+        try:
+            delay = float(assistance_delay_ms)
+        except (ValueError, TypeError):
+            raise ValueError("assistance delay must be a number between 0 and 1000 ms") from None
+        if not 0 <= delay <= 1000:
+            raise ValueError("assistance delay must be between 0 and 1000 ms")
+        delay_args = ["--assistance-delay-ms", str(delay)]
 
     if controller == "ml-live":
         if not run_dir or not mass or not height or gender not in ("M", "F"):
             raise ValueError("live mode needs run_dir, mass, height and gender")
         argv = [
-            "python3", "-u", "scripts/jetson_deploy.py",
+            sys.executable, "-u", "scripts/jetson_deploy.py",
             "--run", run_dir,
             "--mass", str(mass), "--height", str(height), "--gender", gender,
             "--duration", str(duration),
             "--arm", "--start-passive", "--ankle-zero", "auto",
-            "--torque-cap", str(torque_cap or 2.0),
+            "--torque-cap", str(_checked_torque_cap(torque_cap)),
             "--no-teleplot",
         ]
         if assist_scale is not None:
@@ -208,7 +234,7 @@ def build_argv(
             argv += ["--backend", backend]
         if replay_path:
             argv += ["--replay", replay_path, "--dry-run"]
-        return argv, ML_MODEL_DIR
+        return argv + delay_args, ML_MODEL_DIR
 
     if controller in ("ml-mock", "ml-dry-run"):
         if not run_dir:
@@ -223,7 +249,7 @@ def build_argv(
         # and in history.
         script = "scripts/jetson_mock_deploy.py" if controller == "ml-mock" else "scripts/jetson_deploy.py"
         argv = [
-            "python3",
+            sys.executable,
             "-u",
             script,
             "--run", run_dir,
@@ -233,6 +259,10 @@ def build_argv(
         ]
         if controller == "ml-dry-run":
             argv += ["--dry-run"]
+        if height is not None or gender is not None:
+            if height is None or gender not in ("M", "F"):
+                raise ValueError("provide both height and gender for wearer-specific export")
+            argv += ["--height", str(height), "--gender", gender]
         if replay_path:
             argv += ["--replay", replay_path]
         if backend:
@@ -242,6 +272,6 @@ def build_argv(
         # would_command_nm for review) and errors out if it's passed.
         if controller == "ml-dry-run" and assist_scale is not None:
             argv += ["--assist-scale", str(assist_scale)]
-        return argv, ML_MODEL_DIR
+        return argv + delay_args, ML_MODEL_DIR
 
     raise ValueError(f"unknown controller {controller!r}")

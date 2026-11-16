@@ -1,0 +1,59 @@
+November 2 ML recording: assistance timing audit
+
+Source: backup/ml_control_model at 4745a55. The latest committed CSV has 8,446
+samples over 87.735 s. Its association with 20261102_182941_1d037a is inferred
+from a unique sample-count match and the latest source DB entry, not an embedded
+CSV run ID. Eleven Nov 2 run metadata records are archived; this is the one
+available latest ML waveform. Fall-test data belongs to separate experiments.
+
+What the recorded data establishes
+- Assistance enabled from 19.2101 to 84.6397 s. Mean recorded rate: 96.26 Hz;
+  median loop work: 4.96 ms. Source metadata specifies 40 Nm/s motor slew.
+- All twelve raw IMU channels have exactly one unique value during assistance.
+  Last numeric changes occur at 6.107–6.1777 s. FSR and encoder continue changing.
+  This strongly indicates stale held IMU values, though the old log lacks packet
+  timestamps/counters to identify the bus/reader failure precisely.
+- There are 276 positive predicted-moment samples during assistance, including
+  28 in stance, but zero negative motor commands. Dorsiflexion was not commanded.
+- There are 344 enabled swing samples with command magnitude above 0.01 Nm.
+  A stance gate before ramp/slew processing did not guarantee zero final output.
+
+Timing estimates and limits
+29 intervals meet the documented stance/swing duration, full-assistance and
+command-amplitude filters in analyze_assistance_delay.py. FSR chatter can split
+intervals, so these are not independently confirmed strides. Queued torque peaks
+precede logged stance-off by a median 192.9 ms. Prediction-to-queued-command
+10%-of-peak onset lag is median 0 ms, maximum 60.3 ms. Requested-to-queued onset
+lag is zero for these intervals. The median nonzero command tail (>0.05 Nm) is
+20.2 ms after stance-off. Thresholds and per-interval values are saved in CSV.
+
+These measurements do not refute the wearer's experience. They show little
+additional command-path lag in this recording, while the predictor was receiving
+frozen IMUs. Logged stance-off is not an independent toe-off measurement, and
+sent_torque_nm is a queued target, not confirmed CAN transmission or ankle torque.
+There is no synchronized delivered-torque reference. The full perceived/mechanical
+assistance delay cannot be measured from this CSV, nor can stale IMUs be proved
+the sole cause. Current feedback alone is not an ankle torque reference.
+
+Changes and offline verification
+Bidirectional moment routing is enabled in the deployment configuration. Positive
+model moment selects dorsiflexion; negative selects plantarflexion under the
+configured convention. Both use stance gating. Swing and safety gates bypass
+motor slew to zero. Sensor freshness faults stop the run, with separate accel
+and gyro receipt monitoring. New timestamps expose inference and transmission
+stages. No extra intentional assistance delay was added.
+
+Reusing this CSV's predictions in an offline command counterfactual gives 28
+negative commands, no swing commands, and maximum magnitude 2.6404 Nm with the
+historical 5 Nm motor cap. Sensor freshness is deliberately bypassed only in
+this offline routing experiment; live operation stops missing reports. The old CSV cannot establish whether
+frozen numeric values were accompanied by fresh reports.
+This does not demonstrate correct dorsiflexion prediction or a physical fix.
+
+Next measurement
+First resolve and confirm continuous IMU report receipt with assistance disabled.
+Verify both physical torque directions at low commands. Then record synchronized
+contact, angle, predictions, queued targets, CAN sends and actuator feedback.
+Compare actual torque onset with independently observed gait events before
+changing phase timing. An intentional delay would make an already late response
+later; any anticipation requires a measured timing deficit and separate validation.

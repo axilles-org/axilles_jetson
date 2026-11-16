@@ -1,0 +1,2594 @@
+{
+  "model_obs_aug_subject_embedding_current_action": {
+    "model_name": "model_obs_aug_subject_embedding_current_action",
+    "horizon_ms": 0,
+    "horizon_samples": 0,
+    "checkpoint": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/anticipation/20261104_200602_UTC_obs_aug/model_obs_aug_subject_embedding_current_action/best.pt",
+    "metrics": {
+      "per_trial": {
+        "AB10_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2733906285885431,
+            "mae_nm_per_kg": 0.17622333976168064,
+            "normalized_mae": 0.08784851790759336,
+            "r2": 0.6271636123143487
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2694065232294067,
+            "mae_nm_per_kg": 0.17114902624589579,
+            "normalized_mae": 0.08650404575455399,
+            "r2": 0.6388499681321382
+          }
+        },
+        "AB10_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15622288393276132,
+            "mae_nm_per_kg": 0.10535218203020005,
+            "normalized_mae": 0.05085702109832609,
+            "r2": 0.8791871546011136
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1375202896236067,
+            "mae_nm_per_kg": 0.09164243033255426,
+            "normalized_mae": 0.04582626240864181,
+            "r2": 0.907064166076917
+          }
+        },
+        "AB10_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15078127660568397,
+            "mae_nm_per_kg": 0.0990976845562552,
+            "normalized_mae": 0.048007069562459134,
+            "r2": 0.8965069544431126
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1266263267574051,
+            "mae_nm_per_kg": 0.08365904495977704,
+            "normalized_mae": 0.04283289064721738,
+            "r2": 0.9269993864464036
+          }
+        },
+        "AB10_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14972751981150856,
+            "mae_nm_per_kg": 0.1009897377994583,
+            "normalized_mae": 0.04679653807102014,
+            "r2": 0.8992152247740824
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.12203881547885961,
+            "mae_nm_per_kg": 0.08305011816037422,
+            "normalized_mae": 0.041710562241001024,
+            "r2": 0.9335739272811264
+          }
+        },
+        "AB10_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14338852634326826,
+            "mae_nm_per_kg": 0.10130533118218855,
+            "normalized_mae": 0.048126483467039315,
+            "r2": 0.910250582820562
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.12655707020537652,
+            "mae_nm_per_kg": 0.08703673086886074,
+            "normalized_mae": 0.04424779166272356,
+            "r2": 0.9310468801604374
+          }
+        },
+        "AB10_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.12895829221363295,
+            "mae_nm_per_kg": 0.09123193207812597,
+            "normalized_mae": 0.0425924708677096,
+            "r2": 0.929647847504775
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.11329612627244079,
+            "mae_nm_per_kg": 0.07806595119637225,
+            "normalized_mae": 0.03664059218912895,
+            "r2": 0.9465414198057487
+          }
+        },
+        "AB10_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16675726504824911,
+            "mae_nm_per_kg": 0.11655516009332559,
+            "normalized_mae": 0.054390767340732706,
+            "r2": 0.8872148904637919
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14300702090581865,
+            "mae_nm_per_kg": 0.10111233574767871,
+            "normalized_mae": 0.0484126722416177,
+            "r2": 0.9175440721889361
+          }
+        },
+        "AB24_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.21099595062222196,
+            "mae_nm_per_kg": 0.13934592837257678,
+            "normalized_mae": 0.06808699536170419,
+            "r2": 0.84568390875887
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.190221815559168,
+            "mae_nm_per_kg": 0.12618149881288154,
+            "normalized_mae": 0.06361168307768161,
+            "r2": 0.8752287740139281
+          }
+        },
+        "AB24_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19795340266991648,
+            "mae_nm_per_kg": 0.13354396680360722,
+            "normalized_mae": 0.06384238892360718,
+            "r2": 0.8642103147281777
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1785161048801893,
+            "mae_nm_per_kg": 0.12022118085701423,
+            "normalized_mae": 0.05778012047163264,
+            "r2": 0.8910341690312302
+          }
+        },
+        "AB24_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1970613624660185,
+            "mae_nm_per_kg": 0.1296827164466549,
+            "normalized_mae": 0.06068585328681054,
+            "r2": 0.8685685491636296
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17758228342565646,
+            "mae_nm_per_kg": 0.11477262916345596,
+            "normalized_mae": 0.05511634814396436,
+            "r2": 0.8948483827902457
+          }
+        },
+        "AB24_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19764764537917043,
+            "mae_nm_per_kg": 0.1254388735490888,
+            "normalized_mae": 0.05784291797752447,
+            "r2": 0.8682278013152107
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1724111686755774,
+            "mae_nm_per_kg": 0.10945865347827809,
+            "normalized_mae": 0.05288564899648095,
+            "r2": 0.9005872032182421
+          }
+        },
+        "AB24_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20165316477927964,
+            "mae_nm_per_kg": 0.12671172019497315,
+            "normalized_mae": 0.0585261310542752,
+            "r2": 0.8667798061431946
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1741493697695224,
+            "mae_nm_per_kg": 0.10957185146995652,
+            "normalized_mae": 0.05068728029971851,
+            "r2": 0.9016647298892537
+          }
+        },
+        "AB24_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1925879941604465,
+            "mae_nm_per_kg": 0.12000397241520347,
+            "normalized_mae": 0.05442710482846418,
+            "r2": 0.8790654709977632
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16024052640021783,
+            "mae_nm_per_kg": 0.1007348154474455,
+            "normalized_mae": 0.04618706490329897,
+            "r2": 0.9166503299298331
+          }
+        },
+        "AB24_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1915411057211648,
+            "mae_nm_per_kg": 0.11989353469679205,
+            "normalized_mae": 0.054274387444973454,
+            "r2": 0.8822029367236901
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1654801998361228,
+            "mae_nm_per_kg": 0.1034334986016087,
+            "normalized_mae": 0.04857372883453962,
+            "r2": 0.9131141958965996
+          }
+        },
+        "AB25_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14761903462118814,
+            "mae_nm_per_kg": 0.11232269806623439,
+            "normalized_mae": 0.06427237622167997,
+            "r2": 0.8920572881470864
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1531900779310671,
+            "mae_nm_per_kg": 0.10715359074820047,
+            "normalized_mae": 0.06307276038764797,
+            "r2": 0.8851153647422099
+          }
+        },
+        "AB25_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15396491245541882,
+            "mae_nm_per_kg": 0.12287484882359376,
+            "normalized_mae": 0.06620593819216891,
+            "r2": 0.8821706028773824
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16054457203771944,
+            "mae_nm_per_kg": 0.11708564537262135,
+            "normalized_mae": 0.06414374568610418,
+            "r2": 0.8738726101894424
+          }
+        },
+        "AB25_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1548119547250128,
+            "mae_nm_per_kg": 0.11847130039344843,
+            "normalized_mae": 0.06475417954552555,
+            "r2": 0.8777127804745022
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16206272867475005,
+            "mae_nm_per_kg": 0.11296829999602927,
+            "normalized_mae": 0.06423597482678069,
+            "r2": 0.8679621888513803
+          }
+        },
+        "AB25_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18688272232192024,
+            "mae_nm_per_kg": 0.1367530740254333,
+            "normalized_mae": 0.07733509389259723,
+            "r2": 0.8252453019279735
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1958604658012446,
+            "mae_nm_per_kg": 0.13178616866437576,
+            "normalized_mae": 0.07672665567458921,
+            "r2": 0.8108733919511085
+          }
+        },
+        "AB25_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17698736443384364,
+            "mae_nm_per_kg": 0.1278345281160272,
+            "normalized_mae": 0.06917716749812308,
+            "r2": 0.8467209593551903
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1977933637859013,
+            "mae_nm_per_kg": 0.1291800740371239,
+            "normalized_mae": 0.07398059517116436,
+            "r2": 0.811480587637287
+          }
+        },
+        "AB25_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1680191660814273,
+            "mae_nm_per_kg": 0.12515819272733797,
+            "normalized_mae": 0.06341668357279595,
+            "r2": 0.8691222574112141
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18398518211211248,
+            "mae_nm_per_kg": 0.12530088307129378,
+            "normalized_mae": 0.06909926617982555,
+            "r2": 0.8456076862765043
+          }
+        },
+        "AB25_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17647261375345058,
+            "mae_nm_per_kg": 0.1287970294209225,
+            "normalized_mae": 0.06821111968230151,
+            "r2": 0.8545894080892579
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19687103190332375,
+            "mae_nm_per_kg": 0.13052029260238363,
+            "normalized_mae": 0.07264745752072232,
+            "r2": 0.8224976512011626
+          }
+        },
+        "AB27_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17629875851081164,
+            "mae_nm_per_kg": 0.11410160614382167,
+            "normalized_mae": 0.053036445515097404,
+            "r2": 0.8834445634805875
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17073904401683565,
+            "mae_nm_per_kg": 0.1015486732808271,
+            "normalized_mae": 0.047717358247053955,
+            "r2": 0.8921276412332275
+          }
+        },
+        "AB27_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16421379905323943,
+            "mae_nm_per_kg": 0.11024181201485582,
+            "normalized_mae": 0.051895714766929994,
+            "r2": 0.9074373701328945
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1547016200618214,
+            "mae_nm_per_kg": 0.09518202572732455,
+            "normalized_mae": 0.04509266088724687,
+            "r2": 0.9183757081234198
+          }
+        },
+        "AB27_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1569423464938717,
+            "mae_nm_per_kg": 0.10846302666986428,
+            "normalized_mae": 0.050557912888313385,
+            "r2": 0.9129102041229696
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15031417972281821,
+            "mae_nm_per_kg": 0.09771925340383607,
+            "normalized_mae": 0.0483547753970392,
+            "r2": 0.9209825246764792
+          }
+        },
+        "AB27_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15157809294667027,
+            "mae_nm_per_kg": 0.10953300525151259,
+            "normalized_mae": 0.05207274010026561,
+            "r2": 0.9199753388721771
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14793798649151235,
+            "mae_nm_per_kg": 0.10164212968326794,
+            "normalized_mae": 0.04984270670040843,
+            "r2": 0.9247642064764113
+          }
+        },
+        "AB27_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16391961772897073,
+            "mae_nm_per_kg": 0.12304429355278301,
+            "normalized_mae": 0.05855426047293461,
+            "r2": 0.9083791666473051
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1586066406555659,
+            "mae_nm_per_kg": 0.1151678407739346,
+            "normalized_mae": 0.05551762862035338,
+            "r2": 0.9152891632981973
+          }
+        },
+        "AB27_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1607823523444541,
+            "mae_nm_per_kg": 0.1239847994201651,
+            "normalized_mae": 0.05425666633782306,
+            "r2": 0.9166051865887558
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15514846848001868,
+            "mae_nm_per_kg": 0.11606050053723084,
+            "normalized_mae": 0.05134993691316584,
+            "r2": 0.9232506052049934
+          }
+        },
+        "AB27_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1665375390387067,
+            "mae_nm_per_kg": 0.13176974124422725,
+            "normalized_mae": 0.058524710502572144,
+            "r2": 0.9114981304837085
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15920035390043621,
+            "mae_nm_per_kg": 0.12398407682006948,
+            "normalized_mae": 0.05612627125542607,
+            "r2": 0.9199712295328322
+          }
+        },
+        "AB28_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1613112829235848,
+            "mae_nm_per_kg": 0.1152793192010038,
+            "normalized_mae": 0.0597036916854024,
+            "r2": 0.8994990225746212
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15274169668345353,
+            "mae_nm_per_kg": 0.10239206065812141,
+            "normalized_mae": 0.053822158237416096,
+            "r2": 0.9108848946866069
+          }
+        },
+        "AB28_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15797354775955688,
+            "mae_nm_per_kg": 0.113378167094535,
+            "normalized_mae": 0.061863010102446686,
+            "r2": 0.9065294957006964
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14098864071591183,
+            "mae_nm_per_kg": 0.09588699134838123,
+            "normalized_mae": 0.05528512691109526,
+            "r2": 0.9257568514349812
+          }
+        },
+        "AB28_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14855832493299692,
+            "mae_nm_per_kg": 0.10718735601309407,
+            "normalized_mae": 0.05578900013531038,
+            "r2": 0.9174366603434886
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13420605373579048,
+            "mae_nm_per_kg": 0.08997196207495513,
+            "normalized_mae": 0.04853441460635822,
+            "r2": 0.9332329269291124
+          }
+        },
+        "AB28_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1456881102515873,
+            "mae_nm_per_kg": 0.1105907645681795,
+            "normalized_mae": 0.05899080042335103,
+            "r2": 0.9214865821053405
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.12976541541693853,
+            "mae_nm_per_kg": 0.09361459613489122,
+            "normalized_mae": 0.052215351831477394,
+            "r2": 0.9383446295034262
+          }
+        },
+        "AB28_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15257038279883683,
+            "mae_nm_per_kg": 0.11978689109683062,
+            "normalized_mae": 0.058289800826869895,
+            "r2": 0.9171664169149628
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13461952646335593,
+            "mae_nm_per_kg": 0.1017138378097896,
+            "normalized_mae": 0.05255083122322274,
+            "r2": 0.9359751676515348
+          }
+        },
+        "AB28_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16191275772138083,
+            "mae_nm_per_kg": 0.12602958822141858,
+            "normalized_mae": 0.06669685754370575,
+            "r2": 0.9091082643110399
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1410285236118585,
+            "mae_nm_per_kg": 0.10795112543226099,
+            "normalized_mae": 0.057295432807719586,
+            "r2": 0.9317188617534741
+          }
+        },
+        "AB28_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16610224261357692,
+            "mae_nm_per_kg": 0.13943279638310024,
+            "normalized_mae": 0.07345447670608862,
+            "r2": 0.9070476193056114
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14909596571265837,
+            "mae_nm_per_kg": 0.12366155150798054,
+            "normalized_mae": 0.06644329552872597,
+            "r2": 0.9258790398695618
+          }
+        },
+        "AB30_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16527253870209846,
+            "mae_nm_per_kg": 0.11932890831185897,
+            "normalized_mae": 0.054229438200138945,
+            "r2": 0.8941847315716036
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13935263317367524,
+            "mae_nm_per_kg": 0.10184105003423553,
+            "normalized_mae": 0.049284608171205495,
+            "r2": 0.9248068861361082
+          }
+        },
+        "AB30_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17377296129912229,
+            "mae_nm_per_kg": 0.1277910537333687,
+            "normalized_mae": 0.05781604389020059,
+            "r2": 0.8883691501695651
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15594874480308937,
+            "mae_nm_per_kg": 0.11253597264263196,
+            "normalized_mae": 0.05272434435174414,
+            "r2": 0.9111661730042291
+          }
+        },
+        "AB30_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1854855806571543,
+            "mae_nm_per_kg": 0.14054992578271144,
+            "normalized_mae": 0.062356977782862595,
+            "r2": 0.873634688943407
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15985899213147564,
+            "mae_nm_per_kg": 0.12357757351921993,
+            "normalized_mae": 0.0553982510938231,
+            "r2": 0.9061752946691929
+          }
+        },
+        "AB30_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16224022902172358,
+            "mae_nm_per_kg": 0.12631442653942626,
+            "normalized_mae": 0.05555670629033867,
+            "r2": 0.9072071590161819
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14132305005362114,
+            "mae_nm_per_kg": 0.11063235025915291,
+            "normalized_mae": 0.05227108980758908,
+            "r2": 0.9297885029916362
+          }
+        },
+        "AB30_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1724277828052889,
+            "mae_nm_per_kg": 0.14360427588590002,
+            "normalized_mae": 0.06235192683028718,
+            "r2": 0.8940910999385981
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15691054963569256,
+            "mae_nm_per_kg": 0.12957603887664057,
+            "normalized_mae": 0.058455362164912844,
+            "r2": 0.9132762798576068
+          }
+        },
+        "AB30_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18211327089313809,
+            "mae_nm_per_kg": 0.14991070911506998,
+            "normalized_mae": 0.06503001465788746,
+            "r2": 0.8825841274862588
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16528387893042965,
+            "mae_nm_per_kg": 0.13429554408322894,
+            "normalized_mae": 0.05971360724324531,
+            "r2": 0.9042988747436648
+          }
+        },
+        "AB30_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1755483149496747,
+            "mae_nm_per_kg": 0.1448719149172,
+            "normalized_mae": 0.06502619655672298,
+            "r2": 0.8987704463116165
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15898952846155354,
+            "mae_nm_per_kg": 0.13078522854357866,
+            "normalized_mae": 0.060062636319890714,
+            "r2": 0.917772638176004
+          }
+        }
+      },
+      "per_subject": {
+        "AB10": {
+          "rmse_nm_per_kg": 0.1728405114028631,
+          "mae_nm_per_kg": 0.1129315511697374,
+          "normalized_mae": 0.05158948634171588,
+          "r2": 0.8657330885463614
+        },
+        "AB24": {
+          "rmse_nm_per_kg": 0.19857302999546533,
+          "mae_nm_per_kg": 0.12778997075652482,
+          "normalized_mae": 0.05768098821679188,
+          "r2": 0.8680988688621182
+        },
+        "AB25": {
+          "rmse_nm_per_kg": 0.16701531285941565,
+          "mae_nm_per_kg": 0.12464696924920322,
+          "normalized_mae": 0.06315765060946063,
+          "r2": 0.8638226219460146
+        },
+        "AB27": {
+          "rmse_nm_per_kg": 0.16305070251712558,
+          "mae_nm_per_kg": 0.1173212823125833,
+          "normalized_mae": 0.048918143673497325,
+          "r2": 0.9090006970951384
+        },
+        "AB28": {
+          "rmse_nm_per_kg": 0.15646304063045713,
+          "mae_nm_per_kg": 0.11883044852924311,
+          "normalized_mae": 0.05751416228118745,
+          "r2": 0.9113221200504228
+        },
+        "AB30": {
+          "rmse_nm_per_kg": 0.1740122260121911,
+          "mae_nm_per_kg": 0.13607200103709288,
+          "normalized_mae": 0.05728048433284854,
+          "r2": 0.8915366158382896
+        }
+      },
+      "overall_windowed": {
+        "rmse_nm_per_kg": 0.1724895215417129,
+        "mae_nm_per_kg": 0.12293729890358639,
+        "normalized_mae": 0.050521403407216885,
+        "r2": 0.887039608496557
+      },
+      "overall_streaming": {
+        "rmse_nm_per_kg": 0.16093203163135103,
+        "mae_nm_per_kg": 0.11061152089827622,
+        "normalized_mae": 0.04689324280427036,
+        "r2": 0.9026013322778516
+      }
+    }
+  },
+  "model_obs_aug_subject_embedding_future_action_100": {
+    "model_name": "model_obs_aug_subject_embedding_future_action_100",
+    "horizon_ms": 100,
+    "horizon_samples": 10,
+    "checkpoint": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/anticipation/20261104_200602_UTC_obs_aug/model_obs_aug_subject_embedding_future_action_100/best.pt",
+    "metrics": {
+      "per_trial": {
+        "AB10_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.3115832340544988,
+            "mae_nm_per_kg": 0.2060965922804778,
+            "normalized_mae": 0.10274053483568397,
+            "r2": 0.5159910492048458
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.30470841657428477,
+            "mae_nm_per_kg": 0.20085116067399458,
+            "normalized_mae": 0.10151642912555073,
+            "r2": 0.5383170974402882
+          }
+        },
+        "AB10_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15857513259602365,
+            "mae_nm_per_kg": 0.10642503256762763,
+            "normalized_mae": 0.05137492192739164,
+            "r2": 0.8756008907254427
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1383891280007728,
+            "mae_nm_per_kg": 0.08875370901517877,
+            "normalized_mae": 0.04438174265250804,
+            "r2": 0.9059487028143439
+          }
+        },
+        "AB10_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1568912474559747,
+            "mae_nm_per_kg": 0.10160786795452834,
+            "normalized_mae": 0.04922310755118752,
+            "r2": 0.8879857946179672
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13359401296886594,
+            "mae_nm_per_kg": 0.08432710913715398,
+            "normalized_mae": 0.04317493519086078,
+            "r2": 0.918794681890178
+          }
+        },
+        "AB10_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.151908599529268,
+            "mae_nm_per_kg": 0.098300348897484,
+            "normalized_mae": 0.045550331348620916,
+            "r2": 0.8963233242493236
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1266359463306247,
+            "mae_nm_per_kg": 0.08026191915707552,
+            "normalized_mae": 0.04031023493691687,
+            "r2": 0.9285077107876257
+          }
+        },
+        "AB10_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14516786295742604,
+            "mae_nm_per_kg": 0.09916053850547947,
+            "normalized_mae": 0.047107570364527146,
+            "r2": 0.9080718439930934
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1317141093585432,
+            "mae_nm_per_kg": 0.08610070907085066,
+            "normalized_mae": 0.04377193627274434,
+            "r2": 0.9253659647416812
+          }
+        },
+        "AB10_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.12387206774519813,
+            "mae_nm_per_kg": 0.08542900860748218,
+            "normalized_mae": 0.039883322401366814,
+            "r2": 0.9351201146892023
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1098414504056381,
+            "mae_nm_per_kg": 0.072811255508963,
+            "normalized_mae": 0.03417427801746119,
+            "r2": 0.9497868161315829
+          }
+        },
+        "AB10_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15751263965135714,
+            "mae_nm_per_kg": 0.10348718036745636,
+            "normalized_mae": 0.04829256075499213,
+            "r2": 0.8994161206500259
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13280151008320884,
+            "mae_nm_per_kg": 0.08965553772113395,
+            "normalized_mae": 0.04292714761501192,
+            "r2": 0.9287562394962858
+          }
+        },
+        "AB24_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.24320800183464952,
+            "mae_nm_per_kg": 0.16150371518042728,
+            "normalized_mae": 0.0789136994156466,
+            "r2": 0.7950895543948311
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.21998284330019896,
+            "mae_nm_per_kg": 0.14539118381478439,
+            "normalized_mae": 0.07329583175129359,
+            "r2": 0.833170014643573
+          }
+        },
+        "AB24_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.23039230994241616,
+            "mae_nm_per_kg": 0.15707826372042807,
+            "normalized_mae": 0.07509325837708773,
+            "r2": 0.8161625444433795
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2078042654208783,
+            "mae_nm_per_kg": 0.13991211217797384,
+            "normalized_mae": 0.06724388031672078,
+            "r2": 0.8522668313385902
+          }
+        },
+        "AB24_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2263765352509943,
+            "mae_nm_per_kg": 0.1513287775364957,
+            "normalized_mae": 0.07081526546700473,
+            "r2": 0.8266351506168161
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20730033755096225,
+            "mae_nm_per_kg": 0.13601134908252238,
+            "normalized_mae": 0.06531564992631073,
+            "r2": 0.8567336552575396
+          }
+        },
+        "AB24_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.232570458370046,
+            "mae_nm_per_kg": 0.15059243014588347,
+            "normalized_mae": 0.06944183520235139,
+            "r2": 0.8176599095521666
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20625602855075806,
+            "mae_nm_per_kg": 0.13234389647259187,
+            "normalized_mae": 0.0639428006216527,
+            "r2": 0.8576025987050548
+          }
+        },
+        "AB24_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.23389726935079852,
+            "mae_nm_per_kg": 0.15181170858827747,
+            "normalized_mae": 0.07011941704160878,
+            "r2": 0.8208708891408911
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2091536401146207,
+            "mae_nm_per_kg": 0.13359587005812337,
+            "normalized_mae": 0.06180064698804124,
+            "r2": 0.8582410932826157
+          }
+        },
+        "AB24_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.22710882051989154,
+            "mae_nm_per_kg": 0.14851508861090867,
+            "normalized_mae": 0.06735815601559617,
+            "r2": 0.8319143746514144
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19754985771284966,
+            "mae_nm_per_kg": 0.12843952681544557,
+            "normalized_mae": 0.058889716875184156,
+            "r2": 0.8730511365388913
+          }
+        },
+        "AB24_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.22382337426300952,
+            "mae_nm_per_kg": 0.14625272975820594,
+            "normalized_mae": 0.06620688379783214,
+            "r2": 0.8392444125722782
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19705139754327905,
+            "mae_nm_per_kg": 0.12684590534674822,
+            "normalized_mae": 0.05956850240381213,
+            "r2": 0.8768330802056253
+          }
+        },
+        "AB25_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15622100917505913,
+            "mae_nm_per_kg": 0.11705092636362527,
+            "normalized_mae": 0.0669779243719986,
+            "r2": 0.879192750992713
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15150576023481244,
+            "mae_nm_per_kg": 0.10180867275301946,
+            "normalized_mae": 0.059926634068896104,
+            "r2": 0.8876689722942753
+          }
+        },
+        "AB25_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15776161285289367,
+            "mae_nm_per_kg": 0.12578728032813166,
+            "normalized_mae": 0.06777517926977289,
+            "r2": 0.8763482350378337
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15616050328677492,
+            "mae_nm_per_kg": 0.11130736982045296,
+            "normalized_mae": 0.06097819762645115,
+            "r2": 0.8807280443219059
+          }
+        },
+        "AB25_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15727388674124196,
+            "mae_nm_per_kg": 0.11915533421546928,
+            "normalized_mae": 0.0651280595382263,
+            "r2": 0.8738424770999486
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15866364743896472,
+            "mae_nm_per_kg": 0.10709669625510469,
+            "normalized_mae": 0.06089726662184073,
+            "r2": 0.8735154580753063
+          }
+        },
+        "AB25_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18602195747344066,
+            "mae_nm_per_kg": 0.14323847481735125,
+            "normalized_mae": 0.0810026463973462,
+            "r2": 0.8269445154361617
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18568467621405357,
+            "mae_nm_per_kg": 0.12957694790919122,
+            "normalized_mae": 0.07544043480702695,
+            "r2": 0.8300914540389707
+          }
+        },
+        "AB25_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18571082786742743,
+            "mae_nm_per_kg": 0.14228161876529916,
+            "normalized_mae": 0.07699515552087509,
+            "r2": 0.8313257873141455
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18864534437075206,
+            "mae_nm_per_kg": 0.13249123508139665,
+            "normalized_mae": 0.07587687574375851,
+            "r2": 0.8286084555126865
+          }
+        },
+        "AB25_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16800037613030208,
+            "mae_nm_per_kg": 0.13153434749366108,
+            "normalized_mae": 0.06664743163982813,
+            "r2": 0.8692135328409607
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1692299106678763,
+            "mae_nm_per_kg": 0.12120353960161209,
+            "normalized_mae": 0.06683971764272056,
+            "r2": 0.8694505460563424
+          }
+        },
+        "AB25_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17723636086154912,
+            "mae_nm_per_kg": 0.13573541887948978,
+            "normalized_mae": 0.0718857022086891,
+            "r2": 0.8534107351912947
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1810107522767199,
+            "mae_nm_per_kg": 0.12753880351429886,
+            "normalized_mae": 0.07098796383160705,
+            "r2": 0.8500202491774298
+          }
+        },
+        "AB27_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16861806231240722,
+            "mae_nm_per_kg": 0.11248502253057951,
+            "normalized_mae": 0.05228502884690216,
+            "r2": 0.8934215265076361
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15495844967462533,
+            "mae_nm_per_kg": 0.09545971100642245,
+            "normalized_mae": 0.04485617665980597,
+            "r2": 0.9111745502128565
+          }
+        },
+        "AB27_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17376297951059452,
+            "mae_nm_per_kg": 0.11909889377942802,
+            "normalized_mae": 0.05606513633684827,
+            "r2": 0.8963862319655055
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1565103222585996,
+            "mae_nm_per_kg": 0.09982348840790191,
+            "normalized_mae": 0.04729156242434667,
+            "r2": 0.9164829980821841
+          }
+        },
+        "AB27_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1580907631776754,
+            "mae_nm_per_kg": 0.11108990411040845,
+            "normalized_mae": 0.05178238029333563,
+            "r2": 0.9116849845677333
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1404220550143541,
+            "mae_nm_per_kg": 0.09246749209811485,
+            "normalized_mae": 0.04575602715110713,
+            "r2": 0.9310647917958265
+          }
+        },
+        "AB27_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15768928281233788,
+            "mae_nm_per_kg": 0.11558600334568528,
+            "normalized_mae": 0.054950376807680834,
+            "r2": 0.9134430434469619
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14770467507593277,
+            "mae_nm_per_kg": 0.1030194309297998,
+            "normalized_mae": 0.050518100085837424,
+            "r2": 0.9250430937595036
+          }
+        },
+        "AB27_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17550682044199556,
+            "mae_nm_per_kg": 0.1325504837830641,
+            "normalized_mae": 0.06307806180314718,
+            "r2": 0.8950239096874031
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16355849730181898,
+            "mae_nm_per_kg": 0.11973030354532456,
+            "normalized_mae": 0.05771700226523588,
+            "r2": 0.9099641415756109
+          }
+        },
+        "AB27_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1754792602497107,
+            "mae_nm_per_kg": 0.13473895770233613,
+            "normalized_mae": 0.05896276563700046,
+            "r2": 0.9007230987906497
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16367035649527847,
+            "mae_nm_per_kg": 0.12329432582427774,
+            "normalized_mae": 0.054550478616943544,
+            "r2": 0.9146114646728629
+          }
+        },
+        "AB27_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18027928581534625,
+            "mae_nm_per_kg": 0.14209612133689636,
+            "normalized_mae": 0.06311110795434266,
+            "r2": 0.8963454687789619
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16677239244687656,
+            "mae_nm_per_kg": 0.13029648664810017,
+            "normalized_mae": 0.058983831962980716,
+            "r2": 0.9122199463776114
+          }
+        },
+        "AB28_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1971203416001962,
+            "mae_nm_per_kg": 0.1439307392848004,
+            "normalized_mae": 0.07454239443701478,
+            "r2": 0.85001505978572
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17872257509661182,
+            "mae_nm_per_kg": 0.12413063541021693,
+            "normalized_mae": 0.06524899155479383,
+            "r2": 0.8780251937641815
+          }
+        },
+        "AB28_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19040183559823506,
+            "mae_nm_per_kg": 0.13713720768346663,
+            "normalized_mae": 0.07482675617140536,
+            "r2": 0.864287750101856
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16422231483703523,
+            "mae_nm_per_kg": 0.11179438709175,
+            "normalized_mae": 0.06445678179493583,
+            "r2": 0.8993401573885406
+          }
+        },
+        "AB28_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18461586615143552,
+            "mae_nm_per_kg": 0.13330745889567977,
+            "normalized_mae": 0.06938402176335465,
+            "r2": 0.8725615227133989
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15733040239360122,
+            "mae_nm_per_kg": 0.10794183441901513,
+            "normalized_mae": 0.05822807043708634,
+            "r2": 0.9083021198770495
+          }
+        },
+        "AB28_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18188468110068315,
+            "mae_nm_per_kg": 0.135062710910743,
+            "normalized_mae": 0.07204450982035157,
+            "r2": 0.8776919016669668
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1537820108367374,
+            "mae_nm_per_kg": 0.10932620580553717,
+            "normalized_mae": 0.06097880604335594,
+            "r2": 0.9134682322332426
+          }
+        },
+        "AB28_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18908647391790723,
+            "mae_nm_per_kg": 0.14595220380632493,
+            "normalized_mae": 0.07102216955640231,
+            "r2": 0.8728357993614989
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15815163725140355,
+            "mae_nm_per_kg": 0.11898169886318535,
+            "normalized_mae": 0.061472335625603315,
+            "r2": 0.9116768423345498
+          }
+        },
+        "AB28_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19894181609654152,
+            "mae_nm_per_kg": 0.15490680834917658,
+            "normalized_mae": 0.08197914057184297,
+            "r2": 0.8628590933040231
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16753701893290845,
+            "mae_nm_per_kg": 0.1290240998728825,
+            "normalized_mae": 0.06847998680182364,
+            "r2": 0.9036889669250389
+          }
+        },
+        "AB28_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19879644823910722,
+            "mae_nm_per_kg": 0.16464231502070364,
+            "normalized_mae": 0.0867350824715338,
+            "r2": 0.866921119815982
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1692165870172893,
+            "mae_nm_per_kg": 0.13892985659926846,
+            "normalized_mae": 0.0746469489281233,
+            "r2": 0.9045700276507799
+          }
+        },
+        "AB30_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17352608919195817,
+            "mae_nm_per_kg": 0.12815784039514713,
+            "normalized_mae": 0.0582417771510042,
+            "r2": 0.8834129108486842
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14842933318368554,
+            "mae_nm_per_kg": 0.11151992356264931,
+            "normalized_mae": 0.05396856900258114,
+            "r2": 0.9147411018260827
+          }
+        },
+        "AB30_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18812703671845601,
+            "mae_nm_per_kg": 0.13988814208247397,
+            "normalized_mae": 0.06328908578556511,
+            "r2": 0.8692490247453302
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16574815935809684,
+            "mae_nm_per_kg": 0.12142663793299878,
+            "normalized_mae": 0.05688971909617338,
+            "r2": 0.8997208342157142
+          }
+        },
+        "AB30_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19827079909238593,
+            "mae_nm_per_kg": 0.14968838217464486,
+            "normalized_mae": 0.06641138420839446,
+            "r2": 0.8556501399034169
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.171109412639951,
+            "mae_nm_per_kg": 0.1292740155138442,
+            "normalized_mae": 0.05795189343338978,
+            "r2": 0.8925430283211386
+          }
+        },
+        "AB30_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17379773334326953,
+            "mae_nm_per_kg": 0.13573083651405696,
+            "normalized_mae": 0.059698313370403155,
+            "r2": 0.8935533902512158
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14752118700983965,
+            "mae_nm_per_kg": 0.11673876491010939,
+            "normalized_mae": 0.05515622194005154,
+            "r2": 0.9235185662810427
+          }
+        },
+        "AB30_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1755544805320068,
+            "mae_nm_per_kg": 0.14398155754006717,
+            "normalized_mae": 0.06251573976656584,
+            "r2": 0.8902626386257313
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.158147354745563,
+            "mae_nm_per_kg": 0.12838032830666318,
+            "normalized_mae": 0.0579159438047098,
+            "r2": 0.9119413751995864
+          }
+        },
+        "AB30_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1891007833773545,
+            "mae_nm_per_kg": 0.154552074207741,
+            "normalized_mae": 0.06704340010440231,
+            "r2": 0.8734612181650564
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17083780298943466,
+            "mae_nm_per_kg": 0.13837678231907843,
+            "normalized_mae": 0.061528302278328506,
+            "r2": 0.897829895429528
+          }
+        },
+        "AB30_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18426965566436193,
+            "mae_nm_per_kg": 0.15111131680917872,
+            "normalized_mae": 0.06782677094035064,
+            "r2": 0.8885280770707766
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16580522211064208,
+            "mae_nm_per_kg": 0.13606149268378556,
+            "normalized_mae": 0.06248574126614489,
+            "r2": 0.9105828946568009
+          }
+        }
+      },
+      "per_subject": {
+        "AB10": {
+          "rmse_nm_per_kg": 0.18160862965369748,
+          "mae_nm_per_kg": 0.11430016786415752,
+          "normalized_mae": 0.05221469897301773,
+          "r2": 0.8518445826516117
+        },
+        "AB24": {
+          "rmse_nm_per_kg": 0.2311220882483811,
+          "mae_nm_per_kg": 0.15243111555926428,
+          "normalized_mae": 0.06880334449092465,
+          "r2": 0.8214132334561994
+        },
+        "AB25": {
+          "rmse_nm_per_kg": 0.17024871321696505,
+          "mae_nm_per_kg": 0.13073681295023845,
+          "normalized_mae": 0.06624332708481277,
+          "r2": 0.8585723518977364
+        },
+        "AB27": {
+          "rmse_nm_per_kg": 0.1701276909633226,
+          "mae_nm_per_kg": 0.12397305710560462,
+          "normalized_mae": 0.051691659855683345,
+          "r2": 0.9009800838839478
+        },
+        "AB28": {
+          "rmse_nm_per_kg": 0.19166098045386737,
+          "mae_nm_per_kg": 0.1450095084589902,
+          "normalized_mae": 0.0701848768985599,
+          "r2": 0.8670075763134137
+        },
+        "AB30": {
+          "rmse_nm_per_kg": 0.18344082769700001,
+          "mae_nm_per_kg": 0.14331538286674578,
+          "normalized_mae": 0.060329637841638126,
+          "r2": 0.8795201791971876
+        }
+      },
+      "overall_windowed": {
+        "rmse_nm_per_kg": 0.18912018219110263,
+        "mae_nm_per_kg": 0.1349496877931179,
+        "normalized_mae": 0.055457925930363736,
+        "r2": 0.8642778209382236
+      },
+      "overall_streaming": {
+        "rmse_nm_per_kg": 0.17169560307442616,
+        "mae_nm_per_kg": 0.11816272058050635,
+        "normalized_mae": 0.05009453899192512,
+        "r2": 0.8891658477559538
+      }
+    }
+  },
+  "model_obs_aug_subject_embedding_future_action_150": {
+    "model_name": "model_obs_aug_subject_embedding_future_action_150",
+    "horizon_ms": 150,
+    "horizon_samples": 15,
+    "checkpoint": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/anticipation/20261104_200602_UTC_obs_aug/model_obs_aug_subject_embedding_future_action_150/best.pt",
+    "metrics": {
+      "per_trial": {
+        "AB10_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.3019632621994145,
+            "mae_nm_per_kg": 0.2042631494462826,
+            "normalized_mae": 0.10182655127442491,
+            "r2": 0.5456837679693277
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2915903675524484,
+            "mae_nm_per_kg": 0.1923802118099083,
+            "normalized_mae": 0.10159914309847191,
+            "r2": 0.5772334229033809
+          }
+        },
+        "AB10_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16657540443564434,
+            "mae_nm_per_kg": 0.11200156118594344,
+            "normalized_mae": 0.05406689876291469,
+            "r2": 0.862812614740228
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1537085626967379,
+            "mae_nm_per_kg": 0.09867833631717461,
+            "normalized_mae": 0.04792248880141467,
+            "r2": 0.8838932081835937
+          }
+        },
+        "AB10_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1670399881508475,
+            "mae_nm_per_kg": 0.10869401965197857,
+            "normalized_mae": 0.052655936269567084,
+            "r2": 0.8730194931259536
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14707220879141264,
+            "mae_nm_per_kg": 0.08945802570757154,
+            "normalized_mae": 0.045088987876754964,
+            "r2": 0.902825215682013
+          }
+        },
+        "AB10_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15692287127651725,
+            "mae_nm_per_kg": 0.10252828830450603,
+            "normalized_mae": 0.04750947028425774,
+            "r2": 0.889437489159964
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13429751598982667,
+            "mae_nm_per_kg": 0.08343394451047144,
+            "normalized_mae": 0.038808043340462825,
+            "r2": 0.9193785470866283
+          }
+        },
+        "AB10_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1507501428964208,
+            "mae_nm_per_kg": 0.10331909750448795,
+            "normalized_mae": 0.049083150707407236,
+            "r2": 0.9009289591943535
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13824978545320676,
+            "mae_nm_per_kg": 0.08808482535444524,
+            "normalized_mae": 0.04437016067600655,
+            "r2": 0.9178328764331805
+          }
+        },
+        "AB10_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1318005037815855,
+            "mae_nm_per_kg": 0.09176533836685896,
+            "normalized_mae": 0.04284149652458222,
+            "r2": 0.9265525913507413
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.11516836872688727,
+            "mae_nm_per_kg": 0.07522262348889873,
+            "normalized_mae": 0.03804102015368163,
+            "r2": 0.9446762101676226
+          }
+        },
+        "AB10_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16398294742680794,
+            "mae_nm_per_kg": 0.10855913905564704,
+            "normalized_mae": 0.05065940341344072,
+            "r2": 0.8910425336187521
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14111386445908633,
+            "mae_nm_per_kg": 0.09201658001801344,
+            "normalized_mae": 0.04513820294650949,
+            "r2": 0.9194347354781488
+          }
+        },
+        "AB24_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.25281975879295665,
+            "mae_nm_per_kg": 0.17078423990554784,
+            "normalized_mae": 0.08344833527686793,
+            "r2": 0.7786980320941768
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.21942687364482008,
+            "mae_nm_per_kg": 0.14322882932931102,
+            "normalized_mae": 0.07110807597498757,
+            "r2": 0.8345094939261524
+          }
+        },
+        "AB24_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2424750563700701,
+            "mae_nm_per_kg": 0.16639819418977783,
+            "normalized_mae": 0.07954876947209837,
+            "r2": 0.796498233869824
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2098932521346304,
+            "mae_nm_per_kg": 0.13873578738693945,
+            "normalized_mae": 0.0667225585670642,
+            "r2": 0.8490845056772034
+          }
+        },
+        "AB24_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2363898220881523,
+            "mae_nm_per_kg": 0.15909040843308878,
+            "normalized_mae": 0.07444737008944899,
+            "r2": 0.8110530958554459
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20859676631226554,
+            "mae_nm_per_kg": 0.13372532874638984,
+            "normalized_mae": 0.06365079395932595,
+            "r2": 0.8542930176057656
+          }
+        },
+        "AB24_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.24049704810877015,
+            "mae_nm_per_kg": 0.15507822467085386,
+            "normalized_mae": 0.07151034424927256,
+            "r2": 0.8051276187035523
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20576470755050227,
+            "mae_nm_per_kg": 0.12640557659903673,
+            "normalized_mae": 0.05977063319990427,
+            "r2": 0.8589166797036647
+          }
+        },
+        "AB24_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.23635765989361196,
+            "mae_nm_per_kg": 0.15302839447801117,
+            "normalized_mae": 0.0706813849300162,
+            "r2": 0.8171809205314002
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.198290697616094,
+            "mae_nm_per_kg": 0.12445394357396208,
+            "normalized_mae": 0.05960944192423189,
+            "r2": 0.8724722581445803
+          }
+        },
+        "AB24_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.22973420669787314,
+            "mae_nm_per_kg": 0.1499435066152366,
+            "normalized_mae": 0.06800600670666689,
+            "r2": 0.8280015519853366
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18626019665328827,
+            "mae_nm_per_kg": 0.1176779630705544,
+            "normalized_mae": 0.056744641720851766,
+            "r2": 0.8876231836485318
+          }
+        },
+        "AB24_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.22548378046887793,
+            "mae_nm_per_kg": 0.14807504249795278,
+            "normalized_mae": 0.06703182325710373,
+            "r2": 0.8369557341080358
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1894219498206024,
+            "mae_nm_per_kg": 0.11944355482302439,
+            "normalized_mae": 0.05452361059408147,
+            "r2": 0.886280657973739
+          }
+        },
+        "AB25_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16306870789877834,
+            "mae_nm_per_kg": 0.11862031271156892,
+            "normalized_mae": 0.06787594580069259,
+            "r2": 0.8683971024081625
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16426545469132814,
+            "mae_nm_per_kg": 0.10663932223759917,
+            "normalized_mae": 0.06362664871869442,
+            "r2": 0.8680372454475165
+          }
+        },
+        "AB25_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16619020663450185,
+            "mae_nm_per_kg": 0.12550315581646032,
+            "normalized_mae": 0.067622090740764,
+            "r2": 0.8628078034910482
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1709227675205629,
+            "mae_nm_per_kg": 0.1141153360785762,
+            "normalized_mae": 0.06328220390704282,
+            "r2": 0.8571029888439653
+          }
+        },
+        "AB25_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1679916407117843,
+            "mae_nm_per_kg": 0.12105972856766904,
+            "normalized_mae": 0.06616896559225192,
+            "r2": 0.8560501032441737
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1804431415232836,
+            "mae_nm_per_kg": 0.11404312785816488,
+            "normalized_mae": 0.06562052634818326,
+            "r2": 0.835180004594876
+          }
+        },
+        "AB25_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20434837044380108,
+            "mae_nm_per_kg": 0.14601054730560872,
+            "normalized_mae": 0.08257027833311245,
+            "r2": 0.7912908254818144
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.21432845733254152,
+            "mae_nm_per_kg": 0.13793941898782716,
+            "normalized_mae": 0.07892113265127634,
+            "r2": 0.7735066761397856
+          }
+        },
+        "AB25_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.21063235753138687,
+            "mae_nm_per_kg": 0.1500422295970362,
+            "normalized_mae": 0.0811947804837611,
+            "r2": 0.7830036706399112
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.22190029780014606,
+            "mae_nm_per_kg": 0.14218615991416444,
+            "normalized_mae": 0.07848569060946153,
+            "r2": 0.7628420770974333
+          }
+        },
+        "AB25_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19225721115146538,
+            "mae_nm_per_kg": 0.1408790962553905,
+            "normalized_mae": 0.0713823432135427,
+            "r2": 0.828712091857192
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20350680380844643,
+            "mae_nm_per_kg": 0.13366363486869973,
+            "normalized_mae": 0.07017657916945463,
+            "r2": 0.8107347833865124
+          }
+        },
+        "AB25_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20753933481781306,
+            "mae_nm_per_kg": 0.14785619463480562,
+            "normalized_mae": 0.07830488508429882,
+            "r2": 0.7990821773878418
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.22367467418869091,
+            "mae_nm_per_kg": 0.14297671102086237,
+            "normalized_mae": 0.08215391103746247,
+            "r2": 0.7695746550683428
+          }
+        },
+        "AB27_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1709435110618697,
+            "mae_nm_per_kg": 0.11453071303690242,
+            "normalized_mae": 0.053235901991865515,
+            "r2": 0.8904668472395123
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1489546793853532,
+            "mae_nm_per_kg": 0.09162412348638764,
+            "normalized_mae": 0.04471311605021627,
+            "r2": 0.9176849318285683
+          }
+        },
+        "AB27_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18309930993309853,
+            "mae_nm_per_kg": 0.12459065874439335,
+            "normalized_mae": 0.05865035389613924,
+            "r2": 0.8850005251556372
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16220625337164093,
+            "mae_nm_per_kg": 0.1019518428352958,
+            "normalized_mae": 0.049788480763324636,
+            "r2": 0.9105020801333945
+          }
+        },
+        "AB27_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16880099294900383,
+            "mae_nm_per_kg": 0.11766018202141552,
+            "normalized_mae": 0.054844986496348766,
+            "r2": 0.8993115105165667
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14284390628825763,
+            "mae_nm_per_kg": 0.09355278062527726,
+            "normalized_mae": 0.044082640867031925,
+            "r2": 0.9287848674101847
+          }
+        },
+        "AB27_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16769604826524911,
+            "mae_nm_per_kg": 0.12343623978801095,
+            "normalized_mae": 0.05868243292216614,
+            "r2": 0.9021248697370257
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1486142568389677,
+            "mae_nm_per_kg": 0.10434638954492444,
+            "normalized_mae": 0.05096985689872786,
+            "r2": 0.9240603856716312
+          }
+        },
+        "AB27_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18802929292248868,
+            "mae_nm_per_kg": 0.14157678340680682,
+            "normalized_mae": 0.06737349301750624,
+            "r2": 0.879576311681418
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1703053348536633,
+            "mae_nm_per_kg": 0.12524787776369567,
+            "normalized_mae": 0.05995708157507176,
+            "r2": 0.9024367869036729
+          }
+        },
+        "AB27_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19047611892440125,
+            "mae_nm_per_kg": 0.1458031167640977,
+            "normalized_mae": 0.06380452357289276,
+            "r2": 0.8830277049725688
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1694786993521241,
+            "mae_nm_per_kg": 0.1281135310999638,
+            "normalized_mae": 0.05894817299875687,
+            "r2": 0.9080764718373284
+          }
+        },
+        "AB27_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1947468039508198,
+            "mae_nm_per_kg": 0.15313775932619278,
+            "normalized_mae": 0.06801518274948146,
+            "r2": 0.8790327891157912
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17143275943971067,
+            "mae_nm_per_kg": 0.1324539181981152,
+            "normalized_mae": 0.059687184735341264,
+            "r2": 0.9073282635931303
+          }
+        },
+        "AB28_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20872400858166698,
+            "mae_nm_per_kg": 0.15301241407799293,
+            "normalized_mae": 0.07924583574459614,
+            "r2": 0.8318488558416288
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1808843428894922,
+            "mae_nm_per_kg": 0.12162912623123494,
+            "normalized_mae": 0.06919525577409215,
+            "r2": 0.8743242861188771
+          }
+        },
+        "AB28_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20411244906955256,
+            "mae_nm_per_kg": 0.14567620761819275,
+            "normalized_mae": 0.07948592691621285,
+            "r2": 0.8441208224893225
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16779668040126836,
+            "mae_nm_per_kg": 0.11104508710623522,
+            "normalized_mae": 0.06142565774519819,
+            "r2": 0.895727081805563
+          }
+        },
+        "AB28_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19687742556130497,
+            "mae_nm_per_kg": 0.14186865103997695,
+            "normalized_mae": 0.07383996104072862,
+            "r2": 0.8550907847515999
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16183068835815276,
+            "mae_nm_per_kg": 0.10753003737120967,
+            "normalized_mae": 0.05914989699169272,
+            "r2": 0.9028998207503681
+          }
+        },
+        "AB28_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18936120262953213,
+            "mae_nm_per_kg": 0.14128093809285072,
+            "normalized_mae": 0.07536140703251099,
+            "r2": 0.867419988653459
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15160066786263668,
+            "mae_nm_per_kg": 0.10535382286918743,
+            "normalized_mae": 0.05647342647792161,
+            "r2": 0.9158660056772323
+          }
+        },
+        "AB28_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19529475518423922,
+            "mae_nm_per_kg": 0.1509943092696394,
+            "normalized_mae": 0.0734757211972667,
+            "r2": 0.8644306452151099
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15490497137052586,
+            "mae_nm_per_kg": 0.11427381377791362,
+            "normalized_mae": 0.060081855595229404,
+            "r2": 0.9155671861836756
+          }
+        },
+        "AB28_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20369306460870568,
+            "mae_nm_per_kg": 0.1596683044029756,
+            "normalized_mae": 0.08449899982455439,
+            "r2": 0.856249906186733
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16290910097988692,
+            "mae_nm_per_kg": 0.12305094662165517,
+            "normalized_mae": 0.06658025424498963,
+            "r2": 0.9088758731115516
+          }
+        },
+        "AB28_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20406886513964345,
+            "mae_nm_per_kg": 0.16894346349881978,
+            "normalized_mae": 0.08900096696134314,
+            "r2": 0.8597586372184544
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16570351990015678,
+            "mae_nm_per_kg": 0.1328450838626005,
+            "normalized_mae": 0.07168033491211184,
+            "r2": 0.9082180557254529
+          }
+        },
+        "AB30_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18457198387636228,
+            "mae_nm_per_kg": 0.13518028559954895,
+            "normalized_mae": 0.061433151844810255,
+            "r2": 0.8681129897701604
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16326292581759333,
+            "mae_nm_per_kg": 0.11801968131284739,
+            "normalized_mae": 0.05435084750000922,
+            "r2": 0.8976279517724729
+          }
+        },
+        "AB30_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20636221793969714,
+            "mae_nm_per_kg": 0.14911114774424059,
+            "normalized_mae": 0.06746181685367922,
+            "r2": 0.8427421625752451
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19033089468277528,
+            "mae_nm_per_kg": 0.13378145773870329,
+            "normalized_mae": 0.061144727346726456,
+            "r2": 0.8671044959691767
+          }
+        },
+        "AB30_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2110949913239942,
+            "mae_nm_per_kg": 0.1561099776557173,
+            "normalized_mae": 0.06926041656834622,
+            "r2": 0.8363929236413049
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19301820956395402,
+            "mae_nm_per_kg": 0.13978944463028423,
+            "normalized_mae": 0.06334193197156296,
+            "r2": 0.863955721205805
+          }
+        },
+        "AB30_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1942261548757133,
+            "mae_nm_per_kg": 0.1505730851325882,
+            "normalized_mae": 0.06622635984758483,
+            "r2": 0.8670794086303872
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17751329251592157,
+            "mae_nm_per_kg": 0.13559036320710022,
+            "normalized_mae": 0.059789298682390385,
+            "r2": 0.8901578643086454
+          }
+        },
+        "AB30_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19342434311169424,
+            "mae_nm_per_kg": 0.15585405984598635,
+            "normalized_mae": 0.06767069347880257,
+            "r2": 0.8668381928540194
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18192471779914307,
+            "mae_nm_per_kg": 0.14435735135428268,
+            "normalized_mae": 0.06548269755585459,
+            "r2": 0.8828521137847912
+          }
+        },
+        "AB30_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20750306948525038,
+            "mae_nm_per_kg": 0.1651577688879489,
+            "normalized_mae": 0.07164406195559535,
+            "r2": 0.8476668405973283
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1983788527253644,
+            "mae_nm_per_kg": 0.15425297809762953,
+            "normalized_mae": 0.06849598723627216,
+            "r2": 0.8614888666226461
+          }
+        },
+        "AB30_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.20380608795578864,
+            "mae_nm_per_kg": 0.16303651028929075,
+            "normalized_mae": 0.07317943005069592,
+            "r2": 0.8636594789509366
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19276701079987063,
+            "mae_nm_per_kg": 0.15109009249026645,
+            "normalized_mae": 0.0701336824624715,
+            "r2": 0.8795095284398988
+          }
+        }
+      },
+      "per_subject": {
+        "AB10": {
+          "rmse_nm_per_kg": 0.18445841727113502,
+          "mae_nm_per_kg": 0.11867439564211074,
+          "normalized_mae": 0.054212937391500945,
+          "r2": 0.8472242040221732
+        },
+        "AB24": {
+          "rmse_nm_per_kg": 0.23780556525215824,
+          "mae_nm_per_kg": 0.15746870804121207,
+          "normalized_mae": 0.07107717952564621,
+          "r2": 0.811027057851166
+        },
+        "AB25": {
+          "rmse_nm_per_kg": 0.1885496474603265,
+          "mae_nm_per_kg": 0.13578069407940857,
+          "normalized_mae": 0.06879902245382644,
+          "r2": 0.826562147330849
+        },
+        "AB27": {
+          "rmse_nm_per_kg": 0.18085849557868247,
+          "mae_nm_per_kg": 0.1315636895643604,
+          "normalized_mae": 0.054856641024239,
+          "r2": 0.8881119698656424
+        },
+        "AB28": {
+          "rmse_nm_per_kg": 0.20039725836614333,
+          "mae_nm_per_kg": 0.15164950414215495,
+          "normalized_mae": 0.07339864739252501,
+          "r2": 0.8546340120691432
+        },
+        "AB30": {
+          "rmse_nm_per_kg": 0.2003431941793715,
+          "mae_nm_per_kg": 0.15359354539049208,
+          "normalized_mae": 0.06465630403986235,
+          "r2": 0.8563279906861403
+        }
+      },
+      "overall_windowed": {
+        "rmse_nm_per_kg": 0.19960728690078416,
+        "mae_nm_per_kg": 0.1414395166295715,
+        "normalized_mae": 0.058124938005742074,
+        "r2": 0.8488502117169743
+      },
+      "overall_streaming": {
+        "rmse_nm_per_kg": 0.18075484643541861,
+        "mae_nm_per_kg": 0.12108908680705992,
+        "normalized_mae": 0.05033424352559636,
+        "r2": 0.8771755864183919
+      }
+    }
+  },
+  "model_obs_aug_subject_embedding_future_action_50": {
+    "model_name": "model_obs_aug_subject_embedding_future_action_50",
+    "horizon_ms": 50,
+    "horizon_samples": 5,
+    "checkpoint": "/Users/narayanan/PycharmProjects/axilles_jetson/ML_model/runs/anticipation/20261104_200602_UTC_obs_aug/model_obs_aug_subject_embedding_future_action_50/best.pt",
+    "metrics": {
+      "per_trial": {
+        "AB10_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.3034134782899941,
+            "mae_nm_per_kg": 0.19943728135603186,
+            "normalized_mae": 0.0994208236340374,
+            "r2": 0.5410640978170469
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2978796425991769,
+            "mae_nm_per_kg": 0.19413849246923634,
+            "normalized_mae": 0.10252771993407109,
+            "r2": 0.5585138148332156
+          }
+        },
+        "AB10_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16401478534364808,
+            "mae_nm_per_kg": 0.11014232099728587,
+            "normalized_mae": 0.053169381353409984,
+            "r2": 0.8669126969441615
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14948480681981471,
+            "mae_nm_per_kg": 0.09803877323586263,
+            "normalized_mae": 0.047611889172905965,
+            "r2": 0.8901502764783926
+          }
+        },
+        "AB10_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16105151822171862,
+            "mae_nm_per_kg": 0.1055711996048207,
+            "normalized_mae": 0.05114311142500832,
+            "r2": 0.8819226101050154
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14022577077649556,
+            "mae_nm_per_kg": 0.08971021160014692,
+            "normalized_mae": 0.0452160956075939,
+            "r2": 0.9116265783531216
+          }
+        },
+        "AB10_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1553536415752581,
+            "mae_nm_per_kg": 0.10301806532370436,
+            "normalized_mae": 0.047736422739275884,
+            "r2": 0.8915690096969324
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13103167641561514,
+            "mae_nm_per_kg": 0.0866907455783236,
+            "normalized_mae": 0.04032289533186795,
+            "r2": 0.9232300557459182
+          }
+        },
+        "AB10_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1507760089418499,
+            "mae_nm_per_kg": 0.10489966742006268,
+            "normalized_mae": 0.04983402206849688,
+            "r2": 0.9008267656064752
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.140141242685115,
+            "mae_nm_per_kg": 0.09329018956301495,
+            "normalized_mae": 0.046992211016482315,
+            "r2": 0.9155100939959153
+          }
+        },
+        "AB10_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.13059908432257766,
+            "mae_nm_per_kg": 0.09240725989067361,
+            "normalized_mae": 0.0431411835221021,
+            "r2": 0.9278504895048267
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.11864011297883949,
+            "mae_nm_per_kg": 0.08123397384152872,
+            "normalized_mae": 0.04108103510276124,
+            "r2": 0.9412549139647385
+          }
+        },
+        "AB10_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16899657898594017,
+            "mae_nm_per_kg": 0.11585553386626762,
+            "normalized_mae": 0.05406428494981226,
+            "r2": 0.8842267125900156
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1508643812145106,
+            "mae_nm_per_kg": 0.10250497063567,
+            "normalized_mae": 0.05028322250917275,
+            "r2": 0.908061795904666
+          }
+        },
+        "AB24_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.23635154330937838,
+            "mae_nm_per_kg": 0.1595291318739245,
+            "normalized_mae": 0.07794888152680464,
+            "r2": 0.8064753615845993
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.2131562288429965,
+            "mae_nm_per_kg": 0.14345364971962085,
+            "normalized_mae": 0.07121969139116974,
+            "r2": 0.8437936348150727
+          }
+        },
+        "AB24_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.22487828136175161,
+            "mae_nm_per_kg": 0.15495836417823974,
+            "normalized_mae": 0.07407981348481193,
+            "r2": 0.8248655790116303
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20239402918536606,
+            "mae_nm_per_kg": 0.13836883694367577,
+            "normalized_mae": 0.06654608014788325,
+            "r2": 0.8596348658293489
+          }
+        },
+        "AB24_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.22144192417129688,
+            "mae_nm_per_kg": 0.14986990680776274,
+            "normalized_mae": 0.07013257761596231,
+            "r2": 0.8341348199747904
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.20031323922543082,
+            "mae_nm_per_kg": 0.13317494514936679,
+            "normalized_mae": 0.06338882150234178,
+            "r2": 0.8656859447390213
+          }
+        },
+        "AB24_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2219536404259414,
+            "mae_nm_per_kg": 0.14522457840939682,
+            "normalized_mae": 0.06696658810450813,
+            "r2": 0.8339166604908976
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19346419640371174,
+            "mae_nm_per_kg": 0.12602179852485426,
+            "normalized_mae": 0.05958916447740567,
+            "r2": 0.8752548485077914
+          }
+        },
+        "AB24_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2231580418873257,
+            "mae_nm_per_kg": 0.14566695755405848,
+            "normalized_mae": 0.06728125413314831,
+            "r2": 0.8369400631827849
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19309828353575514,
+            "mae_nm_per_kg": 0.12534940932619576,
+            "normalized_mae": 0.060038341260163254,
+            "r2": 0.8789947097936182
+          }
+        },
+        "AB24_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2150668346919961,
+            "mae_nm_per_kg": 0.13983033788846164,
+            "normalized_mae": 0.0634192377575884,
+            "r2": 0.8491831847787531
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1822007662587606,
+            "mae_nm_per_kg": 0.1182864886675732,
+            "normalized_mae": 0.05703807445948692,
+            "r2": 0.8926032202636418
+          }
+        },
+        "AB24_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.21131453073902418,
+            "mae_nm_per_kg": 0.13792951967821773,
+            "normalized_mae": 0.062439064875739136,
+            "r2": 0.8567180855880492
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18174034796273153,
+            "mae_nm_per_kg": 0.1175610695251007,
+            "normalized_mae": 0.053664293442267356,
+            "r2": 0.8952880368843884
+          }
+        },
+        "AB25_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14418202779714798,
+            "mae_nm_per_kg": 0.11151315303780426,
+            "normalized_mae": 0.06380914498230064,
+            "r2": 0.8970461574287034
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1517532500846746,
+            "mae_nm_per_kg": 0.10722693603765553,
+            "normalized_mae": 0.06397725012963681,
+            "r2": 0.887332437939365
+          }
+        },
+        "AB25_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15093650328681554,
+            "mae_nm_per_kg": 0.12233510386089139,
+            "normalized_mae": 0.0659151193469591,
+            "r2": 0.8867808235476987
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16492496509570106,
+            "mae_nm_per_kg": 0.12115831180131569,
+            "normalized_mae": 0.06718785796822757,
+            "r2": 0.8668873946730982
+          }
+        },
+        "AB25_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15576492114036,
+            "mae_nm_per_kg": 0.11998032459471906,
+            "normalized_mae": 0.06557898372799932,
+            "r2": 0.8761927526493902
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17719300395077986,
+            "mae_nm_per_kg": 0.12093601483098712,
+            "normalized_mae": 0.06958670019583214,
+            "r2": 0.8409718181782833
+          }
+        },
+        "AB25_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17438216910591642,
+            "mae_nm_per_kg": 0.13298337489757525,
+            "normalized_mae": 0.07520329511529496,
+            "r2": 0.8479323574577968
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18810577541531218,
+            "mae_nm_per_kg": 0.1320482791068291,
+            "normalized_mae": 0.07555055565865829,
+            "r2": 0.8254589865997993
+          }
+        },
+        "AB25_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16923324182427157,
+            "mae_nm_per_kg": 0.12897385429771024,
+            "normalized_mae": 0.06979370951745725,
+            "r2": 0.8598487226893993
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1858355387884832,
+            "mae_nm_per_kg": 0.1308043627888334,
+            "normalized_mae": 0.0722030242212725,
+            "r2": 0.8335745788988183
+          }
+        },
+        "AB25_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15614400295490052,
+            "mae_nm_per_kg": 0.12184833703575687,
+            "normalized_mae": 0.061739605416818645,
+            "r2": 0.8869628034643701
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17459514842432813,
+            "mae_nm_per_kg": 0.12554465327104058,
+            "normalized_mae": 0.06591392122645345,
+            "r2": 0.8606154457678351
+          }
+        },
+        "AB25_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1692963594096558,
+            "mae_nm_per_kg": 0.12709412177008925,
+            "normalized_mae": 0.06730925697552059,
+            "r2": 0.8662302972269924
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.19091916009390042,
+            "mae_nm_per_kg": 0.13223052079204606,
+            "normalized_mae": 0.07597918824697246,
+            "r2": 0.8320372659541153
+          }
+        },
+        "AB27_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1583163869173718,
+            "mae_nm_per_kg": 0.10629113234678358,
+            "normalized_mae": 0.04940599909121823,
+            "r2": 0.9060131555890163
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15386123116522918,
+            "mae_nm_per_kg": 0.0948904000398031,
+            "normalized_mae": 0.04630707839362318,
+            "r2": 0.9121446535459816
+          }
+        },
+        "AB27_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1512141838682473,
+            "mae_nm_per_kg": 0.10645674112763918,
+            "normalized_mae": 0.05011391387355267,
+            "r2": 0.9215417381727338
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14306901794842428,
+            "mae_nm_per_kg": 0.0920934497938544,
+            "normalized_mae": 0.04497410567552906,
+            "r2": 0.9303506303992959
+          }
+        },
+        "AB27_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14707431203048885,
+            "mae_nm_per_kg": 0.10409063782585286,
+            "normalized_mae": 0.048519809572588904,
+            "r2": 0.9235163115261004
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14425023312893562,
+            "mae_nm_per_kg": 0.09629281042410394,
+            "normalized_mae": 0.04537375962137931,
+            "r2": 0.9273495470110598
+          }
+        },
+        "AB27_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.14587066228905818,
+            "mae_nm_per_kg": 0.10729137285005576,
+            "normalized_mae": 0.05100705271979648,
+            "r2": 0.9258990621245974
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1495912586635937,
+            "mae_nm_per_kg": 0.10443374447349868,
+            "normalized_mae": 0.051012526973162116,
+            "r2": 0.9230127933342045
+          }
+        },
+        "AB27_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.15922887984398895,
+            "mae_nm_per_kg": 0.12146934227516887,
+            "normalized_mae": 0.05780477340060615,
+            "r2": 0.9135962789142589
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16045609254345752,
+            "mae_nm_per_kg": 0.11752806805776997,
+            "normalized_mae": 0.05626155181004462,
+            "r2": 0.9133481870697278
+          }
+        },
+        "AB27_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1607274277702206,
+            "mae_nm_per_kg": 0.12385847198338183,
+            "normalized_mae": 0.05420138451602784,
+            "r2": 0.9166604117017523
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16031635869564914,
+            "mae_nm_per_kg": 0.11969822170504725,
+            "normalized_mae": 0.05507608306578535,
+            "r2": 0.9177191387405349
+          }
+        },
+        "AB27_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16774941694486942,
+            "mae_nm_per_kg": 0.13273212253157385,
+            "normalized_mae": 0.0589521461619521,
+            "r2": 0.910198709811021
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.1653372254903292,
+            "mae_nm_per_kg": 0.12661420554201963,
+            "normalized_mae": 0.05705565814218801,
+            "r2": 0.9137536519623778
+          }
+        },
+        "AB28_Treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17498234997728518,
+            "mae_nm_per_kg": 0.1224312236957601,
+            "normalized_mae": 0.06340769604522911,
+            "r2": 0.8817510233338836
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.16475195583370375,
+            "mae_nm_per_kg": 0.10769208626902622,
+            "normalized_mae": 0.061266422649982125,
+            "r2": 0.8956672742728927
+          }
+        },
+        "AB28_Treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16801985083129484,
+            "mae_nm_per_kg": 0.11734242903915262,
+            "normalized_mae": 0.06402604715810964,
+            "r2": 0.8943182492987052
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15009465642806344,
+            "mae_nm_per_kg": 0.09894757807114958,
+            "normalized_mae": 0.054733804292485755,
+            "r2": 0.9165130572818004
+          }
+        },
+        "AB28_Treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1593094907031321,
+            "mae_nm_per_kg": 0.11160932180768961,
+            "normalized_mae": 0.05809055005210179,
+            "r2": 0.9050664410265258
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14257860668879457,
+            "mae_nm_per_kg": 0.09247313785634474,
+            "normalized_mae": 0.05086742934738235,
+            "r2": 0.9245756021927259
+          }
+        },
+        "AB28_Treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.156339099392263,
+            "mae_nm_per_kg": 0.1139618551568179,
+            "normalized_mae": 0.0607889915553131,
+            "r2": 0.9095796089572135
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13598358953683887,
+            "mae_nm_per_kg": 0.09380483164773237,
+            "normalized_mae": 0.05028275309866681,
+            "r2": 0.9322590735870672
+          }
+        },
+        "AB28_Treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.16293113246820068,
+            "mae_nm_per_kg": 0.12401347814665387,
+            "normalized_mae": 0.06034651099820636,
+            "r2": 0.9055910788127879
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.13972906290733644,
+            "mae_nm_per_kg": 0.10215130990953061,
+            "normalized_mae": 0.053708194799342246,
+            "r2": 0.931281262500052
+          }
+        },
+        "AB28_Treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17385463927855874,
+            "mae_nm_per_kg": 0.1319515935970216,
+            "normalized_mae": 0.06983087674097334,
+            "r2": 0.8952209503093678
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15007914734280847,
+            "mae_nm_per_kg": 0.11144139551109648,
+            "normalized_mae": 0.06029857266648182,
+            "r2": 0.9226425676376718
+          }
+        },
+        "AB28_Treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17454656269286162,
+            "mae_nm_per_kg": 0.1428273621625839,
+            "normalized_mae": 0.0752427651105704,
+            "r2": 0.8973489845511652
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15362549985549173,
+            "mae_nm_per_kg": 0.12452624638774906,
+            "normalized_mae": 0.06719167007831552,
+            "r2": 0.9210572469172228
+          }
+        },
+        "AB30_treadmill_01_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1715866379903975,
+            "mae_nm_per_kg": 0.12555715790082986,
+            "normalized_mae": 0.05705988792902976,
+            "r2": 0.8859580104524776
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.14751741520499753,
+            "mae_nm_per_kg": 0.10939369033846345,
+            "normalized_mae": 0.05037837515666829,
+            "r2": 0.9163803428490118
+          }
+        },
+        "AB30_treadmill_02_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1933788857751002,
+            "mae_nm_per_kg": 0.1425624939852024,
+            "normalized_mae": 0.06449903313687656,
+            "r2": 0.8618189636183631
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17837991689571214,
+            "mae_nm_per_kg": 0.12688815078400528,
+            "normalized_mae": 0.05799414593292889,
+            "r2": 0.8831877017965372
+          }
+        },
+        "AB30_treadmill_03_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.2045572748237247,
+            "mae_nm_per_kg": 0.1562545893326237,
+            "normalized_mae": 0.06932457559990585,
+            "r2": 0.8463347910650969
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18010102702024788,
+            "mae_nm_per_kg": 0.13735395877078257,
+            "normalized_mae": 0.0622383552312857,
+            "r2": 0.8815118486415816
+          }
+        },
+        "AB30_treadmill_04_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.17885417869216874,
+            "mae_nm_per_kg": 0.14073260668676596,
+            "normalized_mae": 0.06189823529563341,
+            "r2": 0.8872494656412
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.15939965246011517,
+            "mae_nm_per_kg": 0.12588465722822859,
+            "normalized_mae": 0.055509515518096665,
+            "r2": 0.9114043383287986
+          }
+        },
+        "AB30_treadmill_05_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.18408357675833079,
+            "mae_nm_per_kg": 0.1527698336912714,
+            "normalized_mae": 0.06633154502837871,
+            "r2": 0.8793361858658212
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17148280107744368,
+            "mae_nm_per_kg": 0.13915091297483034,
+            "normalized_mae": 0.06312097765349815,
+            "r2": 0.8958487937391295
+          }
+        },
+        "AB30_treadmill_06_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.19780218459509077,
+            "mae_nm_per_kg": 0.1630732981839483,
+            "normalized_mae": 0.07073983595843163,
+            "r2": 0.8615109244706753
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.18506172115654845,
+            "mae_nm_per_kg": 0.15005708199685303,
+            "normalized_mae": 0.06663280086990192,
+            "r2": 0.8793773537639482
+          }
+        },
+        "AB30_treadmill_07_01": {
+          "windowed": {
+            "rmse_nm_per_kg": 0.1904455396563738,
+            "mae_nm_per_kg": 0.15757466277222307,
+            "normalized_mae": 0.07072786329663816,
+            "r2": 0.8808795466104605
+          },
+          "streaming": {
+            "rmse_nm_per_kg": 0.17671942412887506,
+            "mae_nm_per_kg": 0.14460539993581323,
+            "normalized_mae": 0.06712358854443333,
+            "r2": 0.8987119838468987
+          }
+        }
+      },
+      "per_subject": {
+        "AB10": {
+          "rmse_nm_per_kg": 0.1840490556290569,
+          "mae_nm_per_kg": 0.11871058657987486,
+          "normalized_mae": 0.0542294701661785,
+          "r2": 0.8478200152328033
+        },
+        "AB24": {
+          "rmse_nm_per_kg": 0.22213072917841697,
+          "mae_nm_per_kg": 0.1475572101420344,
+          "normalized_mae": 0.06660339343626302,
+          "r2": 0.8350286077438847
+        },
+        "AB25": {
+          "rmse_nm_per_kg": 0.16038034987712374,
+          "mae_nm_per_kg": 0.12357431641655472,
+          "normalized_mae": 0.06261414575540984,
+          "r2": 0.8744487723052343
+        },
+        "AB27": {
+          "rmse_nm_per_kg": 0.15592504078669506,
+          "mae_nm_per_kg": 0.11462051063148673,
+          "normalized_mae": 0.04779203309474324,
+          "r2": 0.9167925711355911
+        },
+        "AB28": {
+          "rmse_nm_per_kg": 0.16729593905314946,
+          "mae_nm_per_kg": 0.12346573302132766,
+          "normalized_mae": 0.05975764875958457,
+          "r2": 0.8986361724475088
+        },
+        "AB30": {
+          "rmse_nm_per_kg": 0.18897023908207147,
+          "mae_nm_per_kg": 0.14838218966907155,
+          "normalized_mae": 0.06246254648887024,
+          "r2": 0.8721181661266826
+        }
+      },
+      "overall_windowed": {
+        "rmse_nm_per_kg": 0.18111841597800646,
+        "mae_nm_per_kg": 0.12936846762366386,
+        "normalized_mae": 0.0531643089548792,
+        "r2": 0.87548972813572
+      },
+      "overall_streaming": {
+        "rmse_nm_per_kg": 0.1702305814313702,
+        "mae_nm_per_kg": 0.11749867672811448,
+        "normalized_mae": 0.048841783882570475,
+        "r2": 0.8910252432360145
+      }
+    }
+  }
+}

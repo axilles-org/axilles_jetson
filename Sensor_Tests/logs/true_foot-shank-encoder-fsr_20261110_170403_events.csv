@@ -1,0 +1,41 @@
+t_s,kind,who,detail
+76.5948,STALL,FSR ADC,I2C call blocked 48 ms
+76.6482,GAP,foot_acc,no reading for 53 ms (76.595-76.648 s)  cause: STALL
+76.6441,GAP,foot_gyro,no reading for 53 ms (76.591-76.644 s)  cause: STALL
+76.6549,GAP,shank_acc,no reading for 67 ms (76.588-76.655 s)  cause: STALL
+76.6498,GAP,shank_gyro,no reading for 62 ms (76.587-76.650 s)  cause: STALL
+76.6563,GAP,encoder,no reading for 63 ms (76.594-76.656 s)  cause: STALL
+76.6444,GAP,fsr,no reading for 53 ms (76.591-76.644 s)  cause: STALL
+117.1925,GAP,fsr,no reading for 16 ms (117.176-117.192 s)  cause: no error seen (sensor went quiet)
+117.2049,GAP,encoder,no reading for 32 ms (117.173-117.205 s)  cause: no error seen (sensor went quiet)
+117.7735,GAP,encoder,no reading for 16 ms (117.757-117.774 s)  cause: no error seen (sensor went quiet)
+119.4123,GAP,encoder,no reading for 23 ms (119.389-119.412 s)  cause: no error seen (sensor went quiet)
+119.4030,GAP,fsr,no reading for 15 ms (119.388-119.403 s)  cause: no error seen (sensor went quiet)
+123.5145,GAP,encoder,no reading for 21 ms (123.494-123.514 s)  cause: no error seen (sensor went quiet)
+124.2386,GAP,encoder,no reading for 18 ms (124.220-124.239 s)  cause: no error seen (sensor went quiet)
+124.8483,GAP,encoder,no reading for 20 ms (124.828-124.848 s)  cause: no error seen (sensor went quiet)
+128.7944,GAP,encoder,no reading for 18 ms (128.776-128.794 s)  cause: no error seen (sensor went quiet)
+128.8199,GAP,encoder,no reading for 15 ms (128.805-128.820 s)  cause: no error seen (sensor went quiet)
+128.8886,GAP,encoder,no reading for 17 ms (128.871-128.889 s)  cause: no error seen (sensor went quiet)
+128.9282,GAP,encoder,no reading for 22 ms (128.906-128.928 s)  cause: no error seen (sensor went quiet)
+129.0136,GAP,encoder,no reading for 25 ms (128.988-129.014 s)  cause: no error seen (sensor went quiet)
+129.0132,GAP,fsr,no reading for 18 ms (128.995-129.013 s)  cause: no error seen (sensor went quiet)
+129.4602,GAP,encoder,no reading for 16 ms (129.445-129.460 s)  cause: no error seen (sensor went quiet)
+130.2437,GAP,encoder,no reading for 19 ms (130.225-130.244 s)  cause: no error seen (sensor went quiet)
+130.3935,GAP,encoder,no reading for 24 ms (130.369-130.394 s)  cause: no error seen (sensor went quiet)
+130.3827,GAP,fsr,no reading for 18 ms (130.365-130.383 s)  cause: no error seen (sensor went quiet)
+130.4924,GAP,encoder,no reading for 21 ms (130.472-130.492 s)  cause: no error seen (sensor went quiet)
+130.4908,GAP,fsr,no reading for 18 ms (130.473-130.491 s)  cause: no error seen (sensor went quiet)
+130.5957,GAP,encoder,no reading for 20 ms (130.575-130.596 s)  cause: no error seen (sensor went quiet)
+130.6739,GAP,encoder,no reading for 24 ms (130.650-130.674 s)  cause: no error seen (sensor went quiet)
+130.6683,GAP,fsr,no reading for 18 ms (130.650-130.668 s)  cause: no error seen (sensor went quiet)
+130.6899,GAP,encoder,no reading for 16 ms (130.674-130.690 s)  cause: no error seen (sensor went quiet)
+130.7109,GAP,encoder,no reading for 15 ms (130.695-130.711 s)  cause: no error seen (sensor went quiet)
+130.7606,GAP,fsr,no reading for 21 ms (130.739-130.761 s)  cause: no error seen (sensor went quiet)
+130.7714,GAP,encoder,no reading for 30 ms (130.741-130.771 s)  cause: no error seen (sensor went quiet)
+131.1570,GAP,encoder,no reading for 18 ms (131.139-131.157 s)  cause: no error seen (sensor went quiet)
+132.9949,GAP,encoder,no reading for 24 ms (132.971-132.995 s)  cause: no error seen (sensor went quiet)
+132.9946,GAP,fsr,no reading for 19 ms (132.975-132.995 s)  cause: no error seen (sensor went quiet)
+134.5676,GAP,fsr,no reading for 18 ms (134.550-134.568 s)  cause: no error seen (sensor went quiet)
+135.0551,GAP,encoder,no reading for 21 ms (135.034-135.055 s)  cause: no error seen (sensor went quiet)
+139.7130,GAP,encoder,no reading for 18 ms (139.695-139.713 s)  cause: no error seen (sensor went quiet)

@@ -368,7 +368,7 @@ class HardwareSensors:
         from utilities import Logger
 
         self._imus = FastDualIMUReader(bus=imu_bus)
-        self._fsr_enc = SensorData(Logger())
+        self._fsr_enc = SensorData(Logger(), use_can=False)
         self._last = {k: 0.0 for k in FRAME_KEYS}
 
     def read(self):
@@ -391,7 +391,6 @@ class HardwareSensors:
         return dict(f), t1 - t0, t2 - t1
 
     def shutdown(self):
-        # SensorData.shutdown() also zeroes + exits its own motor-mode handle
         try:
             self._fsr_enc.shutdown()
         except Exception:                                  # noqa: BLE001
@@ -1063,7 +1062,7 @@ def main():
                    help="zero = 0 N·m in every frame (shaft does not move); "
                         "computed = send the controller's torque")
     g.add_argument("--torque-cap", type=float, default=2.0)
-    g.add_argument("--command-sign", type=float, default=-1.0)
+    g.add_argument("--command-sign", type=float, default=1.0)
     g.add_argument("--slew", type=float, default=10.0, help="N·m/s (if MotorInterface supports it)")
     args = ap.parse_args()
 

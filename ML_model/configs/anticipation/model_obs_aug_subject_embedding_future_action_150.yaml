@@ -1,0 +1,6 @@
+# Causal observations available at t -> reference ankle moment at t + 150 ms.
+extends: obs_aug_base.yaml
+data:
+  prediction_horizon_ms: 150
+train:
+  wandb_run_name: model_obs_aug_subject_embedding_future_action_150

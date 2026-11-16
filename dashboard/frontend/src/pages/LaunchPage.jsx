@@ -28,6 +28,7 @@ export default function LaunchPage() {
   const [duration, setDuration] = useState(600);
   const [backend, setBackend] = useState("onnx");
   const [assistScale, setAssistScale] = useState(0.02);
+  const [assistanceDelayMs, setAssistanceDelayMs] = useState(50);
   const [replayFile, setReplayFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
@@ -61,6 +62,12 @@ export default function LaunchPage() {
   const selectedModel = models.find((m) => m.id === selectedModelId);
   const isMl = selectedModel?.controller === "ml";
   const isRunning = job?.status === "running";
+
+  useEffect(() => {
+    if (selectedModel?.backends?.length && !selectedModel.backends.includes(backend)) {
+      setBackend(selectedModel.backends.includes("onnx") ? "onnx" : selectedModel.backends[0]);
+    }
+  }, [selectedModelId, models, backend]);
 
   async function handleReplayDrop(file) {
     setError(null);
@@ -100,6 +107,7 @@ export default function LaunchPage() {
         duration: Number(duration),
         backend: isMl ? backend : null,
         assist_scale: isMl ? Number(assistScale) : null,
+        assistance_delay_ms: isMl ? Number(assistanceDelayMs) : null,
       };
       const result = await launchJob(body);
       setJob(result);
@@ -136,10 +144,20 @@ export default function LaunchPage() {
             ))}
           </select>
 
-          {selectedModel && selectedModel.kind === "tcn" && (
+          {selectedModel && selectedModel.controller === "ml" && (
             <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
-              <div>channels: {JSON.stringify(selectedModel.model_arch?.num_channels)}</div>
-              <div>test RMSE: {selectedModel.test_metrics?.rmse_nm_per_kg?.toFixed(4)} Nm/kg</div>
+              <div>{selectedModel.hardware_test_status}</div>
+              {selectedModel.deployment_notes && <div>{selectedModel.deployment_notes}</div>}
+              <div>Prediction: {selectedModel.prediction_horizon_ms > 0
+                ? `${selectedModel.prediction_horizon_ms} ms ahead`
+                : "current time (0 ms)"}</div>
+              <div>Observation timing augmentation: {selectedModel.observation_augmentation ? "yes" : "no"}</div>
+              {selectedModel.input_features?.length > 0 && <div>
+                Sensor channels: {selectedModel.input_features.length}
+                {" · "}acceleration: {selectedModel.input_features.some((f) => f.includes("_Accel_")) ? "included" : "excluded"}
+                {" · "}gyroscope: {selectedModel.input_features.some((f) => f.includes("_Gyro_")) ? "included" : "excluded"}
+              </div>}
+              <div>{selectedModel.forecast_metrics?.rmse_nm_per_kg != null ? "Streaming test RMSE" : "Test RMSE"}: {(selectedModel.forecast_metrics?.rmse_nm_per_kg ?? selectedModel.test_metrics?.rmse_nm_per_kg)?.toFixed(4)} Nm/kg</div>
               <div>
                 backends available: {selectedModel.backends?.join(", ") || "none found"}
               </div>
@@ -249,19 +267,53 @@ export default function LaunchPage() {
                 </label>
               )}
               <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
-                Backend
+                Inference backend
                 <select
                   value={backend}
                   onChange={(e) => setBackend(e.target.value)}
                   disabled={isRunning}
                   style={{ width: "100%", padding: 6, marginTop: 4 }}
                 >
-                  {(selectedModel?.backends || ["onnx", "jit"]).map((b) => (
-                    <option key={b} value={b}>
-                      {b}
+                  {(selectedModel?.backend_options || []).map((b) => (
+                    <option key={b.id} value={b.id} disabled={!b.available}>
+                      {b.label}{!b.available ? " — unavailable" : ""}
                     </option>
                   ))}
                 </select>
+                {backend === "trt" && (
+                  <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                    Builds and checks a GPU engine on this Jetson before the controller starts.
+                    The first launch or a wearer change can take longer.
+                  </div>
+                )}
+                {selectedModel?.backend_options?.find((b) => b.id === "trt" && !b.available)?.reason && (
+                  <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                    TensorRT: {selectedModel.backend_options.find((b) => b.id === "trt").reason}.
+                  </div>
+                )}
+              </label>
+              <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
+                Assistance delay (ms)
+                <input
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="1"
+                  value={assistanceDelayMs}
+                  onChange={(e) => setAssistanceDelayMs(e.target.value)}
+                  disabled={isRunning}
+                  style={{ width: "100%", padding: 6, marginTop: 4 }}
+                />
+                <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                  Adds delay after prediction. 0 disables it. Set before launching;
+                  swing still stops assistance immediately.
+                </div>
+                {selectedModel?.prediction_horizon_ms > 0 && (
+                  <div style={{ marginTop: 6, color: "var(--text-dim)" }}>
+                    This model predicts {selectedModel.prediction_horizon_ms} ms ahead;
+                    the output delay is separate from that prediction horizon.
+                  </div>
+                )}
               </label>
               <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
                 Assistance scale

@@ -6,7 +6,8 @@ is checked by listening for the status frames it already broadcasts. This file
 never sends a CAN frame and never writes to an I2C device.
 
 I2C is skipped while a controller is running: a stray read from here could take
-bytes out of its BNO085 stream.
+bytes out of its BNO085 stream. While sensor_monitor.py is reading (Live or Ankle
+Limits page open), its per-device status is reported instead of probing.
 """
 from __future__ import annotations
 
@@ -57,6 +58,11 @@ def _controller_running() -> bool:
 
 
 def _check_i2c() -> dict[str, dict[str, Any]]:
+    # While the Live/Ankle Limits sensor monitor holds the bus, a probe byte could
+    # land inside a BNO085 packet it is reading; report what the monitor sees instead.
+    from .sensor_monitor import monitor
+    if monitor.reading():
+        return monitor.device_status()
     if _controller_running():
         return {name: {"ok": False, "reason": "Not checked: a run is using the sensors"}
                 for name in I2C_DEVICES}

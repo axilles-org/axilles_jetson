@@ -17,9 +17,11 @@ from __future__ import annotations
 import asyncio
 import importlib.util
 import json
+import math
 import shutil
 import socket
 import sqlite3
+import time
 import uuid
 import zipfile
 from pathlib import Path
@@ -33,7 +35,9 @@ from . import process_manager
 from .model_catalog import MODEL_NAMES
 from .experiments import router as experiments_router
 from .health import router as health_router
+from . import ankle_limits
 from .ankle_limits import router as ankle_limits_router
+from .sensor_monitor import monitor as sensor_monitor
 
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
@@ -92,17 +96,92 @@ class LiveHub:
 hub = LiveHub()
 
 
+def _read_encoder_offset() -> float:
+    """ENCODER_OFFSET from TBE_controller/utilities.py, read as text (no import)."""
+    import re
+    try:
+        text = (REPO_ROOT / "TBE_controller" / "utilities.py").read_text()
+        m = re.search(r"^ENCODER_OFFSET\s*=\s*([-+0-9.eE]+)", text, re.MULTILINE)
+        if m:
+            return float(m.group(1))
+    except OSError:
+        pass
+    return 165.0
+
+
+# Both controllers log the encoder as raw AS5600 degrees minus ENCODER_OFFSET
+# (SensorData.readEncoder): TBE as ankle_angle, ML as ankle_encoder_deg.
+ENCODER_OFFSET_DEG = _read_encoder_offset()
+VELOCITY_CUTOFF_HZ = 10.0
+
+
+class LiveEnricher:
+    """Adds the fields every Live chart reads, whatever the source:
+
+    source              "monitor" (dashboard sensor reader) or "controller"
+    server_t            backend wall clock, one time axis across the hand-over
+    ankle_deg           encoder minus the Ankle Limits standing angle, or raw if unset
+    ankle_zeroed        1 when ankle_deg is zeroed to standing
+    ankle_velocity_dps  low-passed d(ankle_deg)/dt
+    """
+
+    def __init__(self) -> None:
+        self._prev: tuple[str, float, float] | None = None   # source, t, angle
+        self._vel = 0.0
+
+    def __call__(self, msg: dict[str, Any]) -> dict[str, Any]:
+        source = msg.get("source") or "controller"
+        msg["source"] = source
+        now = time.time()
+        msg["server_t"] = now
+
+        raw = msg.get("encoder_raw_deg")
+        if source == "controller":
+            logged = msg.get("ankle_encoder_deg", msg.get("ankle_angle"))
+            if isinstance(logged, (int, float)):
+                raw = (logged + ENCODER_OFFSET_DEG) % 360.0
+                ankle_limits.record(raw)
+        if not isinstance(raw, (int, float)):
+            msg["ankle_deg"] = None
+            msg["ankle_velocity_dps"] = None
+            self._prev = None
+            return msg
+
+        standing = ankle_limits.standing_deg()
+        angle = raw if standing is None else ankle_limits.offset(raw, standing)
+        msg["ankle_deg"] = angle
+        msg["ankle_zeroed"] = int(standing is not None)
+
+        t = msg.get("t") if isinstance(msg.get("t"), (int, float)) else now
+        prev = self._prev
+        if prev is not None and prev[0] == source and 0 < t - prev[1] < 0.5:
+            dt = t - prev[1]
+            d = (angle - prev[2] + 180.0) % 360.0 - 180.0
+            alpha = dt / (dt + 1.0 / (2 * math.pi * VELOCITY_CUTOFF_HZ))
+            self._vel += alpha * (d / dt - self._vel)
+        else:
+            self._vel = 0.0
+        self._prev = (source, t, angle)
+        msg["ankle_velocity_dps"] = self._vel
+        return msg
+
+
 async def udp_relay_task() -> None:
-    """Non-blocking UDP listener that forwards RunLogger samples to WebSocket clients."""
+    """Non-blocking UDP listener that forwards RunLogger and sensor-monitor samples
+    to WebSocket clients, with the shared Live-page fields added."""
     loop = asyncio.get_running_loop()
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setblocking(False)
     sock.bind((LIVE_RELAY_HOST, LIVE_RELAY_PORT))
+    enrich = LiveEnricher()
 
     while True:
         try:
             data = await loop.sock_recv(sock, 65536)
-            await hub.broadcast(data.decode("utf-8"))
+            msg = json.loads(data.decode("utf-8"))
+            if not isinstance(msg, dict):
+                continue
+            await hub.broadcast(json.dumps(enrich(msg)))
         except Exception:
             await asyncio.sleep(0.01)
 
@@ -133,6 +212,7 @@ async def on_startup() -> None:
 async def ws_live(ws: WebSocket) -> None:
     await ws.accept()
     await hub.register(ws)
+    sensor_monitor.client_connected()      # sensor data even with no controller running
     try:
         while True:
             # Client doesn't need to send anything; keep the connection open.
@@ -140,6 +220,7 @@ async def ws_live(ws: WebSocket) -> None:
     except WebSocketDisconnect:
         pass
     finally:
+        sensor_monitor.client_disconnected()
         await hub.unregister(ws)
 
 

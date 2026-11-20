@@ -2,50 +2,61 @@ import React, { useEffect, useRef } from "react";
 import uPlot from "uplot";
 
 /**
- * Rolling live chart. Keeps the last `windowSize` samples per series and
- * redraws efficiently via uPlot (handles high-frequency data far better
- * than SVG-based chart libraries at 100-200Hz).
+ * Rolling live chart (uPlot handles 100-200 Hz far better than SVG charts).
  *
- * seriesData: { t: number[], values: { [label]: number[] } }
+ * series: [{ label, color, right? }]  — right: true puts it on a second y-axis
+ * data:   [t[], ...one array per series]
+ * The plot is rebuilt when the series list changes (e.g. a line appears once a
+ * controller starts sending it); otherwise only its data is updated.
  */
-export default function LiveChart({ title, seriesData, colors, unit }) {
+export default function LiveChart({ title, subtitle, series, data, unit, rightUnit }) {
   const containerRef = useRef(null);
   const plotRef = useRef(null);
+  const signatureRef = useRef("");
+
+  const signature = series.map((s) => `${s.label}|${s.right ? 1 : 0}`).join(",");
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const labels = Object.keys(seriesData.values);
-    const data = [seriesData.t, ...labels.map((l) => seriesData.values[l])];
+    if (plotRef.current && signatureRef.current !== signature) {
+      plotRef.current.destroy();
+      plotRef.current = null;
+    }
 
     if (!plotRef.current) {
+      const hasRight = series.some((s) => s.right);
+      const axes = [
+        { stroke: "#8b93a7", grid: { stroke: "#232838" } },
+        { stroke: "#8b93a7", grid: { stroke: "#232838" }, label: unit, scale: "y" },
+      ];
+      if (hasRight) {
+        axes.push({ stroke: "#c792ea", grid: { show: false }, label: rightUnit, side: 1, scale: "y2" });
+      }
       const opts = {
         title: "",
         width: containerRef.current.clientWidth,
         height: 220,
         series: [
           {},
-          ...labels.map((label, i) => ({
-            label,
-            stroke: colors?.[i] ?? "#5b9dff",
+          ...series.map((s) => ({
+            label: s.label,
+            stroke: s.color ?? "#5b9dff",
             width: 1.5,
             points: { show: false },
+            scale: s.right ? "y2" : "y",
           })),
         ],
-        axes: [
-          { stroke: "#8b93a7", grid: { stroke: "#232838" } },
-          { stroke: "#8b93a7", grid: { stroke: "#232838" }, label: unit },
-        ],
+        axes,
         legend: { show: true },
         scales: { x: { time: false } },
       };
       plotRef.current = new uPlot(opts, data, containerRef.current);
+      signatureRef.current = signature;
     } else {
       plotRef.current.setData(data);
     }
-
-    return () => {};
-  }, [seriesData, colors, unit]);
+  }, [signature, data, unit, rightUnit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Follow the card's width, e.g. when the assistance panel appears beside
   // the charts after they were first drawn
@@ -74,7 +85,10 @@ export default function LiveChart({ title, seriesData, colors, unit }) {
 
   return (
     <div className="card">
-      <h3>{title}</h3>
+      <h3>
+        {title}
+        {subtitle && <span className="chart-subtitle"> · {subtitle}</span>}
+      </h3>
       <div ref={containerRef} style={{ overflow: "hidden" }} />
     </div>
   );

@@ -23,6 +23,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .sensor_monitor import monitor as sensor_monitor
+
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ML_MODEL_DIR = REPO_ROOT / "ML_model"
 TBE_DIR = REPO_ROOT / "TBE_controller"
@@ -99,6 +101,19 @@ class ProcessManager:
             raise PermissionError(
                 "Refusing to launch with --arm without --start-passive: an armed "
                 "run from the dashboard must start passive."
+            )
+        if self.is_running:
+            raise RuntimeError(
+                f"A job is already running (job_id={self._state.job_id}). "
+                "Stop it before starting another."
+            )
+
+        # The dashboard's own sensor reader must let go of the I2C bus before the
+        # controller opens it. Not under self._lock: this can wait a few seconds.
+        if not sensor_monitor.suspend():
+            raise RuntimeError(
+                "The dashboard sensor monitor is still setting up the IMUs and has not "
+                "released the I2C bus. Try again in a few seconds."
             )
 
         with self._lock:

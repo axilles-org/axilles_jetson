@@ -24,7 +24,7 @@
   "num_input_channels": 14,
   "output_units": "Nm/kg",
   "subject_mass_kg": 75.0,
-  "subject_idx": 11,
+  "subject_idx": 0,
   "applies_input_scaler": true,
   "applies_output_scaler": true,
   "control_rate_hz": 100,

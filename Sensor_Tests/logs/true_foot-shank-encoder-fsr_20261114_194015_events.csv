@@ -1,0 +1,7 @@
+t_s,kind,who,detail
+0.3779,STALL,FSR ADC,I2C call blocked 26 ms
+0.4050,GAP,foot_acc,no reading for 32 ms (0.373-0.405 s)  cause: STALL
+0.4098,GAP,shank_acc,no reading for 35 ms (0.375-0.410 s)  cause: STALL
+0.4123,GAP,shank_gyro,no reading for 37 ms (0.375-0.412 s)  cause: STALL
+0.4148,GAP,encoder,no reading for 38 ms (0.377-0.415 s)  cause: STALL
+0.4040,GAP,fsr,no reading for 31 ms (0.373-0.404 s)  cause: STALL

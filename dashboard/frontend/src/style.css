@@ -567,3 +567,17 @@ tr.clickable:hover {
     position: static;
   }
 }
+
+/* ── Live page: always-on sensor stream ─────────────────────────────────── */
+
+.chart-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.live-problems {
+  margin: -8px 0 16px;
+  font-size: 13px;
+  color: var(--warn);
+}

@@ -30,7 +30,7 @@ python dashboard/backend/simulate_run.py --duration 30
 
 | Page | What it does |
 |---|---|
-| **Live** | Real-time charts for whichever trial is currently streaming; Assist ON/OFF + scale for a live ML run |
+| **Live** | Always-on charts. With no controller running, the dashboard reads the sensors itself (encoder, FSRs, IMUs); controller outputs (torque, prediction, gait state) show 0 until a controller streams. Encoder is zeroed to the Ankle Limits standing angle when set, raw otherwise; the TCN calibrated angle joins the encoder chart on its own axis during an ML run. Assist ON/OFF + scale for a live ML run |
 | **Launch** | Pick a model, wearer (mass, height, sex), assistance scale, torque cap and mode; start/stop, watch the console |
 | **Runs** | History table, filter/search, diff two runs' model config, import/export |
 | **Experiments** | GaTech → exo transform verification (metrics + stride overlays) and transform-ablation test results |
@@ -44,6 +44,7 @@ backend/
   server.py            FastAPI app — history API, live WebSocket relay, launch/stop, model + sample listing
   run_logger.py         Recorder wired into each controller's loop (non-blocking; writes Parquet + SQLite, relays live over UDP)
   experiments.py        Read-only API over ML_model/runs/{transform_verification,ablation}
+  sensor_monitor.py     Dashboard-side sensor reader for Live/Ankle Limits while no controller runs; hands the I2C bus to a launch
   ankle_limits.py       Ankle Limits page: samples the AS5600 (read-only) while the page is open, tracks max offsets from standing
   process_manager.py    Launches/stops a controller subprocess for the Launch page; blocks any --arm (torque) invocation
   simulate_run.py        Fake-trial generator, for trying the dashboard with no hardware
@@ -71,6 +72,12 @@ and tight-shoe conditions. Selectable in the Launch page instead of live
 sensors, so the ML controller runs end-to-end on any machine.
 
 ## Safety
+
+Sensor monitor (`backend/sensor_monitor.py`): I2C only, imports no CAN code. It
+writes the ADS1115 config register per conversion and soft-resets/enables the
+BNO085s when it starts, as the controllers do. It runs only while the Live page
+is connected or Ankle Limits is polling, never while a controller process is
+running, and a Launch waits until it has closed every I2C handle.
 
 Modes: **mock** (`jetson_mock_deploy.py`, no torque code path), **dry-run**
 (`jetson_deploy.py --dry-run`, never transmitted) and **live**

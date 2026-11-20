@@ -131,148 +131,214 @@ function AssistPanel({ latest }) {
   );
 }
 
-const WINDOW_SIZE = 600; // ~4-6s of history depending on control rate
+const WINDOW_S = 10; // seconds of history on screen
+const STALE_MS = 1500; // no sample for this long: say so
 
-// Different controllers log different field names (TBE fixed-profile vs the
-// ML/TCN controller). Rather than hardcode one schema, group whatever fields
-// actually show up in the live stream into sensible chart panels by name.
-const CHART_GROUPS = [
+const MONITOR_DEVICES = {
+  imu_foot: "Foot IMU",
+  imu_shank: "Shank IMU",
+  encoder: "Encoder",
+  adc: "FSR ADC",
+};
+
+// Charts are always shown. Sensor data comes from the dashboard's sensor monitor
+// while no controller runs, then from the controller's own stream. A series reads
+// the first of its keys present in a sample:
+//   zero: true      controller-only output, drawn as 0 until a controller sends it
+//   optional: true  added to the chart once it first arrives (TCN calibrated angle)
+//   right: true     second y-axis
+const imuAxes = (prefix, kind, letter) =>
+  ["x", "y", "z"].map((axis, i) => ({
+    label: `${prefix} ${kind} ${axis}`,
+    keys: [`${prefix}_${letter}${axis}`],
+    color: ["#ff5c5c", "#3ddc84", "#5b9dff"][i],
+  }));
+
+const CHARTS = [
   {
+    id: "ankle",
     title: "Ankle Angle / Encoder",
     unit: "deg",
-    colors: ["#5b9dff", "#3ddc84"],
-    fields: ["ankle_angle", "ankle_encoder_deg", "ankle_angle_deg"],
+    rightUnit: "deg (TCN)",
+    series: [
+      { label: "encoder", keys: ["ankle_deg"], color: "#5b9dff" },
+      { label: "TCN calibrated", keys: ["ankle_angle_deg"], color: "#c792ea", right: true, optional: true },
+    ],
   },
   {
+    id: "velocity",
     title: "Ankle Velocity",
     unit: "deg/s",
-    colors: ["#ffb238"],
-    fields: ["ankle_velocity"],
+    series: [{ label: "velocity", keys: ["ankle_velocity_dps"], color: "#ffb238" }],
   },
   {
+    id: "torque",
     title: "Torque",
-    unit: "Nm",
-    colors: ["#ff5c5c", "#ffb238", "#5b9dff"],
-    fields: ["torque_cmd", "assist_cmd_nm", "sent_torque_nm"],
+    unit: "N·m",
+    series: [
+      { label: "TBE command", keys: ["torque_cmd"], color: "#ff5c5c", zero: true },
+      { label: "ML command", keys: ["assist_cmd_nm"], color: "#ffb238", zero: true },
+      { label: "ML sent", keys: ["sent_torque_nm"], color: "#5b9dff", zero: true },
+    ],
   },
   {
+    id: "prediction",
     title: "ML Prediction",
-    unit: "Nm/kg",
-    colors: ["#c792ea"],
-    fields: ["predicted_nm_per_kg"],
+    unit: "N·m/kg",
+    series: [{ label: "predicted", keys: ["predicted_nm_per_kg"], color: "#c792ea", zero: true }],
   },
   {
+    id: "fsr",
     title: "FSR (Heel / Toe)",
-    unit: "raw",
-    colors: ["#3ddc84", "#5b9dff"],
-    fields: ["heel_fsr", "toe_fsr", "heel_fsr_raw", "toe_fsr_raw"],
+    unit: "counts",
+    series: [
+      { label: "heel", keys: ["heel_fsr_raw", "heel_fsr"], color: "#3ddc84" },
+      { label: "toe", keys: ["toe_fsr_raw", "toe_fsr"], color: "#5b9dff" },
+    ],
   },
   {
+    id: "gait",
     title: "Gait State",
     unit: "",
-    colors: ["#3ddc84", "#ffb238", "#5b9dff", "#ff5c5c", "#c792ea"],
-    fields: ["stance", "ramp", "session_ramp", "assist_on", "calibrated"],
+    series: ["stance", "ramp", "session_ramp", "assist_on", "calibrated"].map((k, i) => ({
+      label: k,
+      keys: [k],
+      color: ["#3ddc84", "#ffb238", "#5b9dff", "#ff5c5c", "#c792ea"][i],
+      zero: true,
+    })),
   },
+  { id: "foot_acc", title: "Foot IMU Accel", unit: "m/s²", series: imuAxes("foot", "accel", "a") },
+  { id: "foot_gyro", title: "Foot IMU Gyro", unit: "rad/s", series: imuAxes("foot", "gyro", "g") },
+  { id: "shank_acc", title: "Shank IMU Accel", unit: "m/s²", series: imuAxes("shank", "accel", "a") },
+  { id: "shank_gyro", title: "Shank IMU Gyro", unit: "rad/s", series: imuAxes("shank", "gyro", "g") },
 ];
 
+const ALL_SERIES = CHARTS.flatMap((c) => c.series.map((s) => ({ ...s, id: `${c.id}:${s.label}` })));
+
+function pick(msg, keys) {
+  for (const k of keys) {
+    if (typeof msg[k] === "number" && Number.isFinite(msg[k])) return msg[k];
+  }
+  return null;
+}
+
 function makeRing() {
-  return { t: [], values: {} };
+  return { t: [], values: Object.fromEntries(ALL_SERIES.map((s) => [s.id, []])) };
 }
 
 export default function LivePage() {
   const [connected, setConnected] = useState(false);
-  const [activeRunId, setActiveRunId] = useState(null);
-  const [controllerLabel, setControllerLabel] = useState(null);
-  const [tick, setTick] = useState(0);
+  const [, setTick] = useState(0);
   const ringRef = useRef(makeRing());
-  const startTimeRef = useRef(null);
-  const seenFieldsRef = useRef(new Set());
+  const startRef = useRef(null);
+  const seenRef = useRef(new Set()); // optional series that have arrived
   const latestRef = useRef({});
+  const lastMsgRef = useRef(0);
+  const frameRef = useRef(null);
 
   useEffect(() => {
+    const redraw = () => {
+      if (frameRef.current !== null) return;
+      frameRef.current = requestAnimationFrame(() => {
+        frameRef.current = null;
+        setTick((n) => n + 1);
+      });
+    };
+
     const ws = connectLiveSocket((msg) => {
       setConnected(true);
       latestRef.current = msg;
-      setActiveRunId(msg.run_id);
-      if (msg.controller) setControllerLabel(msg.controller);
+      lastMsgRef.current = Date.now();
 
-      if (startTimeRef.current === null) startTimeRef.current = msg.t;
-      const relT = msg.t - startTimeRef.current;
-
+      const t = typeof msg.server_t === "number" ? msg.server_t : Date.now() / 1000;
+      if (startRef.current === null) startRef.current = t;
       const ring = ringRef.current;
-      ring.t.push(relT);
-
-      for (const [key, value] of Object.entries(msg)) {
-        if (typeof value !== "number") continue;
-        if (key === "t") continue;
-        seenFieldsRef.current.add(key);
-        if (!ring.values[key]) {
-          // backfill so this series stays aligned with ring.t in length
-          ring.values[key] = new Array(ring.t.length - 1).fill(null);
-        }
-        ring.values[key].push(value);
-      }
-      // any field not present in this sample stays aligned via null padding
-      for (const key of Object.keys(ring.values)) {
-        if (!(key in msg)) ring.values[key].push(null);
+      ring.t.push(t - startRef.current);
+      for (const s of ALL_SERIES) {
+        let v = pick(msg, s.keys);
+        if (v !== null && s.optional) seenRef.current.add(s.id);
+        if (v === null && s.zero) v = 0;
+        ring.values[s.id].push(v);
       }
 
-      if (ring.t.length > WINDOW_SIZE) {
-        ring.t.shift();
-        Object.keys(ring.values).forEach((k) => ring.values[k].shift());
+      // drop samples older than the window, in batches
+      const cutoff = ring.t[ring.t.length - 1] - WINDOW_S;
+      if (ring.t[0] < cutoff - 1) {
+        let n = 0;
+        while (n < ring.t.length && ring.t[n] < cutoff) n++;
+        ring.t.splice(0, n);
+        for (const arr of Object.values(ring.values)) arr.splice(0, n);
       }
-
-      setTick((n) => n + 1);
+      redraw();
     });
 
     ws.onopen = () => setConnected(true);
     ws.onclose = () => setConnected(false);
 
-    return () => ws.close();
+    // re-render now and then so a stalled stream shows as stalled
+    const staleTimer = setInterval(() => setTick((n) => n + 1), 500);
+
+    return () => {
+      ws.close();
+      clearInterval(staleTimer);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    };
   }, []);
 
   const ring = ringRef.current;
-  const seen = seenFieldsRef.current;
+  const latest = latestRef.current;
+  const stale = Date.now() - lastMsgRef.current > STALE_MS;
+  const fromMonitor = latest.source === "monitor";
 
-  const activeGroups = CHART_GROUPS.map((group) => {
-    const presentFields = group.fields.filter((f) => seen.has(f));
-    return { ...group, presentFields };
-  }).filter((g) => g.presentFields.length > 0);
+  let statusText;
+  if (!connected) statusText = "Waiting for the dashboard backend…";
+  else if (stale) statusText = "Connected · no sensor data";
+  else if (fromMonitor) statusText = "Sensors only · no controller running";
+  else statusText = `Controller running${latest.run_id ? ` · run ${latest.run_id}` : ""}`;
+
+  const problems =
+    !stale && fromMonitor && latest.monitor
+      ? Object.entries(latest.monitor).map(([dev, reason]) => `${MONITOR_DEVICES[dev] ?? dev}: ${reason}`)
+      : [];
+
+  const ankleSubtitle = stale
+    ? null
+    : latest.ankle_zeroed === 1
+    ? "zeroed to standing angle"
+    : "raw (no standing angle set on Ankle Limits)";
 
   return (
     <div className="live-layout">
       <div className="live-main">
         <div className="status-row">
-          <span className={`status-dot ${connected ? "connected" : ""}`} />
-          <span>{connected ? "Connected to live relay" : "Waiting for connection..."}</span>
-          {activeRunId && <span style={{ color: "var(--text-dim)" }}>· run {activeRunId}</span>}
-          {controllerLabel && <span style={{ color: "var(--text-dim)" }}>· {controllerLabel}</span>}
+          <span className={`status-dot ${connected && !stale ? "connected" : ""}`} />
+          <span>{statusText}</span>
+          {!fromMonitor && !stale && latest.controller && (
+            <span style={{ color: "var(--text-dim)" }}>· {latest.controller}</span>
+          )}
         </div>
-
-        {!connected && (
-          <p style={{ color: "var(--text-dim)" }}>
-            No live data yet. Start a controller (TBE_controller/main.py or
-            ML_model/scripts/jetson_deploy.py) or the fake-data simulator to see
-            charts update here.
-          </p>
-        )}
+        {problems.length > 0 && <p className="live-problems">{problems.join(" · ")}</p>}
 
         <div className="grid">
-          {activeGroups.map((group) => (
-            <LiveChart
-              key={group.title}
-              title={group.title}
-              unit={group.unit}
-              colors={group.colors}
-              seriesData={{
-                t: ring.t,
-                values: Object.fromEntries(group.presentFields.map((f) => [f, ring.values[f] || []])),
-              }}
-            />
-          ))}
+          {CHARTS.map((chart) => {
+            const series = chart.series.filter(
+              (s) => !s.optional || seenRef.current.has(`${chart.id}:${s.label}`)
+            );
+            return (
+              <LiveChart
+                key={chart.id}
+                title={chart.title}
+                subtitle={chart.id === "ankle" ? ankleSubtitle : null}
+                unit={chart.unit}
+                rightUnit={chart.rightUnit}
+                series={series}
+                data={[ring.t, ...series.map((s) => ring.values[`${chart.id}:${s.label}`])]}
+              />
+            );
+          })}
         </div>
       </div>
-      <AssistPanel latest={latestRef.current} />
+      <AssistPanel latest={latest} />
     </div>
   );
 }

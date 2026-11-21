@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Command-line driver for an APA102 / SK9822 LED strip on the Jetson 40-pin SPI1.
+"""Command-line control of the DotStar strip through the Arduino Micro bridge.
 
 Examples:
-    python led-strip/led_strip.py --num 30 test          # find the color order
-    python led-strip/led_strip.py --num 30 solid 255 0 0
-    python led-strip/led_strip.py --num 30 rainbow
-    python led-strip/led_strip.py --num 30 chase 0 0 255
-    python led-strip/led_strip.py --num 30 off
+    python3 led-strip/led_strip.py --num 30 test          # R, G, B, W for 2 s each
+    python3 led-strip/led_strip.py --num 30 solid 255 0 0
+    python3 led-strip/led_strip.py --num 30 rainbow
+    python3 led-strip/led_strip.py --num 30 chase 0 0 255
+    python3 led-strip/led_strip.py --num 30 off
 
 Animations run until Ctrl+C. The strip is turned off on exit, except after
 `solid`, which leaves the color on.
@@ -17,7 +17,7 @@ import argparse
 import sys
 import time
 
-from dotstar import DotStar, wheel
+from dotstar import DEFAULT_PORT, DotStar, wheel
 
 
 def cmd_off(strip: DotStar, args) -> None:
@@ -33,7 +33,7 @@ def cmd_test(strip: DotStar, args) -> None:
     """Show red, green, blue, white for 2 s each; prints what should be visible."""
     for name, color in (("RED", (255, 0, 0)), ("GREEN", (0, 255, 0)),
                         ("BLUE", (0, 0, 255)), ("WHITE", (255, 255, 255))):
-        print(f"Strip should be {name}")
+        print(f"Strip should be {name}", flush=True)
         strip.fill(color)
         strip.show()
         time.sleep(2.0)
@@ -79,17 +79,7 @@ def cmd_blink(strip: DotStar, args) -> None:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--num", type=int, required=True, help="number of LEDs on the strip")
-    p.add_argument("--backend", choices=("gpio", "spi"), default="gpio",
-                   help="gpio: bit-bang pins 19/23, no setup needed (default). "
-                        "spi: hardware SPI1, needs SPI1 enabled with jetson-io")
-    p.add_argument("--clock", default="PZ.03",
-                   help="gpio backend: clock line name (PZ.03 = pin 23, PZ.04 = pin 21, PZ.06 = pin 24)")
-    p.add_argument("--data", default="PZ.05", help="gpio backend: data line name (PZ.05 = pin 19)")
-    p.add_argument("--half-period", type=float, default=0.0,
-                   help="gpio backend: seconds per clock half-period (0 = as fast as possible)")
-    p.add_argument("--bus", type=int, default=0, help="spidev bus (0 = SPI1 on pins 19/23)")
-    p.add_argument("--device", type=int, default=0, help="spidev chip select (unused by the strip)")
-    p.add_argument("--speed", type=int, default=4_000_000, help="SPI clock in Hz (default 4 MHz)")
+    p.add_argument("--port", default=DEFAULT_PORT, help="Arduino serial port")
     p.add_argument("--order", default="BGR", help="wire color order (default BGR)")
     p.add_argument("--brightness", type=float, default=0.2, help="0.0-1.0 (default 0.2)")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -116,10 +106,7 @@ def main() -> int:
 
     args = p.parse_args()
 
-    strip = DotStar(args.num, bus=args.bus, device=args.device, speed_hz=args.speed,
-                    order=args.order, brightness=args.brightness, backend=args.backend,
-                    clock_line=args.clock, data_line=args.data,
-                    half_period_s=args.half_period)
+    strip = DotStar(args.num, port=args.port, order=args.order, brightness=args.brightness)
     keep_on = args.cmd == "solid"
     try:
         args.func(strip, args)

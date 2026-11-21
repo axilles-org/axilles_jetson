@@ -1,7 +1,11 @@
-"""Minimal APA102 / SK9822 ("DotStar") driver: bit-banged GPIO (default) or spidev.
+"""APA102 / SK9822 ("DotStar") driver for the Jetson, through an Arduino Micro.
 
-The strip only needs data (DI) and clock (CI). The SPI chip-select and MISO pins
-are not used. Frame format, sent MSB first in SPI mode 0:
+The Jetson's header pins are 3.3 V, and the 5 V strip ignores 3.3 V data, so the
+strip hangs off an Arduino Micro (5 V pins) running arduino/dotstar_bridge. This
+module builds each APA102 frame and sends it over USB serial; the Arduino clocks
+the bytes out on D14 (data) and D15 (clock).
+
+Frame format (MSB first):
 
     start frame   4 x 0x00
     per LED       0b111xxxxx (5-bit global brightness), then 3 color bytes
@@ -9,20 +13,23 @@ are not used. Frame format, sent MSB first in SPI mode 0:
                   reaches the last LED of an APA102 chain
 
 The end frame uses 0x00, not 0xFF: if the strip is longer than ``num_leds``,
-the extra LEDs see the bytes as another start frame and stay as they were,
-instead of being driven to full white.
+the extra LEDs see another start frame and keep their state instead of going
+full white.
 
-Colors are given as (r, g, b) tuples in 0-255. ``order`` is the byte order the
-strip expects on the wire after the brightness byte: "BGR" for most APA102
-strips, though some batches use "BRG" or "GBR". Run ``led_strip.py test`` to
-find the right one.
+Serial packet: b"DS" + 2-byte big-endian length + frame bytes. The Arduino
+answers b"K" once the bytes are on the wire.
+
+Colors are (r, g, b) tuples in 0-255. ``order`` is the byte order on the wire
+after the brightness byte: "BGR" for most APA102 strips.
 """
 from __future__ import annotations
 
+import time
 from typing import Iterable, Sequence
 
 Color = tuple[int, int, int]
 
+DEFAULT_PORT = "/dev/serial/by-id/usb-Arduino_LLC_Arduino_Micro-if00"
 _VALID_ORDERS = {"RGB", "RBG", "GRB", "GBR", "BRG", "BGR"}
 
 
@@ -30,17 +37,10 @@ class DotStar:
     def __init__(
         self,
         num_leds: int,
-        bus: int = 0,
-        device: int = 0,
-        speed_hz: int = 4_000_000,
+        port: str = DEFAULT_PORT,
         order: str = "BGR",
         brightness: float = 0.2,
-        auto_show: bool = False,
-        backend: str = "gpio",
-        gpio_chip: str = "/dev/gpiochip0",
-        clock_line: str = "PZ.03",
-        data_line: str = "PZ.05",
-        half_period_s: float = 0.0,
+        timeout_s: float = 2.0,
     ) -> None:
         if num_leds < 1:
             raise ValueError("num_leds must be at least 1")
@@ -48,21 +48,19 @@ class DotStar:
         if order not in _VALID_ORDERS:
             raise ValueError(f"order must be one of {sorted(_VALID_ORDERS)}")
 
-        if backend not in ("gpio", "spi"):
-            raise ValueError("backend must be 'gpio' or 'spi'")
+        import serial
 
         self.num_leds = num_leds
-        self.auto_show = auto_show
         self._index = tuple("RGB".index(c) for c in order)
         self._pixels: list[Color] = [(0, 0, 0)] * num_leds
-        self._brightness = min(max(float(brightness), 0.0), 1.0)
-
-        if backend == "spi":
-            self._out = _SpiOut(bus, device, speed_hz)
-        else:
-            self._out = _GpioOut(gpio_chip, clock_line, data_line, half_period_s)
-
+        self.brightness = brightness
         self._end_frame = bytes(4 + (num_leds + 15) // 16)
+
+        # 115200 is nominal (native USB ignores it). Never 1200: that baud rate
+        # resets an Arduino Micro into its bootloader.
+        self._ser = serial.Serial(port, 115200, timeout=timeout_s, write_timeout=timeout_s)
+        time.sleep(0.2)                  # let the sketch see DTR and print its greeting
+        self._ser.reset_input_buffer()
 
     # brightness -----------------------------------------------------------
     @property
@@ -72,8 +70,6 @@ class DotStar:
     @brightness.setter
     def brightness(self, value: float) -> None:
         self._brightness = min(max(float(value), 0.0), 1.0)
-        if self.auto_show:
-            self.show()
 
     # pixel access ---------------------------------------------------------
     def __len__(self) -> int:
@@ -84,137 +80,57 @@ class DotStar:
 
     def __setitem__(self, i: int, color: Sequence[int]) -> None:
         self._pixels[i] = _clamp(color)
-        if self.auto_show:
-            self.show()
 
     def fill(self, color: Sequence[int]) -> None:
         self._pixels = [_clamp(color)] * self.num_leds
-        if self.auto_show:
-            self.show()
 
     def set_all(self, colors: Iterable[Sequence[int]]) -> None:
         colors = [_clamp(c) for c in colors]
         if len(colors) != self.num_leds:
             raise ValueError(f"expected {self.num_leds} colors, got {len(colors)}")
         self._pixels = colors
-        if self.auto_show:
-            self.show()
 
     # output ---------------------------------------------------------------
     def show(self) -> None:
-        """Send the current buffer to the strip."""
-        # Brightness goes into the 5-bit global field rather than scaling the
-        # 8-bit color values, so dim colors keep their full 8-bit resolution.
-        level = round(self._brightness * 31)
-        header = 0xE0 | level
+        """Send the current buffer to the strip and wait for the Arduino's ack."""
+        # Brightness uses the 5-bit global field, so dim colors keep full 8-bit
+        # color resolution.
+        header = 0xE0 | round(self._brightness * 31)
         a, b, c = self._index
-        buf = bytearray(4)
+        frame = bytearray(4)
         for px in self._pixels:
-            buf += bytes((header, px[a], px[b], px[c]))
-        buf += self._end_frame
-        self._out.write(buf)
+            frame += bytes((header, px[a], px[b], px[c]))
+        frame += self._end_frame
+        if len(frame) > 0xFFFF:
+            raise ValueError("frame too long for one packet")
+
+        self._ser.write(b"DS" + len(frame).to_bytes(2, "big") + frame)
+        while True:                      # skip any greeting text until the ack
+            r = self._ser.read(1)
+            if not r:
+                raise TimeoutError("no ack from the Arduino: is dotstar_bridge.ino uploaded?")
+            if r == b"K":
+                return
 
     def off(self) -> None:
         self._pixels = [(0, 0, 0)] * self.num_leds
         self.show()
 
     def close(self, turn_off: bool = True) -> None:
-        if self._out is None:
+        if self._ser is None:
             return
         try:
             if turn_off:
                 self.off()
         finally:
-            self._out.close()
-            self._out = None
+            self._ser.close()
+            self._ser = None
 
     def __enter__(self) -> "DotStar":
         return self
 
     def __exit__(self, *exc) -> None:
         self.close()
-
-
-class _SpiOut:
-    """Hardware SPI through spidev. Needs SPI1 enabled in the pinmux (jetson-io)."""
-
-    def __init__(self, bus: int, device: int, speed_hz: int) -> None:
-        import spidev
-
-        self._dev = spidev.SpiDev()
-        self._dev.open(bus, device)
-        self._dev.mode = 0
-        self._dev.max_speed_hz = speed_hz
-
-    def write(self, buf: bytes) -> None:
-        # writebytes2 splits buffers larger than the spidev bufsiz (4096 by default).
-        self._dev.writebytes2(buf)
-
-    def close(self) -> None:
-        self._dev.close()
-
-
-class _GpioOut:
-    """Bit-banged clock + data on two GPIO lines through libgpiod.
-
-    Needs no pinmux or boot change: it drives the same header pins (19 and 23
-    by default) as plain GPIO outputs. APA102 latches data on the clock's rising
-    edge and has no minimum clock rate, so jitter from Python is harmless; it is
-    only slower, roughly tens of ms per frame for a 30-LED strip.
-
-    On release the lines are set back to inputs, as they were before.
-    """
-
-    def __init__(self, chip: str, clock_line: str, data_line: str,
-                 half_period_s: float = 0.0) -> None:
-        import gpiod
-
-        self._half = half_period_s
-        from gpiod.line import Direction, Value
-
-        self._lo, self._hi = Value.INACTIVE, Value.ACTIVE
-        with gpiod.Chip(chip) as c:
-            self._clk = c.line_offset_from_id(clock_line)
-            self._dat = c.line_offset_from_id(data_line)
-        self._req = gpiod.request_lines(
-            chip,
-            consumer="led-strip",
-            config={(self._clk, self._dat): gpiod.LineSettings(
-                direction=Direction.OUTPUT, output_value=Value.INACTIVE)},
-        )
-        self._input = gpiod.LineSettings(direction=Direction.INPUT)
-
-    def write(self, buf: bytes) -> None:
-        req, clk, dat, lo, hi = self._req, self._clk, self._dat, self._lo, self._hi
-        # Precomputed "clock low + data bit" states for one call per half-period.
-        low_with = ({clk: lo, dat: lo}, {clk: lo, dat: hi})
-        set_values, set_value = req.set_values, req.set_value
-        if self._half > 0:
-            # Slow path: clock low, then data, then clock high, each held for
-            # half_period_s, so the data is settled long before the rising edge.
-            import time
-            half = self._half
-            for byte in buf:
-                for shift in range(7, -1, -1):
-                    set_value(clk, lo)
-                    time.sleep(half / 2)
-                    set_value(dat, hi if (byte >> shift) & 1 else lo)
-                    time.sleep(half / 2)
-                    set_value(clk, hi)
-                    time.sleep(half)
-            set_values(low_with[0])
-            return
-        for byte in buf:
-            for shift in range(7, -1, -1):
-                set_values(low_with[(byte >> shift) & 1])
-                set_value(clk, hi)
-        set_values(low_with[0])
-
-    def close(self) -> None:
-        try:
-            self._req.reconfigure_lines({(self._clk, self._dat): self._input})
-        finally:
-            self._req.release()
 
 
 def _clamp(color: Sequence[int]) -> Color:

@@ -8,12 +8,21 @@ const SCALE_MAX = 0.3; // jetson_deploy.py --max-scale default; the controller c
 
 const clampScale = (x) => Math.min(SCALE_MAX, Math.max(SCALE_MIN, Math.round(x * 100) / 100));
 
+// process_manager.LIVE_DELAY_MIN_MS/MAX_MS; the backend and controller enforce them too
+const DELAY_STEP_MS = 5;
+const DELAY_MIN_MS = 10;
+const DELAY_MAX_MS = 40;
+
+const clampDelay = (x) =>
+  Math.min(DELAY_MAX_MS, Math.max(DELAY_MIN_MS, Math.round(x / DELAY_STEP_MS) * DELAY_STEP_MS));
+
 function AssistPanel({ latest }) {
   const [job, setJob] = useState(null);
   // What the backend is currently heartbeating to the controller
-  const [desired, setDesired] = useState({ assist: false, scale: null });
+  const [desired, setDesired] = useState({ assist: false, scale: null, delay_ms: null });
   // Value chosen with the arrows, sent only when "Set" is pressed
   const [pending, setPending] = useState(null);
+  const [pendingDelay, setPendingDelay] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -28,9 +37,27 @@ function AssistPanel({ latest }) {
         .catch(() => {});
     };
     poll();
-    const id = setInterval(poll, 1000);
+    // 500 ms so a remote-button press shows up promptly in the delay box
+    const id = setInterval(poll, 500);
     return () => clearInterval(id);
   }, []);
+
+  // A new run starts from its own launch delay, not the last run's arrows.
+  useEffect(() => setPendingDelay(null), [job?.job_id]);
+
+  // The backend's delay changed (Set here, or a remote-button press): show it.
+  // No priority between the two, so this replaces arrow clicks not yet Set.
+  useEffect(() => {
+    if (typeof desired.delay_ms === "number") setPendingDelay(desired.delay_ms);
+  }, [desired.delay_ms]);
+
+  // Delay the controller is working towards: the one set here, else the launch delay.
+  const requestedDelay = desired.delay_ms ?? latest.assistance_delay_ms ?? null;
+  useEffect(() => {
+    if (pendingDelay === null && typeof requestedDelay === "number") {
+      setPendingDelay(clampDelay(requestedDelay));
+    }
+  }, [pendingDelay, requestedDelay]);
 
   if (!job?.live || job.status !== "running") return null;
 
@@ -46,12 +73,12 @@ function AssistPanel({ latest }) {
     ? `Ramp ${(latest.session_ramp ?? 0).toFixed(2)}`
     : "Passive: predicting, 0 N·m sent";
 
-  async function send(assist, scale) {
+  async function send(assist, scale, delayMs = null) {
     setError(null);
     setBusy(true);
     try {
-      // null leaves the backend's scale unchanged
-      setDesired(await setAssist(assist, scale == null ? null : Number(scale)));
+      // null leaves the backend's scale / delay unchanged
+      setDesired(await setAssist(assist, scale == null ? null : Number(scale), delayMs));
     } catch (e) {
       setError(e.message);
     } finally {
@@ -60,6 +87,15 @@ function AssistPanel({ latest }) {
   }
 
   const unsaved = pending !== null && desired.scale !== null && pending !== clampScale(desired.scale);
+
+  const appliedDelay = latest.assistance_delay_ms;
+  const delayUnsaved =
+    pendingDelay !== null && typeof requestedDelay === "number" && pendingDelay !== requestedDelay;
+  // Set, but the controller holds it until the stance in progress ends
+  const delayWaiting =
+    typeof latest.pending_delay_ms === "number" &&
+    typeof appliedDelay === "number" &&
+    latest.pending_delay_ms !== appliedDelay;
 
   return (
     <aside className="card assist-panel">
@@ -114,6 +150,49 @@ function AssistPanel({ latest }) {
         <div className="assist-dim">
           applied {appliedScale == null ? "—" : Number(appliedScale).toFixed(2)}
           {unsaved && <span className="assist-unsaved"> · not set yet</span>}
+        </div>
+      </div>
+
+      <div className="assist-scale">
+        <div className="assist-label">Assistance delay</div>
+        <div className="assist-stepper">
+          <span className={`assist-scale-value ${delayUnsaved ? "unsaved" : ""}`}>
+            {pendingDelay === null ? "—" : pendingDelay}
+            <span className="assist-unit"> ms</span>
+          </span>
+          <div className="assist-arrows">
+            <button
+              aria-label="Increase assistance delay"
+              onClick={() => setPendingDelay((d) => clampDelay(d + DELAY_STEP_MS))}
+              disabled={pendingDelay === null || pendingDelay >= DELAY_MAX_MS}
+            >
+              ▲
+            </button>
+            <button
+              aria-label="Decrease assistance delay"
+              onClick={() => setPendingDelay((d) => clampDelay(d - DELAY_STEP_MS))}
+              disabled={pendingDelay === null || pendingDelay <= DELAY_MIN_MS}
+            >
+              ▼
+            </button>
+          </div>
+        </div>
+        <button
+          className="assist-btn set"
+          onClick={() => send(desired.assist, null, pendingDelay)}
+          disabled={busy || pendingDelay === null || !delayUnsaved}
+        >
+          Set
+        </button>
+        <div className="assist-dim">
+          applied {typeof appliedDelay === "number" ? `${appliedDelay} ms` : "—"}
+          {delayWaiting && (
+            <span className="assist-unsaved">
+              {" "}
+              · {latest.pending_delay_ms} ms after this stance
+            </span>
+          )}
+          {delayUnsaved && <span className="assist-unsaved"> · not set yet</span>}
         </div>
       </div>
 

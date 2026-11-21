@@ -81,11 +81,12 @@ export async function getAssist() {
   return res.json();
 }
 
-export async function setAssist(assist, scale) {
+// delayMs: null leaves the assistance delay unchanged
+export async function setAssist(assist, scale, delayMs = null) {
   const res = await fetch(`${API_BASE}/launch/assist`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ assist, scale }),
+    body: JSON.stringify({ assist, scale, delay_ms: delayMs }),
   });
   if (!res.ok) throw new Error((await res.json()).detail || "assist change failed");
   return res.json();

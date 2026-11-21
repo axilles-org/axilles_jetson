@@ -11,7 +11,7 @@ import time
 from dataclasses import dataclass
 
 from ..config import DeployConfig, SensorAdapterConfig
-from .delay import PredictionDelay
+from .delay import PredictionDelay, validate_delay_ms
 
 
 class StanceDetector:
@@ -57,6 +57,20 @@ class AssistanceController:
         self.faulted = False
         self._ramp = 0.0
         self._last_command = 0.0
+        # Delay requested at runtime, applied at the next swing sample.
+        self.pending_delay_ms: float | None = None
+
+    def request_delay(self, delay_ms: float) -> None:
+        """Queue a new assistance delay. It takes effect at the next swing sample,
+        so the stance in progress finishes on the old delay and every stance runs
+        on a single delay value."""
+        delay_ms = validate_delay_ms(delay_ms)
+        self.pending_delay_ms = None if delay_ms == self.delay.delay_ms else delay_ms
+
+    @property
+    def target_delay_ms(self) -> float:
+        """The delay the next stance will use (applied, or pending if queued)."""
+        return self.delay.delay_ms if self.pending_delay_ms is None else self.pending_delay_ms
 
     def reset(self) -> None:
         self.delay.reset()
@@ -90,6 +104,10 @@ class AssistanceController:
 
         # A swing sample must not inherit torque from the previous stance.
         if not stance or not enabled or not ready:
+            if not stance and self.pending_delay_ms is not None:
+                # Stance is over; the next one starts on the new delay.
+                self.delay.set_delay_ms(self.pending_delay_ms)
+                self.pending_delay_ms = None
             self.delay.reset()
             self.delayed_moment = 0.0
             self._ramp = 0.0

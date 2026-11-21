@@ -47,6 +47,7 @@ backend/
   sensor_monitor.py     Dashboard-side sensor reader for Live/Ankle Limits while no controller runs; hands the I2C bus to a launch
   ankle_limits.py       Ankle Limits page: samples the AS5600 (read-only) while the page is open, tracks max offsets from standing
   process_manager.py    Launches/stops a controller subprocess for the Launch page; blocks any --arm (torque) invocation
+  delay_buttons.py      Remote up/down buttons (header pins 29/31, inputs only) stepping a live run's delay 5 ms per press, 10..40 ms; needs Jetson.GPIO in the backend's Python
   simulate_run.py        Fake-trial generator, for trying the dashboard with no hardware
   sample_data/            Bundled real exo CSVs, usable as a replay source (see below)
 

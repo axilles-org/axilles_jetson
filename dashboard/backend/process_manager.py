@@ -38,6 +38,32 @@ ALLOWED_MODES = ("mock", "dry-run", "live")
 MAX_LOG_LINES = 2000
 MAX_TORQUE_CAP_NM = 10.0  # SAFE_T_MAX in ML_model/src/exo/deploy/motor.py
 
+# Range and step of the assistance delay the Live page may set during a live run
+# (passed to jetson_deploy.py as --min/--max-delay-ms, which clamps it again).
+# The Launch page's starting delay may be anywhere in 0..1000 ms.
+LIVE_DELAY_MIN_MS = 10.0
+LIVE_DELAY_MAX_MS = 40.0
+LIVE_DELAY_STEP_MS = 5.0   # one Live-page arrow click or one remote button press
+
+
+def stepped_live_delay(base_ms: float, steps: int) -> float:
+    """base + steps * 5 ms, snapped to the 5 ms grid and clamped to 10..40 ms
+    (a launch delay of 50 ms steps to 40 either way)."""
+    raw = base_ms + steps * LIVE_DELAY_STEP_MS
+    snapped = round(raw / LIVE_DELAY_STEP_MS) * LIVE_DELAY_STEP_MS
+    return min(LIVE_DELAY_MAX_MS, max(LIVE_DELAY_MIN_MS, snapped))
+
+
+def checked_live_delay(delay_ms: Any) -> float:
+    try:
+        delay = float(delay_ms)
+    except (TypeError, ValueError):
+        raise ValueError(f"assistance delay must be a number, got {delay_ms!r}") from None
+    if not LIVE_DELAY_MIN_MS <= delay <= LIVE_DELAY_MAX_MS:  # also rejects NaN
+        raise ValueError(f"assistance delay must be between {LIVE_DELAY_MIN_MS:g} "
+                         f"and {LIVE_DELAY_MAX_MS:g} ms during a run")
+    return delay
+
 
 def _checked_torque_cap(torque_cap: Any) -> float:
     try:
@@ -83,7 +109,38 @@ class ProcessManager:
         self._state: JobState | None = None
         self._reader_thread: threading.Thread | None = None
         # Desired assistance for a live job; server.py sends it as a heartbeat.
-        self.assist_state = {"assist": False, "scale": 0.02}
+        # delay_ms stays None (launch delay kept) until set from the Live page
+        # or the remote buttons. Change it only through update_assist/step_delay.
+        self._assist_lock = threading.Lock()
+        self.assist_state = {"assist": False, "scale": 0.02, "delay_ms": None}
+        # Applied delay the live controller last streamed (its launch delay
+        # until one is set); the base for the first button press.
+        self.observed_delay_ms: float | None = None
+
+    def update_assist(self, **changes: Any) -> dict[str, Any]:
+        """Merge changes into assist_state under a lock. Dashboard POSTs (FastAPI
+        worker threads) and the remote buttons (their own thread) both write here,
+        so neither can drop the other's change, e.g. a button press landing at the
+        same moment as an OFF click. No priority: the later write wins."""
+        with self._assist_lock:
+            self.assist_state = {**self.assist_state, **changes}
+            return self.assist_state
+
+    def step_delay(self, steps: int) -> dict[str, Any] | None:
+        """Move the requested delay by steps * 5 ms (remote buttons). None when no
+        live job is running or its delay is not known yet; nothing changes then."""
+        job = self.status()
+        if not job or not job["live"] or job["status"] != "running":
+            return None
+        with self._assist_lock:
+            base = self.assist_state.get("delay_ms")
+            if base is None:
+                base = self.observed_delay_ms
+            if base is None:
+                return None
+            self.assist_state = {**self.assist_state,
+                                 "delay_ms": stepped_live_delay(base, steps)}
+            return self.assist_state
 
     @property
     def is_running(self) -> bool:
@@ -133,7 +190,8 @@ class ProcessManager:
                 start_new_session=True,  # own process group, so we can signal cleanly
             )
             state = JobState(job_id=job_id, argv=argv, cwd=str(cwd), status="running", live=live)
-            self.assist_state = {**self.assist_state, "assist": False}
+            self.update_assist(assist=False, delay_ms=None)
+            self.observed_delay_ms = None
             self._proc = proc
             self._state = state
 
@@ -167,7 +225,7 @@ class ProcessManager:
             proc = self._proc
             state = self._state
 
-        self.assist_state = {**self.assist_state, "assist": False}
+        self.update_assist(assist=False)
         # SIGINT first (the scripts already handle KeyboardInterrupt to zero
         # torque / close resources cleanly); escalate to SIGTERM/SIGKILL only
         # if it doesn't exit promptly.
@@ -241,6 +299,8 @@ def build_argv(
             "--duration", str(duration),
             "--arm", "--start-passive", "--ankle-zero", "auto",
             "--torque-cap", str(_checked_torque_cap(torque_cap)),
+            "--min-delay-ms", str(LIVE_DELAY_MIN_MS),
+            "--max-delay-ms", str(LIVE_DELAY_MAX_MS),
             "--no-teleplot",
         ]
         if assist_scale is not None:

@@ -107,6 +107,10 @@ def main() -> None:
                     help="assistance off until switched on from the dashboard")
     ap.add_argument("--max-scale", type=float, default=0.3,
                     help="ceiling on the assistance scale the dashboard may set")
+    ap.add_argument("--min-delay-ms", type=float, default=10.0,
+                    help="lowest assistance delay the dashboard may set during a run")
+    ap.add_argument("--max-delay-ms", type=float, default=40.0,
+                    help="highest assistance delay the dashboard may set during a run")
     ap.add_argument("--ankle-zero", choices=["config", "auto"], default="config",
                     help="auto: zero the encoder from the first --calib-s s of walking")
     ap.add_argument("--calib-s", type=float, default=10.0)
@@ -116,6 +120,8 @@ def main() -> None:
     args = ap.parse_args()
     if not 0.0 < args.torque_cap <= SAFE_T_MAX:
         ap.error(f"--torque-cap must be above 0 and at most {SAFE_T_MAX}")
+    if not 0.0 <= args.min_delay_ms <= args.max_delay_ms <= 1000.0:
+        ap.error("need 0 <= --min-delay-ms <= --max-delay-ms <= 1000")
 
     signal.signal(signal.SIGINT, _handle_signal)
     signal.signal(signal.SIGTERM, _handle_signal)
@@ -198,7 +204,8 @@ def main() -> None:
         motor.enter()
         motor.start_sender(stale_s=args.sender_stale_ms / 1000.0)
 
-    switch = (AssistSwitch(cfg.deploy.assistance_scale, args.max_scale)
+    switch = (AssistSwitch(cfg.deploy.assistance_scale, args.max_scale,
+                           delay_range_ms=(args.min_delay_ms, args.max_delay_ms))
               if args.start_passive else None)
     sign = cfg.deploy.sensor_adapter.ankle_encoder_sign
     calib_samples: list[float] = []
@@ -208,7 +215,8 @@ def main() -> None:
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fields = ["t_s", *FRAME_KEYS, "predicted_nm_per_kg", "predicted_nm",
-              "delayed_predicted_nm_per_kg", "assistance_delay_ms", "delay_ready",
+              "delayed_predicted_nm_per_kg", "assistance_delay_ms", "pending_delay_ms",
+              "delay_ready",
               "delayed_prediction_age_ms",
               "assist_cmd_nm", "sent_torque_nm", "session_ramp", "stance",
               "ramp", "buffer_ready", "ankle_angle_deg", "calibrated",
@@ -243,6 +251,7 @@ def main() -> None:
     session_ramp = 0.0
     prev_start = None
     model_fault_seen = False
+    applied_delay_ms = controller.assistance.delay.delay_ms
     try:
         while not _STOP and (t_now := time.perf_counter() - t0) < args.duration:
             loop_start = time.perf_counter()
@@ -258,6 +267,9 @@ def main() -> None:
             switch_enabled = switch.poll() if switch else exercise_command
             if switch:
                 controller.assistance.scale = switch.scale
+                if switch.delay_ms is not None:
+                    # queued; the controller applies it once the current stance ends
+                    controller.assistance.request_delay(switch.delay_ms)
             if not calibrated:
                 calib_samples.append(raw["ankle_encoder_deg"])
                 if t_now >= args.calib_s:
@@ -268,6 +280,10 @@ def main() -> None:
             out = controller.step(raw, tick_dt,
                                   assistance_enabled=switch_enabled and calibrated)
             prediction_t = time.perf_counter()
+            if out["assistance_delay_ms"] != applied_delay_ms:
+                print(f"[{t_now:6.1f}s] assistance delay {applied_delay_ms:g} -> "
+                      f"{out['assistance_delay_ms']:g} ms (applied at end of stance)")
+                applied_delay_ms = out["assistance_delay_ms"]
             pred_kg = out["predicted_nm_per_kg"]
             assist_cmd = out["command_nm"]                 # N.m from AssistanceController
             if out["model_fault"] and not model_fault_seen:
@@ -295,6 +311,8 @@ def main() -> None:
                    "predicted_nm": round(pred_kg * args.mass, 4),
                    "delayed_predicted_nm_per_kg": out["delayed_predicted_nm_per_kg"],
                    "assistance_delay_ms": out["assistance_delay_ms"],
+                   # equals assistance_delay_ms unless a change waits for the stance to end
+                   "pending_delay_ms": controller.assistance.target_delay_ms,
                    "delay_ready": int(out["delay_ready"]),
                    "delayed_prediction_age_ms": out["delayed_prediction_age_ms"],
                    "assist_cmd_nm": round(assist_cmd, 4),

@@ -3,12 +3,23 @@ from collections import deque
 import math
 
 
+def validate_delay_ms(delay_ms: float) -> float:
+    delay_ms = float(delay_ms)
+    if not math.isfinite(delay_ms) or not 0 <= delay_ms <= 1000:
+        raise ValueError("assistance_delay_ms must be finite and between 0 and 1000")
+    return delay_ms
+
+
 class PredictionDelay:
     def __init__(self, delay_ms: float = 0.0):
-        if not math.isfinite(delay_ms) or not 0 <= delay_ms <= 1000:
-            raise ValueError("assistance_delay_ms must be finite and between 0 and 1000")
-        self.delay_ms = float(delay_ms)
+        self.delay_ms = validate_delay_ms(delay_ms)
         self._samples = deque()
+        self.reset()
+
+    def set_delay_ms(self, delay_ms: float) -> None:
+        """Change the delay and empty the buffer, so no sample delayed by the old
+        value is ever returned. AssistanceController calls this only in swing."""
+        self.delay_ms = validate_delay_ms(delay_ms)
         self.reset()
 
     def reset(self) -> None:

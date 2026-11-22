@@ -99,11 +99,11 @@ KD_IMPEDANCE = 0.0
 PEAK_TORQUE = 6.0 # DO NOT INCREASE ABOVE 10.0 WITHOUT PROPER TESTING
 
 # Looks like the assistance is toe in and toe off
-TAU_PHASE_ARRAY = np.array([0.0, 0.7, 0.8, 0.85, 0.9, 0.95, 1.0])
+TAU_PHASE_ARRAY = np.array([0.0, 0.6, 0.7, 0.75, 0.8, 0.85, 1.0])
 TAU_VAL_ARRAY = np.array([0.0, 0.2,  0.6,  1.0,  0.6, 0.2, 0.0])
 
 # Assistance percentage for torque profile during activation
-ASSISTANCE_LEVEL = 0.65
+ASSISTANCE_LEVEL = 0.8
 
 # Teleplot UDP configuration
 TELEPLOT_HOST = "127.0.0.1"

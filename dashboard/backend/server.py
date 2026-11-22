@@ -38,6 +38,7 @@ from .health import router as health_router
 from . import ankle_limits
 from .ankle_limits import router as ankle_limits_router
 from .sensor_monitor import monitor as sensor_monitor
+from .delay_buttons import DelayButtons
 
 DATA_ROOT = Path(__file__).resolve().parent.parent / "data"
 RUNS_ROOT = DATA_ROOT / "runs"
@@ -181,6 +182,10 @@ async def udp_relay_task() -> None:
             msg = json.loads(data.decode("utf-8"))
             if not isinstance(msg, dict):
                 continue
+            delay = msg.get("assistance_delay_ms")
+            if msg.get("source") in (None, "controller") and isinstance(delay, (int, float)):
+                # base for the first remote-button press when none was set yet
+                process_manager.manager.observed_delay_ms = float(delay)
             await hub.broadcast(json.dumps(enrich(msg)))
         except Exception:
             await asyncio.sleep(0.01)
@@ -202,8 +207,17 @@ async def assist_heartbeat_task() -> None:
         await asyncio.sleep(ASSIST_HEARTBEAT_S)
 
 
+delay_buttons = DelayButtons(process_manager.manager.step_delay)
+
+
+@app.on_event("shutdown")
+def on_shutdown() -> None:
+    delay_buttons.stop()
+
+
 @app.on_event("startup")
 async def on_startup() -> None:
+    delay_buttons.start()       # own thread; no-op without Jetson.GPIO
     asyncio.create_task(udp_relay_task())
     asyncio.create_task(assist_heartbeat_task())
 
@@ -650,8 +664,8 @@ def launch(body: dict[str, Any]) -> dict[str, Any]:
         job_id = uuid.uuid4().hex[:12]
         job = process_manager.manager.start(argv, cwd, job_id)
         if body.get("assist_scale") is not None:
-            process_manager.manager.assist_state = {
-                "assist": False, "scale": float(body["assist_scale"])}
+            process_manager.manager.update_assist(
+                assist=False, scale=float(body["assist_scale"]), delay_ms=None)
         return job
     except PermissionError as e:
         raise HTTPException(403, str(e))
@@ -666,16 +680,23 @@ def get_assist() -> dict[str, Any]:
 
 @app.post("/api/launch/assist")
 def set_assist(body: dict[str, Any]) -> dict[str, Any]:
-    """body: {assist: bool, scale: float}. The controller caps scale at --max-scale."""
+    """body: {assist: bool, scale: float, delay_ms: float | null}. The controller caps
+    scale at --max-scale. delay_ms (10..40 ms) is applied by the controller only
+    after the stance in progress ends, never mid-stance."""
     job = process_manager.manager.status()
     if not job or job["status"] != "running" or not job["live"]:
         raise HTTPException(400, "no live job is running")
-    state = dict(process_manager.manager.assist_state)
-    state["assist"] = bool(body.get("assist", False))
+    # Only the fields in this request change, so a remote-button delay press
+    # in between is kept unless this request sets a delay itself.
+    changes: dict[str, Any] = {"assist": bool(body.get("assist", False))}
+    if body.get("delay_ms") is not None:
+        try:
+            changes["delay_ms"] = process_manager.checked_live_delay(body["delay_ms"])
+        except ValueError as e:
+            raise HTTPException(400, str(e))
     if body.get("scale") is not None:
-        state["scale"] = float(body["scale"])
-    process_manager.manager.assist_state = state
-    return state
+        changes["scale"] = float(body["scale"])
+    return process_manager.manager.update_assist(**changes)
 
 
 @app.post("/api/launch/stop")

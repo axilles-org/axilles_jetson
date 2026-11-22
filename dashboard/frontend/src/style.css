@@ -527,6 +527,11 @@ tr.clickable:hover {
   font-variant-numeric: tabular-nums;
 }
 
+.assist-unit {
+  font-size: 16px;
+  font-weight: 500;
+}
+
 .assist-scale-value.unsaved,
 .assist-unsaved {
   color: var(--warn);

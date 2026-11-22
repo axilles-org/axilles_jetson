@@ -20,7 +20,7 @@ Serial packet: b"DS" + 2-byte big-endian length + frame bytes. The Arduino
 answers b"K" once the bytes are on the wire.
 
 Colors are (r, g, b) tuples in 0-255. ``order`` is the byte order on the wire
-after the brightness byte: "BGR" for most APA102 strips.
+after the brightness byte: "GBR" for the exo strip ("BGR" for most APA102 strips).
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ class DotStar:
         self,
         num_leds: int,
         port: str = DEFAULT_PORT,
-        order: str = "BGR",
+        order: str = "GBR",
         brightness: float = 0.2,
         timeout_s: float = 2.0,
     ) -> None:

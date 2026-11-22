@@ -36,6 +36,8 @@ from exo.deploy.ankle_reference import load_ankle_reference
 from exo.deploy.dashboard_info import build_model_info
 from exo.deploy.prepare_backend import prepare_backend
 from exo.deploy.jetson_io import FRAME_KEYS, ReplaySensors, Teleplot
+from exo.deploy.leds import (LedMode, LedStatus, StanceWindow, foot_gyro_rad_s,
+                             torque_color)
 from exo.deploy.motor import SAFE_T_MAX, MotorInterface
 from exo.deploy.runtime import ExoController
 
@@ -115,6 +117,8 @@ def main() -> None:
                     help="auto: zero the encoder from the first --calib-s s of walking")
     ap.add_argument("--calib-s", type=float, default=10.0)
 
+    ap.add_argument("--no-leds", action="store_true",
+                    help="leave the status LED strip alone (it is only used in live runs)")
     ap.add_argument("--no-teleplot", action="store_true")
     ap.add_argument("--print-every", type=int, default=50)
     args = ap.parse_args()
@@ -245,6 +249,11 @@ def main() -> None:
     if not calibrated:
         print(f"CALIBRATING: walk normally for {args.calib_s:.0f} s to zero the ankle angle.")
 
+    # Status LEDs (exo.deploy.leds), live runs only. The writer thread never
+    # blocks this loop, and LED failures never affect torque.
+    leds = LedStatus() if live_torque and not args.no_leds else None
+    led_window = StanceWindow()
+
     t0 = time.perf_counter()
     i = 0
     sent = 0.0
@@ -304,6 +313,15 @@ def main() -> None:
                 overrun=overrun) if exercise_command else 0.0)
             queued_t = time.perf_counter()
             tx_t, tx_nm = motor.transmission_snapshot()
+
+            if leds:
+                window = led_window.update(bool(out["stance"]), t_now, foot_gyro_rad_s(raw))
+                if not calibrated:
+                    leds.set_state(LedMode.CALIBRATING)
+                elif assist_on:
+                    leds.set_state(LedMode.ASSIST, window, torque_color(sent, torque_cap))
+                else:
+                    leds.set_state(LedMode.READY)          # steady green
 
             row = {"t_s": round(t_now, 4),
                    **{k: round(raw[k], 5) for k in FRAME_KEYS},
@@ -371,10 +389,16 @@ def main() -> None:
     except Exception as exc:                               # noqa: BLE001
         print(f"\n!! exception: {exc!r} -> zeroing torque")
         motor.stop()  # zero before potentially blocking telemetry flush
+        if leds:
+            # A motor fault (E-stop cutting motor power shows as "no motor
+            # status") or any other crash.
+            leds.event(LedMode.ESTOP)
         run_logger.stop(status="crashed")
         raise
     else:
         motor.stop()
+        if leds:
+            leds.event(LedMode.STOP)
         run_logger.stop(status="completed")
     finally:
         try:
@@ -385,6 +409,8 @@ def main() -> None:
         sensors.shutdown()
         if switch:
             switch.close()
+        if leds:
+            leds.close()
         tp.close()
         print(f"\n{i} frames over {time.perf_counter() - t0:.1f} s. "
               f"last torque {motor.last_torque_nm:+.2f} N.m. log: {out_path}")

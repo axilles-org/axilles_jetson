@@ -80,7 +80,7 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--num", type=int, required=True, help="number of LEDs on the strip")
     p.add_argument("--port", default=DEFAULT_PORT, help="Arduino serial port")
-    p.add_argument("--order", default="BGR", help="wire color order (default BGR)")
+    p.add_argument("--order", default="GBR", help="wire color order (default GBR, this strip)")
     p.add_argument("--brightness", type=float, default=0.2, help="0.0-1.0 (default 0.2)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
